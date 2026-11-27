@@ -69,7 +69,7 @@ window.NUTEX_DATA = (() => {
   // 6 Departments = 300 Employees exact
   const DEPARTMENTS = [
     {
-      id: 'rd', name: 'R&D', vp: 'Sarah Klein', employees: 45, targetUsers: 44,
+      id: 'rd', name: 'R&D', vp: 'Sarah Klein', employees: 45, targetUsers: 44, budgetShare: 0.32,
       dataSourcesReady: 1, dataSourcesTotal: 1,
       trainedEmployees: 40, weeklyUsers: 38, dailyUsers: 26, openRequests: 9,
       hoursSavedMo: 340, costSavedMo: 14200, errorRatePct: 2.4, cycleDays: 3.0,
@@ -88,7 +88,7 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'marketing', name: 'Marketing', vp: 'Marcus Weber', employees: 30, targetUsers: 30,
+      id: 'marketing', name: 'Marketing', vp: 'Marcus Weber', employees: 30, targetUsers: 30, budgetShare: 0.10,
       dataSourcesReady: 1, dataSourcesTotal: 1,
       trainedEmployees: 25, weeklyUsers: 24, dailyUsers: 15, openRequests: 5,
       hoursSavedMo: 225, costSavedMo: 8900, errorRatePct: 2.9, cycleDays: 2.8,
@@ -106,7 +106,7 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'sales', name: 'Sales', vp: 'Marcus Weber', employees: 50, targetUsers: 48,
+      id: 'sales', name: 'Sales', vp: 'Marcus Weber', employees: 50, targetUsers: 48, budgetShare: 0.19,
       dataSourcesReady: 1, dataSourcesTotal: 2,
       trainedEmployees: 38, weeklyUsers: 37, dailyUsers: 22, openRequests: 10,
       hoursSavedMo: 310, costSavedMo: 11800, errorRatePct: 2.8, cycleDays: 3.1,
@@ -125,7 +125,7 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'production', name: 'Production', vp: 'Dr. Thomas Berg', employees: 90, targetUsers: 60,
+      id: 'production', name: 'Production', vp: 'Dr. Thomas Berg', employees: 90, targetUsers: 60, budgetShare: 0.18,
       dataSourcesReady: 0, dataSourcesTotal: 2,
       trainedEmployees: 49, weeklyUsers: 42, dailyUsers: 19, openRequests: 6,
       hoursSavedMo: 245, costSavedMo: 9400, errorRatePct: 3.5, cycleDays: 4.1,
@@ -145,7 +145,7 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'logistics', name: 'Logistics', vp: 'Julia Hoffmann', employees: 45, targetUsers: 36,
+      id: 'logistics', name: 'Logistics', vp: 'Julia Hoffmann', employees: 45, targetUsers: 36, budgetShare: 0.10,
       dataSourcesReady: 0, dataSourcesTotal: 2,
       trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 14, openRequests: 5,
       hoursSavedMo: 155, costSavedMo: 5800, errorRatePct: 3.2, cycleDays: 3.7,
@@ -164,7 +164,7 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'purchasing', name: 'Purchasing', vp: 'Andreas Richter', employees: 40, targetUsers: 37,
+      id: 'purchasing', name: 'Purchasing', vp: 'Andreas Richter', employees: 40, targetUsers: 37, budgetShare: 0.11,
       dataSourcesReady: 1, dataSourcesTotal: 1,
       trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 15, openRequests: 3,
       hoursSavedMo: 145, costSavedMo: 7100, errorRatePct: 2.9, cycleDays: 3.4,
@@ -610,30 +610,30 @@ window.NUTEX_DATA = (() => {
   const PILOTS = [
     {
       id: 'quotedraft', name: 'QuoteDraft', full: 'Automated Quote & Spec Drafting', deptId: 'sales', owner: 'Marcus Weber',
-      status: 'Live', since: 'Mar 2026', costMo: 3400, valueMo: 11800, employees: 50,
+      status: 'Live', since: 'Mar 2026', costMo: 2500, valueMo: 8600, employees: 50,
       result: 'Quotes 38% faster · win rate +4 pp', trend: [1.9, 2.4, 2.8, 3.1, 3.3, 3.47],
       next: 'Roll out to Apparel & Retail team (18 reps)'
     },
     {
       id: 'yarnlab', name: 'YarnLab', full: 'Yarn Formulation Assistant', deptId: 'rd', owner: 'Sarah Klein',
-      status: 'Live', since: 'Feb 2026', costMo: 4600, valueMo: 13700, employees: 45,
+      status: 'Live', since: 'Feb 2026', costMo: 3300, valueMo: 9800, employees: 45,
       result: 'Lab test cycles 30% faster', trend: [2.2, 2.5, 2.6, 2.8, 2.9, 2.98],
       next: 'Connect simulation data to cut cycles further'
     },
     {
       id: 'fabricvision', name: 'FabricVision', full: 'Optical Fabric Defect Camera', deptId: 'production', owner: 'Dr. Thomas Berg',
-      status: 'Pilot', since: 'Jul 2026', costMo: 4000, valueMo: 9600, employees: 90,
+      status: 'Pilot', since: 'Jul 2026', costMo: 2000, valueMo: 4800, employees: 90,
       result: 'Scrap −18% on 4 looms in Plant A', trend: [0.4, 0.9, 1.4, 1.8, 2.2, 2.4],
       next: 'Approve rollout to all looms (€48k) — needs works council sign-off'
     },
     {
       id: 'weaveopt', name: 'WeaveOpt', full: 'Loom Setting Optimizer', deptId: 'production', owner: 'Dr. Thomas Berg',
-      status: 'Pilot', since: 'Aug 2026', costMo: 2800, valueMo: 5900, employees: 62,
+      status: 'Pilot', since: 'Aug 2026', costMo: 1100, valueMo: 2300, employees: 62,
       result: 'Changeover time −22%', trend: [0, 0.6, 1.1, 1.6, 1.9, 2.1],
       next: 'Blocked by ERP link for full rollout'
     },
     {
-      id: 'yarnprice', name: 'YarnPrice', label: 'right', full: 'Raw Yarn Price Forecast', deptId: 'purchasing', owner: 'Andreas Richter',
+      id: 'yarnprice', name: 'YarnPrice', label: 'left', full: 'Raw Yarn Price Forecast', deptId: 'purchasing', owner: 'Andreas Richter',
       status: 'Pilot', since: 'Sep 2026', costMo: 1500, valueMo: 4200, employees: 12,
       result: '€35k saved on two fiber contracts', trend: [0, 0, 0, 1.2, 2.1, 2.8],
       next: 'Keep small — high value, few users'
@@ -646,7 +646,7 @@ window.NUTEX_DATA = (() => {
     },
     {
       id: 'shopfloor', name: 'ShopFloor Copilot', label: 'above-left', full: 'Shopfloor Assistant (work instructions)', deptId: 'production', owner: 'Dr. Thomas Berg',
-      status: 'Pilot', since: 'May 2026', costMo: 3800, valueMo: 2900, employees: 110,
+      status: 'Pilot', since: 'May 2026', costMo: 1700, valueMo: 1300, employees: 80,
       result: 'Only 31% of operators use it weekly', trend: [0.5, 0.6, 0.6, 0.7, 0.7, 0.76],
       next: 'Fix adoption: shopfloor training wave 2 before more spend'
     },
@@ -655,8 +655,46 @@ window.NUTEX_DATA = (() => {
       status: 'Pilot', since: 'Apr 2026', costMo: 1100, valueMo: 600, employees: 6,
       result: 'Errors flat — vendor tool covers it already', trend: [0.7, 0.6, 0.6, 0.5, 0.55, 0.55],
       next: 'Stop at end of contract (Jan 2027), save €1.1k/mo'
+    },
+    {
+      id: 'routeassist', name: 'RouteAssist', full: 'Warehouse Picking Route Assistant', deptId: 'logistics', owner: 'Julia Hoffmann',
+      status: 'Pilot', since: 'Jul 2026', costMo: 1400, valueMo: 2600, employees: 20,
+      result: 'Picking route errors −15%, 40 min saved per shift', trend: [0.3, 0.7, 1.1, 1.4, 1.7, 1.86],
+      next: 'Extend to second warehouse once SupplyAI users moved to Copilot'
+    },
+    {
+      id: 'contentstudio', name: 'ContentStudio', label: 'right', full: 'Brand Content & Spec Sheet Drafting', deptId: 'marketing', owner: 'Marcus Weber',
+      status: 'Live', since: 'Apr 2026', costMo: 1600, valueMo: 5200, employees: 24,
+      result: 'Campaign assets 45% faster, agency spend −€3k/mo', trend: [2.1, 2.4, 2.7, 2.9, 3.1, 3.25],
+      next: 'Connect product data to auto-draft spec sheets'
+    },
+    {
+      id: 'trendradar', name: 'TrendRadar', label: 'right', full: 'Market Intelligence Briefs', deptId: 'marketing', owner: 'Marcus Weber',
+      status: 'Pilot', since: 'Sep 2026', costMo: 900, valueMo: 1100, employees: 7,
+      result: 'Weekly competitor brief in 10 min instead of 3 h', trend: [0, 0, 0, 0.8, 1.1, 1.22],
+      next: 'Share briefs with Sales to widen the audience'
     }
   ];
+
+  // Company financial context for AI spend (example figures, mid-sized textile manufacturer)
+  const COMPANY = {
+    revenueYear: 68000000,      // €68M revenue
+    itBudgetPct: 3.0,           // IT budget as % of revenue
+    bench: {                    // peer ranges, mid-sized manufacturing
+      perEmpMo: [60, 120],      // € AI spend per employee per month
+      shareOfIt: [10, 20],      // % of IT budget
+      shareOfRevenue: [0.3, 0.8] // % of revenue
+    },
+    // Anonymised peer group: AI spend as % of revenue (mid-sized manufacturers, 150–600 employees)
+    peers: [
+      { name: 'Technical textiles A', share: 0.18 }, { name: 'Nonwovens B', share: 0.27 },
+      { name: 'Automotive textiles C', share: 0.33 }, { name: 'Yarn spinner D', share: 0.38 },
+      { name: 'Home textiles E', share: 0.42 }, { name: 'Coated fabrics F', share: 0.46 },
+      { name: 'Medical textiles G', share: 0.49 }, { name: 'Apparel fabrics H', share: 0.58 },
+      { name: 'Industrial filters I', share: 0.64 }, { name: 'Composites J', share: 0.71 },
+      { name: 'Smart textiles K', share: 0.86 }, { name: 'Packaging films L', share: 1.04 }
+    ]
+  };
 
   // People the CEO can delegate to-dos to (quick choose + search)
   const PEOPLE = [
@@ -681,9 +719,10 @@ window.NUTEX_DATA = (() => {
     year: 2026,
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
     target: 255,
-    trained:  [30, 60, 104, 118, 130, 140, 150, 158, 172, 186, 210],
-    licensed: [40, 72, 98, 122, 184, 186, 198, 172, 196, 182, 232],
-    weekly:   [24, 45, 74, 92, 121, 112, 134, 141, 168, 158, 193],
+    // Each month-to-month step is either exactly one change event below or organic growth.
+    trained:  [30, 60, 104, 116, 136, 138, 156, 166, 182, 186, 210],
+    licensed: [40, 70, 96, 120, 182, 182, 196, 168, 210, 194, 232],
+    weekly:   [30, 52, 81, 104, 133, 119, 151, 142, 180, 158, 193],
     events: [
       {
         id: 'ev-training1', m: 1.9, date: '2 Mar 2026', title: 'AI basics training · wave 1',
@@ -693,7 +732,7 @@ window.NUTEX_DATA = (() => {
       },
       {
         id: 'ev-licenses', m: 3.85, date: '28 Apr 2026', title: 'License expansion (+60 seats)',
-        weekly: 29, licensed: 62, trained: 12, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
+        weekly: 29, licensed: 62, trained: 20, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
         why: 'Seats went to whole departments at once; only half started using them weekly.',
         fix: 'Tie new seats to a training slot.'
       },
@@ -710,6 +749,12 @@ window.NUTEX_DATA = (() => {
         fix: 'Offer a one-click re-request instead of a ticket.'
       },
       {
+        id: 'ev-copilot', m: 7.85, date: '26 Aug 2026', title: 'M365 Copilot rollout (ops teams)',
+        weekly: 38, licensed: 42, trained: 16, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
+        why: 'Copilot inside Outlook and Teams meant no new tool to learn; usage started on day one.',
+        fix: 'Add short role-based prompts for shift leads.'
+      },
+      {
         id: 'ev-supplyai', m: 8.9, date: '28 Sep 2026', title: 'SupplyAI chat module removed',
         weekly: -22, licensed: -16, trained: 0, recovered: 12, depts: ['logistics', 'purchasing'],
         why: 'The vendor dropped the chat module; warehouse teams lost their main AI entry point without a replacement.',
@@ -717,7 +762,7 @@ window.NUTEX_DATA = (() => {
       },
       {
         id: 'ev-bootcamp', m: 9.6, date: '20 Oct 2026', title: 'Prompting bootcamp & AI champions',
-        weekly: 35, licensed: 50, trained: 24, recovered: 0, depts: ['sales', 'rd'],
+        weekly: 35, licensed: 38, trained: 24, recovered: 0, depts: ['sales', 'rd'],
         why: 'Champions in every team answered questions on the spot; usage grew fastest where they were active.',
         fix: 'Name champions in Production and Logistics.'
       }
@@ -725,7 +770,7 @@ window.NUTEX_DATA = (() => {
   };
 
   return {
-    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE,
+    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE, COMPANY,
     TOOLS, TIMEFRAMES, DEPARTMENTS, INITIAL_PROJECTS, INITIAL_TRAININGS, SYSTEMS, CULTURE_SURVEY, TREND_2026, I18N
   };
 })();

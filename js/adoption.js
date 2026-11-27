@@ -7,41 +7,67 @@
 
 window.NUTEX_ADOPTION = (() => {
   const D = window.NUTEX_DATA;
-  const A = D.ADOPTION_2026;
-  const TOTAL = 300;
+  let TOTAL = 300;
 
   const SERIES = [
-    { key: 'trained',  label: 'Trained',        color: '#14B8A6', fill: 'rgba(20,184,166,0.05)' },
-    { key: 'licensed', label: 'With license',   color: '#3B82F6', fill: 'rgba(59,130,246,0.05)' },
-    { key: 'weekly',   label: 'Weekly users',   color: '#F97316', fill: 'rgba(249,115,22,0.22)' }
+    { key: 'trained',  label: 'Trained',      color: '#14B8A6', fill: 'rgba(20,184,166,0.05)' },
+    { key: 'licensed', label: 'With license', color: '#3B82F6', fill: 'rgba(59,130,246,0.05)' },
+    { key: 'weekly',   label: 'Weekly users', color: '#F97316', fill: 'rgba(249,115,22,0.22)' }
   ];
 
   const pct = (n) => Math.round((n / TOTAL) * 100);
   const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
   const deptName = (id) => (D.DEPARTMENTS.find(d => d.id === id) || {}).name || id;
 
+  // Company = sum of all departments; a department filter shows only its own history and the
+  // change events it was part of (its share). Each marker equals the step in the weekly line.
+  function data() {
+    const S = window.NUTEX_STATE;
+    const H = S.adoption();
+    const C = D.ADOPTION_2026;
+    const sel = S.state.filters.dept;
+    const ids = sel !== 'all' && S.canViewDept(sel) ? [sel] : D.DEPARTMENTS.map(d => d.id);
+    const sum = (f) => H.labels.map((_, i) => ids.reduce((acc, id) => acc + H.perDept[id][f][i], 0));
+    TOTAL = ids.reduce((acc, id) => acc + H.perDept[id].employees, 0);
+    const events = H.events
+      .filter(e => ids.some(id => e.share.weekly[id] !== undefined))
+      .map(e => {
+        const pick = (f) => ids.reduce((acc, id) => acc + (e.share[f][id] || 0), 0);
+        return { ...e, weekly: pick('weekly'), trained: pick('trained'), licensed: pick('licensed'), recovered: pick('recovered'), depts: e.depts.filter(id => ids.includes(id)) };
+      })
+      .filter(e => e.weekly !== 0);
+    return {
+      ...C,
+      target: ids.reduce((acc, id) => acc + H.perDept[id].target, 0),
+      weekly: sum('weekly'), trained: sum('trained'), licensed: sum('licensed'),
+      events
+    };
+  }
+
   // Month index (0 = Jan) of the selected timeframe
   function upTo() {
     const k = window.NUTEX_STATE.state.filters.timeframe;
     const i = D.TREND_2026.keys.indexOf(k);
-    return i < 0 ? A.labels.length - 1 : i;
+    return i < 0 ? D.ADOPTION_2026.labels.length - 1 : i;
   }
 
-  function events(last) { return A.events.filter(e => e.m <= last + 0.999); }
+  function events(last, A = data()) { return A.events.filter(e => e.m <= last + 0.999); }
 
   function summary() {
+    const A = data();
     const last = upTo();
     const weekly = A.weekly[last];
     const gap = A.target - weekly;
-    const losses = events(last).filter(e => e.weekly < 0);
+    const losses = events(last, A).filter(e => e.weekly < 0);
     const biggest = losses.slice().sort((a, b) => a.weekly - b.weekly)[0] || null;
     const lost = losses.reduce((s, e) => s - e.weekly, 0);
     const recovered = losses.reduce((s, e) => s + e.recovered, 0);
-    return { last, weekly, gap, losses, biggest, lost, recovered };
+    return { last, weekly, gap, losses, biggest, lost, recovered, target: A.target };
   }
 
   // ---------- Level 1: tiny time horizon ----------
   function mini() {
+    const A = data();
     const last = upTo();
     const w = 300;
     const h = 62;
@@ -57,7 +83,7 @@ window.NUTEX_ADOPTION = (() => {
       const fill = s.key === 'weekly' ? `<polygon points="${a.poly}" fill="${s.fill}"/>` : '';
       return `${fill}<polyline points="${a.pts}" fill="none" stroke="${s.color}" stroke-width="${s.key === 'weekly' ? 2.2 : 1.5}" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
     }).join('');
-    const marks = events(last).filter(e => e.weekly < 0).map(e => `
+    const marks = events(last, A).filter(e => e.weekly < 0).map(e => `
       <line x1="${x(e.m)}" x2="${x(e.m)}" y1="6" y2="${h}" stroke="#EF4444" stroke-width="1" stroke-dasharray="2 2" opacity="0.8"/>
       <path d="M${x(e.m) - 4},2 L${x(e.m) + 4},2 L${x(e.m)},8 z" fill="#EF4444"/>
     `).join('');
@@ -71,7 +97,7 @@ window.NUTEX_ADOPTION = (() => {
   }
 
   // ---------- Level 2 ----------
-  function bigChart(last) {
+  function bigChart(last, A) {
     const W = 800;
     const H = 330;
     const L = 40;
@@ -102,7 +128,7 @@ window.NUTEX_ADOPTION = (() => {
       `;
     }).join('');
 
-    const evs = events(last).map(e => {
+    const evs = events(last, A).map(e => {
       const ex = x(e.m);
       const loss = e.weekly < 0;
       const col = loss ? '#EF4444' : '#10B981';
@@ -129,6 +155,7 @@ window.NUTEX_ADOPTION = (() => {
   }
 
   function render() {
+    const A = data();
     const s = summary();
     const last = s.last;
     const steps = [
@@ -151,7 +178,7 @@ window.NUTEX_ADOPTION = (() => {
         </div>
         <div class="ad-wrap" data-ad-stage>
           <div class="ad-left">
-            ${bigChart(last)}
+            ${bigChart(last, A)}
             <div class="ad-tooltip" data-ad-tooltip role="tooltip" aria-hidden="true"></div>
           </div>
           <aside class="ad-log">
@@ -210,7 +237,7 @@ window.NUTEX_ADOPTION = (() => {
   }
 
   function show(stage, node) {
-    const e = A.events.find(x => x.id === node.getAttribute('data-ev'));
+    const e = data().events.find(x => x.id === node.getAttribute('data-ev'));
     const tip = stage.querySelector('[data-ad-tooltip]');
     if (!e || !tip) return;
     tip.innerHTML = cardHtml(e);

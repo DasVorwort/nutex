@@ -154,7 +154,8 @@ window.NUTEX_CHARTS = (() => {
   // 3. Clean 2026 Area Trend Chart (Jan–Nov) with Target Line
   function renderTrendLine({ labels, actual, target, unit = '%', min = 0, max = 100 }) {
     const t = window.NUTEX_STATE.t;
-    const w = 820, h = 230, padL = 48, padR = 24, padT = 26, padB = 34;
+    // Wide aspect so the chart stays compact (fits inside the detail pop-ups without scrolling)
+    const w = 1200, h = 220, padL = 48, padR = 24, padT = 26, padB = 34;
     const pw = w - padL - padR, ph = h - padT - padB;
     const x = (i) => padL + (i / Math.max(1, labels.length - 1)) * pw;
     const y = (v) => padT + ph - ((Math.max(min, Math.min(max, v)) - min) / (max - min)) * ph;

@@ -9,8 +9,13 @@ window.NUTEX_VALUE = (() => {
   const D = window.NUTEX_DATA;
 
   const X_MAX = 4;          // value per €
-  const Y_MAX = 140;        // employees affected
-  const Y_SPLIT = 40;       // "broad impact" threshold
+  // Employees axis and "broad impact" threshold follow the scope (company or one department)
+  function scale() {
+    const sel = window.NUTEX_STATE.state.filters.dept;
+    const dept = sel !== 'all' ? D.DEPARTMENTS.find(d => d.id === sel) : null;
+    if (!dept) return { max: 140, split: 40 };
+    return { max: Math.ceil(dept.employees / 10) * 10, split: Math.max(5, Math.round(dept.employees * 0.4)) };
+  }
   const ZONES = {
     implement: { label: 'Implement',  color: '#10B981', bg: 'rgba(16,185,129,0.09)', txt: 'var(--green-txt)', hint: 'pays off for many people' },
     niche:     { label: 'Niche win',  color: '#3B82F6', bg: 'rgba(59,130,246,0.07)', txt: 'var(--blue)',      hint: 'pays off, few people' },
@@ -22,13 +27,18 @@ window.NUTEX_VALUE = (() => {
   const eurK = (n) => n >= 10000 ? `€${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : eur(n);
   const deptName = (id) => (D.DEPARTMENTS.find(d => d.id === id) || {}).name || id;
 
-  function zoneOf(p) {
+  function zoneOf(p, split = scale().split) {
     const v = p.valueMo / p.costMo;
-    if (v >= 1) return p.employees >= Y_SPLIT ? 'implement' : 'niche';
-    return p.employees >= Y_SPLIT ? 'improve' : 'stop';
+    if (v >= 1) return p.employees >= split ? 'implement' : 'niche';
+    return p.employees >= split ? 'improve' : 'stop';
   }
 
-  const pilots = () => D.PILOTS.map(p => ({ ...p, vpe: p.valueMo / p.costMo, zone: zoneOf(p) }));
+  const pilots = () => {
+    const sel = window.NUTEX_STATE.state.filters.dept;
+    return D.PILOTS
+      .filter(p => sel === 'all' || p.deptId === sel)
+      .map(p => ({ ...p, vpe: p.valueMo / p.costMo, zone: zoneOf(p) }));
+  };
 
   function spark(values, { w = 260, h = 70, ref = 1, color = '#10B981' } = {}) {
     const all = values.concat([ref]);
@@ -72,6 +82,7 @@ window.NUTEX_VALUE = (() => {
     const T = 10;
     const B = 292;
     const px = (v) => L + (Math.min(v, X_MAX) / X_MAX) * (R - L);
+    const { max: Y_MAX, split: Y_SPLIT } = scale();
     const py = (e) => B - (Math.min(e, Y_MAX) / Y_MAX) * (B - T);
     const x1 = px(1);
     const ys = py(Y_SPLIT);
@@ -84,6 +95,7 @@ window.NUTEX_VALUE = (() => {
     const label = (p, cx, cy, r) => {
       const pos = p.label || (p.employees < 20 ? 'above' : 'below');
       const at = pos === 'right' ? { x: cx + r + 7, y: cy, a: 'start', b: 'central' }
+        : pos === 'left' ? { x: cx - r - 7, y: cy, a: 'end', b: 'central' }
         : pos === 'above' ? { x: cx, y: cy - r - 7, a: 'middle', b: 'auto' }
         : pos === 'above-left' ? { x: cx + r, y: cy - r - 7, a: 'end', b: 'auto' }
         : { x: cx, y: cy + r + 14, a: 'middle', b: 'auto' };
@@ -93,7 +105,7 @@ window.NUTEX_VALUE = (() => {
     const ticksX = [0, 1, 2, 3, 4].map(v => `
       <text x="${px(v)}" y="${B + 16}" text-anchor="middle" font-size="10.5" fill="var(--text-3)">${v === 1 ? '1.0 break-even' : `€${v}`}</text>
     `).join('');
-    const ticksY = [0, 40, 70, 140].map(e => `
+    const ticksY = [0, Y_SPLIT, Y_MAX].map(e => `
       <text x="${L - 8}" y="${py(e)}" text-anchor="end" dominant-baseline="central" font-size="10.5" fill="var(--text-3)">${e}</text>
     `).join('');
 
@@ -151,7 +163,19 @@ window.NUTEX_VALUE = (() => {
             ${spark(series, { color: ratio >= 1 ? '#10B981' : '#EF4444' })}
             <div class="vl-axis"><span>${labels[0]}</span><span>${labels[labels.length - 1]}</span></div>
 
-            <span class="vl-lbl" style="margin-top:14px">${list.length} pilots · ${eurK(pv)} value vs ${eurK(pc)} cost</span>
+            <span class="vl-lbl" style="margin-top:12px">Where the value comes from</span>
+            <div class="vl-src">
+              <div class="vl-src-bar">
+                <div style="flex:${Math.min(pv, valueMo)};background:#10B981" title="Pilots"></div>
+                <div style="flex:${Math.max(0, valueMo - pv)};background:#93C5FD" title="Everyday AI tools"></div>
+              </div>
+              <div class="vl-src-legend">
+                <span><i style="background:#10B981"></i>Pilots <strong>${eurK(Math.min(pv, valueMo))}</strong></span>
+                <span><i style="background:#93C5FD"></i>Everyday AI tools <strong>${eurK(Math.max(0, valueMo - pv))}</strong></span>
+              </div>
+            </div>
+
+            <span class="vl-lbl" style="margin-top:12px">${list.length} pilot${list.length === 1 ? '' : 's'} · ${eurK(pv)} value vs ${eurK(pc)} cost</span>
             <div class="vl-chips">
               ${counts.map(c => `
                 <span class="vl-chip" data-q="${c.k}" title="${ZONES[c.k].hint}">
@@ -162,6 +186,7 @@ window.NUTEX_VALUE = (() => {
           </div>
           <div class="vl-right">
             ${chart(list)}
+            ${list.length ? '' : `<div class="vl-empty">No AI pilots in ${deptName(window.NUTEX_STATE.state.filters.dept)} yet</div>`}
             <div class="vl-foot">Bubble size = cost per month · dark outline = live · hover a pilot for details</div>
             <div class="vl-tooltip" data-vl-tooltip role="tooltip" aria-hidden="true"></div>
           </div>
