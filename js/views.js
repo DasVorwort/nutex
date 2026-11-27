@@ -224,7 +224,7 @@ window.NUTEX_VIEWS = (() => {
   const DETAILS = {
     departments: { title: 'Weekly use by department', render: (m) => renderDepartments(m) },
     culture:     { title: 'People score · monthly pulse', render: () => renderCulture() },
-    budget:      { title: 'Budget used', render: (m) => renderBudget(m) },
+    budget:      { title: 'Budget · where the AI money goes', render: (m) => (window.NUTEX_BUDGET ? window.NUTEX_BUDGET.render(m) : renderBudget(m)) },
     projects:    { title: 'Pilots & AI projects', render: (m) => renderProjects(m) },
     trainings:   { title: 'Trainings', render: (m) => renderTrainings(m) },
     licenses:    { title: 'Licenses & seats', render: (m) => renderLicenses(m) },

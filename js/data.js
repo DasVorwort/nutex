@@ -676,6 +676,17 @@ window.NUTEX_DATA = (() => {
     }
   ];
 
+  // Company financial context for AI spend (example figures, mid-sized textile manufacturer)
+  const COMPANY = {
+    revenueYear: 68000000,      // €68M revenue
+    itBudgetPct: 3.0,           // IT budget as % of revenue
+    bench: {                    // peer ranges, mid-sized manufacturing
+      perEmpMo: [60, 120],      // € AI spend per employee per month
+      shareOfIt: [10, 20],      // % of IT budget
+      shareOfRevenue: [0.3, 0.8] // % of revenue
+    }
+  };
+
   // People the CEO can delegate to-dos to (quick choose + search)
   const PEOPLE = [
     { id: 'sarah',   name: 'Sarah Klein',     role: 'VP R&D' },
@@ -743,7 +754,7 @@ window.NUTEX_DATA = (() => {
   };
 
   return {
-    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE,
+    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE, COMPANY,
     TOOLS, TIMEFRAMES, DEPARTMENTS, INITIAL_PROJECTS, INITIAL_TRAININGS, SYSTEMS, CULTURE_SURVEY, TREND_2026, I18N
   };
 })();

@@ -2610,6 +2610,121 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 
 .ov-detail .hero-row > .card:nth-child(2) > svg { max-height: 190px; }
 
+/* Level 2 · Budget */
+.bg-wrap { display: flex; flex-direction: column; gap: 12px; }
+.bg-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); }
+.bg-top {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.1fr auto;
+  gap: 22px;
+  align-items: start;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+.bg-kpi, .bg-trend, .bg-cats, .bg-adjust { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bg-big { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.1; }
+.bg-big small { font-size: 15px; font-weight: 600; color: var(--text-3); }
+.bg-bar { height: 8px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.bg-bar-fill { height: 100%; border-radius: 99px; }
+.bg-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); }
+.bg-spark { width: 100%; height: 54px; display: block; }
+.bg-stack { display: flex; gap: 2px; height: 10px; border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.bg-cat-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-size: 11.5px; color: var(--text-2); }
+.bg-cat-legend span { display: flex; align-items: center; gap: 5px; }
+.bg-cat-legend i { width: 8px; height: 8px; border-radius: 2px; }
+.bg-cat-legend strong { margin-left: auto; color: var(--text); }
+.bg-adjust-row { display: flex; flex-direction: column; gap: 5px; }
+.bg-chip {
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bg-chip:hover { border-color: var(--blue); }
+
+.bg-green { background: var(--green); }
+.bg-yellow { background: var(--yellow); }
+.bg-red { background: var(--red); }
+
+.bg-grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 12px; }
+.bg-panel { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); min-width: 0; }
+.bg-panel-head { display: flex; justify-content: space-between; align-items: center; }
+.bg-panel-head h4 { margin: 0; font-size: 14px; color: var(--text); }
+.bg-legend { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-3); }
+.bg-legend i { width: 12px; height: 8px; border-radius: 2px; margin-left: 6px; }
+.bg-key-spent { background: var(--green); }
+.bg-key-budget { background: var(--track); border: 1px dashed var(--text-3); }
+
+.bg-table { display: flex; flex-direction: column; }
+.bg-tr {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 46px 58px 58px;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.bg-tr > :nth-child(n+3) { text-align: right; }
+.bg-th { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); padding-bottom: 2px; }
+.bg-tr.is-sel { background: var(--highlight-row); }
+.bg-dept { display: flex; flex-direction: column; line-height: 1.2; }
+.bg-dept strong { color: var(--text); font-size: 12.5px; }
+.bg-dept small { font-size: 10.5px; color: var(--text-3); }
+.bg-track-wrap { position: relative; height: 22px; display: block; }
+.bg-track, .bg-fill, .bg-over { position: absolute; top: 5px; height: 12px; border-radius: 4px; }
+.bg-track { left: 0; background: var(--track); outline: 1px dashed var(--border-hover); outline-offset: -1px; }
+.bg-fill { left: 0; opacity: 0.9; }
+.bg-over { background: repeating-linear-gradient(45deg, var(--red), var(--red) 4px, #FCA5A5 4px, #FCA5A5 8px); border-radius: 0 4px 4px 0; }
+.bg-amt { position: absolute; right: 0; top: 4px; font-size: 11px; font-weight: 700; color: var(--text); background: var(--surface); padding-left: 6px; }
+.bg-amt em { font-style: normal; font-weight: 500; color: var(--text-3); }
+
+.bg-tips { display: flex; flex-direction: column; gap: 5px; }
+.bg-tip { padding: 6px 10px; border-radius: 8px; font-size: 12px; color: var(--text-2); border-left: 3px solid; background: var(--surface-soft); }
+.bg-tip strong { color: var(--text); }
+.bg-tip-red { border-left-color: var(--red); }
+.bg-tip-yellow { border-left-color: var(--yellow); }
+.bg-tip-green { border-left-color: var(--green); }
+
+.bg-zoom { display: flex; flex-direction: column; gap: 4px; }
+.bg-step {
+  display: grid;
+  grid-template-columns: 70px 64px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background: var(--surface-soft);
+  font-size: 12px;
+}
+.bg-step-lbl { color: var(--text-3); font-weight: 600; grid-row: span 2; }
+.bg-step strong { font-size: 14px; color: var(--text); grid-row: span 2; }
+.bg-step-bar { height: 6px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.bg-step-bar i { display: block; height: 100%; background: var(--text-3); border-radius: 99px; }
+.bg-step-share { font-size: 11px; color: var(--text-3); }
+.bg-step.is-ai { background: rgba(59, 130, 246, 0.08); }
+.bg-step.is-ai .bg-step-bar i { background: #3B82F6; }
+.bg-step.is-value { background: var(--green-bg); }
+.bg-step.is-value .bg-step-bar i { background: var(--green); }
+.bg-step-share strong { color: var(--green-txt); }
+
+.bg-bench { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.bg-bench > div { display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; }
+.bg-bench span { font-size: 10.5px; color: var(--text-3); }
+.bg-bench strong { font-size: 16px; color: var(--text); }
+.bg-bench small { font-size: 10.5px; font-weight: 600; }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }
