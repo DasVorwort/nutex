@@ -102,14 +102,13 @@ window.NUTEX_ROADMAP = (() => {
   const ITEM_INDEX = {};
   const LAYOUT = LANES.map((lane, li) => {
     const y = TOP + li * LANE_GAP + 22;
-    let labelIdx = 0;
     const placed = lane.items.map(m => {
       const vs = visualState(m);
-      const labeled = vs === 'open' || vs === 'overdue';
+      const labeled = vs === 'overdue';
       const p = {
         ...m, onPath: !!m.onPath, unlocks: m.unlocks || null,
         x: xOf(m.date), y, visualState: vs, statusMeta: statusMeta(m),
-        labeled, labelPos: labeled ? (labelIdx++ % 2 === 0 ? 'above' : 'below') : null,
+        labeled, labelPos: labeled ? 'above' : null,
         lane: lane.label
       };
       ITEM_INDEX[p.id] = p;
@@ -203,7 +202,7 @@ window.NUTEX_ROADMAP = (() => {
         <rect x="${xOf(p.from)}" y="30" width="${x2 - xOf(p.from)}" height="${AXIS_Y - 30}" fill="${c.band}"/>
         <polygon points="${pts}" fill="${c.fill}"/>
         <text x="${(x1 + x2) / 2 + (i ? 4 : -4)}" y="16" dominant-baseline="central" text-anchor="middle" font-size="11.5" fill="${c.text}">
-          <tspan font-weight="750">${p.label}</tspan><tspan dx="5" font-weight="500" opacity="0.85">· ${c.sub}</tspan>
+          <tspan font-weight="750">${p.label}</tspan>
         </text>
       `;
     }).join('');
@@ -221,13 +220,10 @@ window.NUTEX_ROADMAP = (() => {
     }
 
     const lanes = LAYOUT.map(l => {
-      const active = l.placed.filter(m => m.status !== 'proposed');
-      const doneN = active.filter(m => m.status === 'done').length;
       return `
         <g class="rm-lane">
           <text x="2" y="${l.y}" dominant-baseline="central" font-size="12.5">
             <tspan font-weight="700" fill="var(--text)">${l.label}</tspan>
-            <tspan dx="6" font-size="11" font-weight="500" fill="var(--text-3)">${doneN} of ${active.length}</tspan>
           </text>
           <line x1="${X0 - 6}" y1="${l.y}" x2="${X1 + 14}" y2="${l.y}" stroke="var(--border-hover)" stroke-width="1.6" stroke-linecap="round" marker-end="url(#rm-arrow)"/>
           ${l.placed.map(nodeMark).join('')}
@@ -257,7 +253,6 @@ window.NUTEX_ROADMAP = (() => {
         </defs>
         ${phases}
         <line x1="${X0 - 6}" y1="${AXIS_Y}" x2="${X1 + 22}" y2="${AXIS_Y}" stroke="var(--text-3)" stroke-width="1.3" marker-end="url(#rm-axis-arrow)"/>
-        <text x="2" y="${AXIS_Y}" dominant-baseline="central" font-size="11" font-weight="600" fill="var(--text-3)">Time →</text>
         ${ticks.join('')}
         ${lanes}
         ${today}
@@ -282,7 +277,6 @@ window.NUTEX_ROADMAP = (() => {
       <section class="card card-lg roadmap-section ${compact ? 'roadmap-compact' : ''}" aria-label="AI roadmap">
         <div class="panel-head roadmap-head">
           <h3>AI Roadmap 2026 – 2027</h3>
-          <span class="muted-sm">Hover a milestone for owner & impact</span>
         </div>
         <div class="roadmap-stage" data-roadmap-stage>
           ${renderSvg()}

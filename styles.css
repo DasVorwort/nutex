@@ -2259,6 +2259,7 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
   justify-content: center;
 }
 .ov-todo-panel .ov-todo-block {
+  flex: none;
   height: 178px;
   padding: 0;
   background: transparent;
