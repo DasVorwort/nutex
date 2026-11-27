@@ -147,6 +147,7 @@ window.NUTEX_VIEWS = (() => {
         <div class="ov-block-head">
           <h2 class="ov-row-title">${title}</h2>
           <span class="ov-row-q">${question}</span>
+          <span class="ov-head-rule" aria-hidden="true"></span>
         </div>
         <div class="ov-tile-grid ov-cols-${cols}">${tiles.join('')}</div>
       </section>
@@ -157,9 +158,8 @@ window.NUTEX_VIEWS = (() => {
   function todoSection({ title, todos }) {
     return `
       <section class="ov-todo-section">
-        <div class="ov-block-head">
-          <span class="ov-todo-sec-title">${title}</span>
-          ${todos.length ? `<span class="ov-todo-count">${Math.min(3, todos.length)}</span>` : ''}
+        <div class="ov-block-head" aria-label="${title}">
+          <span class="ov-head-rule" aria-hidden="true"></span>
         </div>
         <div class="ov-todo-block">
           ${todos.length ? todos.slice(0, 3).join('') : `<div class="ov-todo-empty">✓ Nothing open</div>`}

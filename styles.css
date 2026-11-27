@@ -2201,6 +2201,20 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 
 .ov-block { position: relative; display: flex; flex-direction: column; gap: 7px; }
 .ov-block-head { display: flex; align-items: center; gap: 10px; height: 22px; min-width: 0; }
+.ov-block .ov-row-title { position: relative; padding-left: 11px; }
+.ov-block .ov-row-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--blue);
+  transform: translateY(-50%);
+}
+.ov-head-rule { flex: 1; height: 1px; background: var(--border); margin-left: 4px; }
+.ov-todo-section .ov-head-rule { margin-left: 0; background: rgba(37, 99, 235, 0.18); }
 .ov-todo-panel {
   background: var(--highlight-row);
   border: 1px solid #BFDBFE;
