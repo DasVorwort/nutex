@@ -3048,6 +3048,35 @@ body.dark .ip-l-main { border-top-color: #F8FAFC; }
 body.dark .ip-chart polyline[stroke="#0F172A"] { stroke: #F8FAFC; }
 body.dark .ip-chart circle[fill="#0F172A"] { fill: #F8FAFC; }
 
+/* Business impact · clean variant */
+.ip-clean .ip-grid { grid-template-columns: 300px minmax(0, 1fr); gap: 18px; }
+.ip-clean .ip-list { gap: 2px; }
+.ip-clean .ip-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+}
+.ip-clean .ip-row:hover { background: var(--surface-soft); }
+.ip-clean .ip-row.is-sel { background: var(--highlight-row); box-shadow: none; }
+.ip-clean .ip-row.is-sel strong { color: var(--blue); }
+.ip-clean .ip-row b { font-size: 13px; font-weight: 700; }
+.ip-clean .ip-row + .ip-row { border-top: 1px solid var(--border); border-radius: 0; }
+.ip-clean .ip-row.is-sel, .ip-clean .ip-row.is-sel + .ip-row { border-top-color: transparent; border-radius: 10px; }
+.ip-clean .ip-detail { background: transparent; border: none; padding: 0; gap: 6px; }
+.ip-clean .ip-kpis { gap: 22px; }
+.ip-clean .ip-kpis strong { font-size: 18px; }
+.ip-sum { color: var(--text-3); }
+.ip-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text-3); }
+.ip-note strong { color: var(--text); font-weight: 600; }
+.ip-key { display: inline-flex; align-items: center; gap: 6px; }
+.ip-key i { width: 14px; height: 0; }
+.ip-k-main { border-top: 2.4px solid #2563EB; }
+.ip-k-ctrl { border-top: 1.6px solid var(--border-hover); }
+.ip-dotsep { width: 1px; height: 12px; background: var(--border); }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }

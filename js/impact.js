@@ -89,15 +89,15 @@ window.NUTEX_IMPACT = (() => {
   // ---------- Level 2 ----------
   function bigChart(k, ni) {
     const W = 760;
-    const H = 250;
-    const L = 46;
+    const H = 230;
+    const L = 44;
     const R = 744;
-    const T = 26;
-    const B = 214;
+    const T = 24;
+    const B = 196;
     const labels = I().labels;
     const n = ni + 1;
-    const vals = k.series.slice(0, n).concat(k.control ? k.control.slice(0, n) : [], k.target !== undefined ? [k.target] : []);
-    const pad = (Math.max(...vals) - Math.min(...vals)) * 0.18 || 1;
+    const vals = k.series.slice(0, n).concat(k.control ? k.control.slice(0, n) : []);
+    const pad = (Math.max(...vals) - Math.min(...vals)) * 0.2 || 1;
     const lo = Math.min(...vals) - pad;
     const hi = Math.max(...vals) + pad;
     const x = (i) => L + (i / (labels.length - 1)) * (R - L);
@@ -105,33 +105,27 @@ window.NUTEX_IMPACT = (() => {
     const st = stats(k, ni);
     const g = k.goLive;
     const line = (arr, color, wdt, dash) => `<polyline points="${arr.slice(0, n).map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="${wdt}" ${dash ? `stroke-dasharray="${dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
-    const grid = [0, 0.5, 1].map(f => {
-      const v = lo + (hi - lo) * f;
-      return `<line x1="${L}" x2="${R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 8}" y="${y(v)}" text-anchor="end" dominant-baseline="central" font-size="10.5" fill="var(--text-3)">${fmt(v, k)}</text>`;
-    }).join('');
+    const grid = [lo + (hi - lo) * 0.15, lo + (hi - lo) * 0.85].map(v =>
+      `<line x1="${L}" x2="${R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 8}" y="${y(v)}" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--text-3)">${fmt(v, k)}</text>`
+    ).join('');
     return `
       <svg class="ip-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${k.name} over time">
         ${grid}
-        <rect x="${x(g)}" y="${T - 6}" width="${R - x(g)}" height="${B - T + 6}" fill="rgba(37,99,235,0.05)"/>
-        <line x1="${x(g)}" x2="${x(g)}" y1="${T - 14}" y2="${B}" stroke="#2563EB" stroke-width="1.6"/>
-        <rect x="${x(g) - 40}" y="${T - 24}" width="80" height="18" rx="9" fill="#2563EB"/>
-        <text x="${x(g)}" y="${T - 15}" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="800" fill="#fff">AI go-live · ${labels[g]}</text>
-        <line x1="${x(Math.max(0, g - 3))}" x2="${x(g)}" y1="${y(st.before)}" y2="${y(st.before)}" stroke="var(--text-2)" stroke-width="2" stroke-dasharray="5 3"/>
-        <text x="${x(Math.max(0, g - 3))}" y="${y(st.before) - 6}" font-size="10" font-weight="700" fill="var(--text-2)">before ${fmt(st.before, k)}</text>
-        ${k.target !== undefined ? `<line x1="${L}" x2="${R}" y1="${y(k.target)}" y2="${y(k.target)}" stroke="#10B981" stroke-dasharray="6 4" stroke-width="1.3"/><text x="${L + 6}" y="${y(k.target) + (k.lowerIsBetter ? 14 : -6)}" text-anchor="start" font-size="10" font-weight="700" fill="var(--green-txt)">target ${fmt(k.target, k)}</text>` : ''}
-        ${k.control ? line(k.control, '#94A3B8', 2, '4 3') : ''}
-        ${line(k.series, '#0F172A', 2.6)}
-        <circle cx="${x(ni)}" cy="${y(st.now)}" r="5" fill="#0F172A"/>
-        <text x="${x(ni) - 8}" y="${y(st.now) - 10}" text-anchor="end" font-size="11.5" font-weight="800" fill="var(--text)">${fmt(st.now, k)}</text>
-        ${labels.map((l, i) => `<text x="${x(i)}" y="${H - 14}" text-anchor="middle" font-size="10" fill="${i <= ni ? 'var(--text-3)' : 'var(--border-hover)'}">${l}</text>`).join('')}
+        <line x1="${x(g)}" x2="${x(g)}" y1="${T - 8}" y2="${B}" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="${x(g) + 6}" y="${T - 2}" font-size="10.5" font-weight="600" fill="var(--text-3)">AI go-live</text>
+        ${k.control ? line(k.control, 'var(--border-hover)', 1.6) : ''}
+        ${line(k.series, '#2563EB', 2.4)}
+        <circle cx="${x(ni)}" cy="${y(st.now)}" r="4" fill="#2563EB"/>
+        ${labels.map((l, i) => (i % 2 === 1 || i === labels.length - 1) ? '' : `<text x="${x(i)}" y="${H - 10}" text-anchor="middle" font-size="10" fill="var(--text-3)">${l}</text>`).join('')}
+        <text x="${x(labels.length - 1)}" y="${H - 10}" text-anchor="middle" font-size="10" fill="var(--text-3)">${labels[labels.length - 1]}</text>
       </svg>
     `;
   }
 
   const CONF = {
-    high:   { label: 'High',   cls: 'green',  text: 'Control group without AI stayed flat — the change can be attributed to AI.' },
-    medium: { label: 'Medium', cls: 'yellow', text: 'Before/after only — other changes in the same period may contribute.' },
-    low:    { label: 'Low',    cls: 'red',    text: 'Indirect effect — AI is one of several drivers.' }
+    high:   { label: 'high',   text: (k) => `${k.controlLabel} without AI stayed flat` },
+    medium: { label: 'medium', text: () => 'before/after comparison only' },
+    low:    { label: 'low',    text: () => 'indirect effect, several drivers' }
   };
 
   function render() {
@@ -140,32 +134,26 @@ window.NUTEX_IMPACT = (() => {
     const sel = sm.kpis.find(k => k.id === S.state.impactKpi) || (sm.best ? sm.best.k : sm.kpis[0]);
     const st = stats(sel, ni);
     const conf = CONF[sel.confidence];
-    const deptNames = (ids) => ids.map(id => (D.DEPARTMENTS.find(d => d.id === id) || {}).name || id).join(', ');
     const eur = (n) => '€' + Math.round(n / 1000) + 'k';
 
     return `
-      <div class="ip">
+      <div class="ip ip-clean">
         <div class="ip-head">
-          <span class="b2-q">What has AI changed for our customers and operations?${sm.fallback ? ' <span class="ov-scope-pill">Company-wide — no KPI tracked for this department</span>' : ''}</span>
-          <span class="ip-sum"><strong>${sm.improved}</strong> of ${sm.live.length} live KPIs better · avg <strong class="text-green">+${sm.avgBetter.toFixed(0)}%</strong> · ≈ <strong>${eur(sm.euro)}</strong>/yr</span>
+          <span class="b2-q">What has AI changed for our customers and operations?${sm.fallback ? ' <span class="ov-scope-pill">Company-wide</span>' : ''}</span>
+          <span class="ip-sum">${sm.improved} of ${sm.live.length} KPIs better · ≈ ${eur(sm.euro)} per year</span>
         </div>
         <div class="ip-grid">
           <div class="ip-list">
-            ${sm.kpis.map((k, i) => {
+            ${sm.kpis.map(k => {
               const s = stats(k, ni);
-              const c = CONF[k.confidence];
               const good = s.better > 2;
               return `
                 <button type="button" class="ip-row ${k.id === sel.id ? 'is-sel' : ''} ${s.live ? '' : 'is-off'}" data-action="impact-kpi" data-kpi="${k.id}">
-                  <i style="background:${LINE_COLORS[i % LINE_COLORS.length]}"></i>
                   <span class="ip-row-main">
                     <strong>${k.name}</strong>
-                    <small>${s.live ? `${fmt(s.before, k)} → ${fmt(s.now, k)}` : `go-live ${I().labels[k.goLive]}`} · ${k.driver}</small>
+                    <small>${s.live ? `${fmt(s.before, k)} → ${fmt(s.now, k)}` : `go-live ${I().labels[k.goLive]}`}</small>
                   </span>
-                  <span class="ip-row-right">
-                    ${s.live ? `<b class="${good ? 'text-green' : 'text-red'}">${s.delta}</b>` : '<b class="text-3">—</b>'}
-                    <em class="ip-conf ip-conf-${c.cls}">${c.label}</em>
-                  </span>
+                  <b class="${s.live ? (good ? 'text-green' : 'text-red') : 'text-3'}">${s.live ? s.delta : '—'}</b>
                 </button>
               `;
             }).join('')}
@@ -174,25 +162,18 @@ window.NUTEX_IMPACT = (() => {
             <div class="ip-detail-head">
               <div>
                 <h4>${sel.name}</h4>
-                <span>${sel.unitLabel} · ${sel.lowerIsBetter ? 'lower is better' : 'higher is better'} · ${deptNames(sel.depts)}</span>
+                <span>${sel.unitLabel} · ${sel.lowerIsBetter ? 'lower is better' : 'higher is better'}</span>
               </div>
               <div class="ip-kpis">
                 <div><span>Before AI</span><strong>${fmt(st.before, sel)}</strong></div>
                 <div><span>Now</span><strong>${st.live ? fmt(st.now, sel) : '—'}</strong></div>
                 <div><span>Change</span><strong class="${st.better > 2 ? 'text-green' : 'text-red'}">${st.live ? st.delta : '—'}</strong></div>
-                ${st.ctrlBetter !== null ? `<div><span>Beyond control</span><strong class="text-green">${st.net >= 0 ? '+' : ''}${st.net.toFixed(0)}%</strong></div>` : ''}
               </div>
             </div>
             ${bigChart(sel, ni)}
-            <div class="ip-legend">
-              <span><i class="ip-l-main"></i>${sel.name}</span>
-              ${sel.control ? `<span><i class="ip-l-ctrl"></i>${sel.controlLabel}</span>` : ''}
-              <span><i class="ip-l-before"></i>avg. 3 months before go-live</span>
-            </div>
-            <div class="ip-facts">
-              <div class="ip-conf-box ip-conf-${conf.cls}"><strong>Attribution: ${conf.label}</strong> ${conf.text}</div>
-              <div><span>Driven by</span><strong>${sel.driver}</strong><small>${sel.owner}</small></div>
-              <div><span>€ impact</span><strong>${sel.euroYear ? `≈ ${eur(sel.euroYear)}/yr` : 'indirect'}</strong><small>${sel.euroNote}</small></div>
+            <div class="ip-note">
+              ${sel.control ? `<span class="ip-key"><i class="ip-k-main"></i>With AI</span><span class="ip-key"><i class="ip-k-ctrl"></i>${sel.controlLabel}</span><span class="ip-dotsep"></span>` : ''}
+              <span><strong>${sel.driver}</strong> · ${sel.owner.split(' · ')[0]} · ${sel.euroYear ? `≈ ${eur(sel.euroYear)}/yr` : 'value not priced'} · attribution ${conf.label}: ${conf.text(sel)}</span>
             </div>
           </div>
         </div>
