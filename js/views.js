@@ -258,29 +258,17 @@ window.NUTEX_VIEWS = (() => {
       foot: lag ? `Lowest: <strong>${lag.dept.name} ${lag.weeklyPct}%</strong>` : ''
     });
 
-    const steps = [
-      { label: 'All', n: metrics.totalEmp },
-      { label: 'Target group', n: metrics.targetUsers },
-      { label: 'Trained', n: metrics.trainedCount },
-      { label: 'Weekly users', n: metrics.weeklyUsers }
-    ];
-    let gapIdx = 2;
-    let gapN = 0;
-    for (let i = 2; i < steps.length; i++) {
-      const drop = steps[i - 1].n - steps[i].n;
-      if (drop > gapN) { gapN = drop; gapIdx = i; }
-    }
+    // Where do we lose employees? — Level 1 time horizon (Level 2 opens the loss timeline)
+    const AD = window.NUTEX_ADOPTION;
+    const ad = AD.summary();
     const t5 = tile({
-      title: 'Where do we lose employees?', level: ppLevel(metrics.trainedPct, D.TARGETS.trainingPct), nav: 'trainings',
-      hero: gapN, unit: ' lost',
-      context: `${steps[gapIdx - 1].label.toLowerCase()} → ${steps[gapIdx].label.toLowerCase()}`,
-      visual: miniBars(steps.map((s, i) => ({
-        label: s.label,
-        value: Math.round((s.n / Math.max(1, metrics.totalEmp)) * 100),
-        color: i === gapIdx ? 'var(--red)' : i === 3 ? 'var(--blue)' : '#93A9F0',
-        display: `${s.n}`
-      }))),
-      foot: `${metrics.untrainedCount} employees not trained yet`
+      title: 'Where do we lose employees?', level: ppLevel(Math.round((ad.weekly / D.ADOPTION_2026.target) * 100), 100), action: 'open-loss',
+      hero: ad.gap, unit: ' short',
+      context: `weekly users vs. target group ${D.ADOPTION_2026.target}`,
+      visual: AD.mini(),
+      foot: ad.biggest
+        ? `Biggest loss: <strong>${ad.biggest.title}</strong> <span class="text-red">−${Math.abs(ad.biggest.weekly)}</span>`
+        : 'No losses this year'
     });
 
     const culture = S.computeCulture();
@@ -449,6 +437,14 @@ window.NUTEX_VIEWS = (() => {
           <div class="ov-modal" role="dialog" aria-label="AI roadmap">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
             ${R.render({ filter: S.state.roadmapFilter || null })}
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.lossOpen && window.NUTEX_ADOPTION ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="Where did we lose our people?">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            ${window.NUTEX_ADOPTION.render()}
           </div>
         </div>
       ` : ''}

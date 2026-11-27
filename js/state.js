@@ -76,6 +76,7 @@ window.NUTEX_STATE = (() => {
     roadmapOpen: false,
     roadmapFilter: null,
     valueOpen: false,
+    lossOpen: false,
     showProjectModal: false,
     showTrainingModal: false
   };

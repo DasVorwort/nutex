@@ -2379,6 +2379,84 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 .vl-tip-next { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface-soft); font-size: 12px; color: var(--text-2); }
 .vl-tip-next span { display: block; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
 
+/* Level 1 + 2 · Where do we lose our people? */
+.ad-mini { width: 100%; height: 56px; display: block; }
+
+.ad-card { margin: 0; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3); }
+.ad-card .panel-head { padding-right: 40px; margin-bottom: 6px; }
+.ad-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+.ad-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ad-legend i { width: 14px; height: 4px; border-radius: 2px; }
+.ad-legend i.ad-dash { height: 0; border-top: 2px dashed var(--text-2); border-radius: 0; }
+.ad-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+.ad-left { position: relative; min-width: 0; }
+.ad-chart { width: 100%; height: auto; display: block; }
+.ad-ev { cursor: pointer; outline: none; }
+.ad-ev.is-active rect:first-of-type,
+.ad-ev:hover rect:first-of-type { stroke-width: 2; }
+.ad-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+
+.ad-log { display: flex; flex-direction: column; gap: 8px; }
+.ad-log-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 2px; }
+.ad-log-sum { font-size: 12.5px; color: var(--text-2); }
+.ad-loss {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  cursor: default;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ad-loss:hover, .ad-loss.is-active { background: var(--surface); border-color: var(--border-hover); border-left-color: var(--red); }
+.ad-loss-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.ad-loss-top strong { font-size: 13px; color: var(--text); }
+.ad-loss-n { font-size: 14px; font-weight: 800; color: var(--red-txt); }
+.ad-loss-sub { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+.ad-rec { height: 5px; border-radius: 99px; background: var(--red-bg); margin: 7px 0 2px; overflow: hidden; }
+.ad-rec div { height: 100%; background: var(--green); border-radius: 99px; }
+
+.ad-leak { display: flex; align-items: center; gap: 16px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+.ad-leak-row { display: flex; align-items: center; gap: 10px; flex: 1; }
+.ad-leak-step {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--track);
+}
+.ad-leak-step strong { font-size: 16px; color: var(--text); }
+.ad-leak-step span { font-size: 12px; color: var(--text-2); }
+.ad-leak-step.is-last { background: rgba(249, 115, 22, 0.14); }
+.ad-leak-drop { font-size: 12px; font-weight: 800; color: var(--red-txt); white-space: nowrap; }
+.ad-leak-drop::before { content: '→ '; color: var(--text-3); font-weight: 500; }
+
+.ad-tooltip {
+  position: absolute;
+  z-index: 5;
+  width: 290px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.ad-tooltip.open { opacity: 1; }
+.ad-tip-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ad-tip-head strong { font-size: 14px; color: var(--text); }
+.ad-tip-badge { padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 800; white-space: nowrap; }
+.ad-tip-badge.is-loss { background: var(--red-bg); color: var(--red-txt); }
+.ad-tip-badge.is-gain { background: var(--green-bg); color: var(--green-txt); }
+.ad-tip-sub { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+.ad-tip-grid { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; margin-top: 9px; font-size: 12px; color: var(--text-3); }
+.ad-tip-grid strong { text-align: right; color: var(--text); }
+.ad-tip-why { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface-soft); font-size: 12px; color: var(--text-2); line-height: 1.4; }
+.ad-tip-why span { display: block; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }

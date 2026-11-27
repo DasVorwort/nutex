@@ -658,8 +658,58 @@ window.NUTEX_DATA = (() => {
     }
   ];
 
+  // Company-wide adoption over time (employees of 300) + the changes that moved it.
+  // Nov values match the live metrics (210 trained, 193 weekly users, target group 255).
+  // m = position on the month axis (0 = Jan); a change sits just before the month it shows up in.
+  const ADOPTION_2026 = {
+    year: 2026,
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+    target: 255,
+    trained:  [30, 60, 104, 118, 130, 140, 150, 158, 172, 186, 210],
+    licensed: [40, 72, 98, 122, 184, 186, 198, 172, 196, 182, 232],
+    weekly:   [24, 45, 74, 92, 121, 112, 134, 141, 168, 158, 193],
+    events: [
+      {
+        id: 'ev-training1', m: 1.9, date: '2 Mar 2026', title: 'AI basics training · wave 1',
+        weekly: 29, licensed: 26, trained: 44, recovered: 0, depts: ['rd', 'marketing', 'sales'],
+        why: 'Hands-on e-learning plus team sessions turned licensed users into weekly users.',
+        fix: 'Repeat the format for shopfloor teams (wave 2, Dec).'
+      },
+      {
+        id: 'ev-licenses', m: 3.85, date: '28 Apr 2026', title: 'License expansion (+60 seats)',
+        weekly: 29, licensed: 62, trained: 12, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
+        why: 'Seats went to whole departments at once; only half started using them weekly.',
+        fix: 'Tie new seats to a training slot.'
+      },
+      {
+        id: 'ev-sso', m: 4.8, date: '25 May 2026', title: 'SSO migration',
+        weekly: -14, licensed: 0, trained: 0, recovered: 14, depts: ['production', 'logistics'],
+        why: 'Shared shopfloor PCs logged users out every shift; people gave up after repeated sign-ins.',
+        fix: 'Fixed with kiosk sign-in in July — fully recovered.'
+      },
+      {
+        id: 'ev-lock', m: 6.8, date: '25 Jul 2026', title: 'Inactive licenses locked',
+        weekly: -9, licensed: -28, trained: 0, recovered: 4, depts: ['production', 'sales'],
+        why: '28 seats with < 1 use per month were locked; 9 of those people used AI occasionally and dropped out.',
+        fix: 'Offer a one-click re-request instead of a ticket.'
+      },
+      {
+        id: 'ev-supplyai', m: 8.9, date: '28 Sep 2026', title: 'SupplyAI chat module removed',
+        weekly: -22, licensed: -16, trained: 0, recovered: 12, depts: ['logistics', 'purchasing'],
+        why: 'The vendor dropped the chat module; warehouse teams lost their main AI entry point without a replacement.',
+        fix: 'Move them to M365 Copilot with a 30-min guided switch.'
+      },
+      {
+        id: 'ev-bootcamp', m: 9.6, date: '20 Oct 2026', title: 'Prompting bootcamp & AI champions',
+        weekly: 35, licensed: 50, trained: 24, recovered: 0, depts: ['sales', 'rd'],
+        why: 'Champions in every team answered questions on the spot; usage grew fastest where they were active.',
+        fix: 'Name champions in Production and Logistics.'
+      }
+    ]
+  };
+
   return {
-    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS,
+    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026,
     TOOLS, TIMEFRAMES, DEPARTMENTS, INITIAL_PROJECTS, INITIAL_TRAININGS, SYSTEMS, CULTURE_SURVEY, TREND_2026, I18N
   };
 })();

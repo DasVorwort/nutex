@@ -172,6 +172,11 @@
       const info = e.target.closest('[data-kpi-info]');
       if (info) { e.stopPropagation(); showPopover(info.dataset.kpiInfo, info); return; }
 
+      if (e.target.closest('[data-action="open-loss"]')) {
+        S.state.lossOpen = true;
+        render(); return;
+      }
+
       if (e.target.closest('[data-action="open-value"]')) {
         S.state.valueOpen = true;
         render(); return;
@@ -195,6 +200,7 @@
       if (e.target.closest('[data-action="close-roadmap"]') && (e.target.closest('.ov-modal-close') || e.target.classList.contains('ov-modal-backdrop'))) {
         S.state.roadmapOpen = false;
         S.state.valueOpen = false;
+        S.state.lossOpen = false;
         render(); return;
       }
 
@@ -330,7 +336,7 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         closeModals();
-        if (S.state.roadmapOpen || S.state.valueOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; render(); }
+        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; render(); }
         if (S.state.showSettings) { S.state.showSettings = false; render(); }
       }
     });
@@ -343,6 +349,7 @@
 
     if (window.NUTEX_ROADMAP) window.NUTEX_ROADMAP.bind(el.viewRoot);
     if (window.NUTEX_VALUE) window.NUTEX_VALUE.bind(el.viewRoot);
+    if (window.NUTEX_ADOPTION) window.NUTEX_ADOPTION.bind(el.viewRoot);
 
     document.addEventListener('click', e => {
       if (!e.target.closest('#kpi-popover') && !e.target.closest('[data-kpi-info]')) hidePopover();
