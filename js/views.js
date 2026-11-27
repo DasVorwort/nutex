@@ -400,9 +400,9 @@ window.NUTEX_VIEWS = (() => {
         labels: D.TREND_2026.labelsEn.slice(0, rSeries.length).map(l => l.split(' ')[0])
       };
       t7 = tile({
-        title: 'Value per € spent', level: rLevel, action: 'open-value',
+        title: 'Return per € spent', level: rLevel, action: 'open-value',
         hero: `€${ratio.toFixed(2)}`,
-        context: `${eurK(metrics.costSavedMo)} value · ${eurK(metrics.totalSpendMo)} cost`,
+        context: `${eurK(metrics.costSavedMo)} return · ${eurK(metrics.totalSpendMo)} cost`,
         visual: sparkline(rSeries, { color: LV[rLevel], ref: 1 }),
         foot: `Dashed = break-even · <strong>${metrics.hoursSavedMo.toLocaleString('en-US')} h</strong> saved`
       });

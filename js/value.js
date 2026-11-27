@@ -1,7 +1,7 @@
 /* ============================================================================
    NuTex Inc. — Level 2: "Which pilots should we implement?"
-   Opened from the "Value per € spent" tile. Left: company value per € and
-   trend. Right: bubble chart of pilots (x = value per €, y = employees
+   Opened from the "Return per € spent" tile. Left: company return per € and
+   trend. Right: bubble chart of pilots (x = return per €, y = employees
    affected, size = monthly cost) with four decision zones and hover cards.
    ============================================================================ */
 
@@ -116,7 +116,7 @@ window.NUTEX_VALUE = (() => {
       const z = ZONES[p.zone];
       const live = p.status === 'Live';
       return `
-        <g class="vl-bubble" data-q="${p.zone}" data-pilot="${p.id}" tabindex="0" role="button" aria-label="${p.name}: €${p.vpe.toFixed(2)} per €, ${p.employees} employees">
+        <g class="vl-bubble" data-q="${p.zone}" data-pilot="${p.id}" tabindex="0" role="button" aria-label="${p.name}: €${p.vpe.toFixed(2)} return per €, ${p.employees} employees">
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="${z.color}" fill-opacity="${live ? 0.95 : 0.8}" stroke="${live ? 'var(--text)' : 'var(--surface)'}" stroke-width="${live ? 2 : 1.5}"/>
           ${label(p, cx, cy, r)}
         </g>
@@ -124,7 +124,7 @@ window.NUTEX_VALUE = (() => {
     }).join('');
 
     return `
-      <svg class="vl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pilots by value per euro and employees affected">
+      <svg class="vl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pilots by return per euro and employees affected">
         ${zone('improve', L, T, x1 - L - 3, ys - T - 3, L + 10, T + 18, 'start')}
         ${zone('implement', x1 + 3, T, R - x1 - 3, ys - T - 3, R - 10, T + 18, 'end')}
         ${zone('stop', L, ys + 3, x1 - L - 3, B - ys - 3, L + 10, B - 10, 'start')}
@@ -132,7 +132,7 @@ window.NUTEX_VALUE = (() => {
         <line x1="${x1}" x2="${x1}" y1="${T}" y2="${B}" stroke="var(--text-3)" stroke-dasharray="4 4" stroke-width="1.2"/>
         <line x1="${L}" x2="${R}" y1="${B}" y2="${B}" stroke="var(--border-hover)"/>
         ${ticksX}${ticksY}
-        <text x="${R}" y="${H - 4}" text-anchor="end" font-size="11" font-weight="700" fill="var(--text-2)">value per € →</text>
+        <text x="${R}" y="${H - 4}" text-anchor="end" font-size="11" font-weight="700" fill="var(--text-2)">return per € →</text>
         <text transform="translate(12 ${(T + B) / 2}) rotate(-90)" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text-2)">employees affected</text>
         ${bubbles}
       </svg>
@@ -155,15 +155,15 @@ window.NUTEX_VALUE = (() => {
         </div>
         <div class="vl-wrap" data-vl-stage>
           <div class="vl-left">
-            <span class="vl-lbl">Value per € spent</span>
+            <span class="vl-lbl">Return per € spent</span>
             <div class="vl-big">€${ratio.toFixed(2)}</div>
             <div class="vl-meta">target ≥ €1.00</div>
-            <div class="vl-meta"><strong>${eurK(valueMo)} value</strong> vs <strong>${eurK(costMo)} cost</strong> per month</div>
+            <div class="vl-meta"><strong>${eurK(valueMo)} return</strong> vs <strong>${eurK(costMo)} cost</strong> per month</div>
             <div class="vl-meta ${diff >= 0 ? 'text-green' : 'text-red'}"><strong>${diff >= 0 ? '+' : ''}${diff.toFixed(2)}</strong> vs last month</div>
             ${spark(series, { color: ratio >= 1 ? '#10B981' : '#EF4444' })}
             <div class="vl-axis"><span>${labels[0]}</span><span>${labels[labels.length - 1]}</span></div>
 
-            <span class="vl-lbl" style="margin-top:12px">Where the value comes from</span>
+            <span class="vl-lbl" style="margin-top:12px">Where the return comes from</span>
             <div class="vl-src">
               <div class="vl-src-bar">
                 <div style="flex:${Math.min(pv, valueMo)};background:#10B981" title="Pilots"></div>
@@ -175,7 +175,7 @@ window.NUTEX_VALUE = (() => {
               </div>
             </div>
 
-            <span class="vl-lbl" style="margin-top:12px">${list.length} pilot${list.length === 1 ? '' : 's'} · ${eurK(pv)} value vs ${eurK(pc)} cost</span>
+            <span class="vl-lbl" style="margin-top:12px">${list.length} pilot${list.length === 1 ? '' : 's'} · ${eurK(pv)} return vs ${eurK(pc)} cost</span>
             <div class="vl-chips">
               ${counts.map(c => `
                 <span class="vl-chip" data-q="${c.k}" title="${ZONES[c.k].hint}">
@@ -204,14 +204,14 @@ window.NUTEX_VALUE = (() => {
       </div>
       <div class="vl-tip-sub">${p.full} · ${deptName(p.deptId)} · ${p.owner}</div>
       <div class="vl-tip-grid">
-        <span>Value per €</span><strong style="color:${z.txt}">€${p.vpe.toFixed(2)}</strong>
-        <span>Value / month</span><strong>${eur(p.valueMo)}</strong>
+        <span>Return per €</span><strong style="color:${z.txt}">€${p.vpe.toFixed(2)}</strong>
+        <span>Return / month</span><strong>${eur(p.valueMo)}</strong>
         <span>Cost / month</span><strong>${eur(p.costMo)}</strong>
         <span>Employees</span><strong>${p.employees}</strong>
         <span>Status</span><strong>${p.status} since ${p.since}</strong>
       </div>
       <div class="vl-tip-trend">
-        <span>Value per € · Jun → Nov</span>
+        <span>Return per € · Jun → Nov</span>
         ${miniTrend(p.trend, z.color)}
       </div>
       <div class="vl-tip-result">${p.result}</div>
