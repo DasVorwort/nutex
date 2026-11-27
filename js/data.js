@@ -299,7 +299,6 @@ window.NUTEX_DATA = (() => {
   const CULTURE_SURVEY = {
     questions: [
       { id: 'q_tools',   en: 'Have the AI tools I need',         de: 'Habe die KI-Tools, die ich brauche' },
-      { id: 'q_freedom', en: 'Freedom to use & explore AI',      de: 'Kann KI frei ausleben & nutzen' },
       { id: 'q_manager', en: 'Manager encourages AI use',        de: 'Führungskraft fördert KI-Nutzung' },
       { id: 'q_rules',   en: 'Clear rules & data safety',        de: 'Klare Regeln & Datensicherheit' },
       { id: 'q_trust',   en: 'Positive outlook (no fear of AI)', de: 'Positives Gefühl (keine Angst vor KI)' }
@@ -312,6 +311,26 @@ window.NUTEX_DATA = (() => {
       logistics:  { responseRate: 0.80, scores: { q_tools: 62, q_freedom: 67, q_manager: 74, q_rules: 78, q_trust: 66 }, wishes: { perplexity: 7,  claude: 5,  midjourney: 2,  deepl: 3,  cursor: 1  } },
       purchasing: { responseRate: 0.85, scores: { q_tools: 70, q_freedom: 74, q_manager: 79, q_rules: 83, q_trust: 73 }, wishes: { perplexity: 10, claude: 8,  midjourney: 1,  deepl: 6,  cursor: 1  } }
     },
+    // "What stops you from using AI more?" (multiple answers, % of respondents)
+    barriers: {
+      options: [
+        { id: 'time',     label: 'No time to learn it',        lever: 'Protected learning time (30 min / week)' },
+        { id: 'allowed',  label: 'Not sure what is allowed',   lever: 'One-page AI usage policy & FAQ' },
+        { id: 'fit',      label: "Tool doesn't fit my work",   lever: 'Role-specific use cases & prompts' },
+        { id: 'training', label: 'No training yet',            lever: 'Shopfloor training wave 2' },
+        { id: 'mistakes', label: 'Afraid of making mistakes',  lever: 'AI champions as first contact' }
+      ],
+      byDept: {
+        rd:         { time: 28, allowed: 18, fit: 8,  training: 4,  mistakes: 4 },
+        marketing:  { time: 32, allowed: 22, fit: 10, training: 6,  mistakes: 5 },
+        sales:      { time: 40, allowed: 25, fit: 15, training: 10, mistakes: 8 },
+        production: { time: 46, allowed: 33, fit: 28, training: 31, mistakes: 14 },
+        logistics:  { time: 42, allowed: 29, fit: 24, training: 22, mistakes: 12 },
+        purchasing: { time: 36, allowed: 30, fit: 17, training: 14, mistakes: 9 }
+      }
+    },
+    // Share of gross AI time savings lost to checking / fixing output
+    reworkPct: { rd: 0.18, marketing: 0.20, sales: 0.22, production: 0.30, logistics: 0.28, purchasing: 0.25 },
     wishTools: [
       { id: 'perplexity', name: 'Perplexity Enterprise' },
       { id: 'claude',     name: 'Claude for Work' },

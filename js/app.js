@@ -335,6 +335,13 @@
       }
     });
 
+    el.viewRoot.addEventListener('change', e => {
+      if (e.target.matches('[data-barrier-dept]')) {
+        S.state.barrierDept = e.target.value;
+        render();
+      }
+    });
+
     // Live name filter inside the delegate popover (no re-render, keeps focus)
     el.viewRoot.addEventListener('input', e => {
       if (!e.target.matches('[data-todo-search]')) return;
