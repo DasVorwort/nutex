@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
    NuTex Inc. — Actionable Executive Dataset (300 Employees, Jan–Nov 2026)
    No abstract readiness scores, no jargon abbreviations.
    ============================================================================ */
@@ -487,7 +487,7 @@ window.NUTEX_DATA = (() => {
       ov_open_roadmap: 'Open roadmap →',
       ov_act_ready: 'Foundations on track',
       ov_act_ready_detail: 'No open blockers on the critical path.',
-      ov_culture: 'Culture score',
+      ov_culture: 'People Score',
       ov_vs_prev: 'vs. prev. month',
       ov_weekly_vs: 'weekly users (target {v}%)',
       ov_act_approve_training: 'Approve training: {x}',
@@ -667,7 +667,7 @@ window.NUTEX_DATA = (() => {
       ov_open_roadmap: 'Roadmap öffnen →',
       ov_act_ready: 'Grundlagen im Plan',
       ov_act_ready_detail: 'Keine offenen Blocker auf dem kritischen Pfad.',
-      ov_culture: 'Kultur-Score',
+      ov_culture: 'People Score',
       ov_vs_prev: 'ggü. Vormonat',
       ov_weekly_vs: 'wöchentl. Nutzer (Ziel {v}%)',
       ov_act_approve_training: 'Schulung freigeben: {x}',

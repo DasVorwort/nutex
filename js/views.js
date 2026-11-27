@@ -10,7 +10,7 @@ window.NUTEX_VIEWS = (() => {
   const t = (k, v) => S.t(k, v);
   const infoBtn = (key) => `<button type="button" class="info-btn" data-kpi-info="${key}" aria-label="Info">i</button>`;
   const dot = (level) => `<span class="dot dot-${level}"></span>`;
-  const eur = (n) => '€' + Math.round(n).toLocaleString('de-DE');
+  const eur = (n) => '€' + Math.round(n).toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US');
   const deptLabel = (id) => D.DEPARTMENTS.find(d => d.id === id)?.name || id;
 
   function renderProgressLine({ pct, targetPct, level }) {
@@ -238,13 +238,13 @@ window.NUTEX_VIEWS = (() => {
             title: t('ov_savings'), info: 'impact', nav: 'budget',
             value: eurK(metrics.costSavedMo), unit: t('ov_per_mo'),
             pct: savPct, targetPct: 100, level: savSt.level,
-            sub: `${t('target')} ${eurK(savTarget)} · ${metrics.hoursSavedMo.toLocaleString('de-DE')} h`
+            sub: `${t('target')} ${eurK(savTarget)} · ${metrics.hoursSavedMo.toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US')} h`
           })
         : kpiCard({
             title: t('ov_hours_saved'), info: 'impact', nav: 'departments',
-            value: metrics.hoursSavedMo.toLocaleString('de-DE'), unit: ' h',
+            value: metrics.hoursSavedMo.toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US'), unit: ' h',
             pct: Math.round((metrics.hoursSavedMo / Math.max(1, hrsTarget)) * 100), targetPct: 100, level: hrsSt.level,
-            sub: `${t('target')} ${hrsTarget.toLocaleString('de-DE')} h ${t('ov_per_mo')}`
+            sub: `${t('target')} ${hrsTarget.toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US')} h ${t('ov_per_mo')}`
           })
     ];
 

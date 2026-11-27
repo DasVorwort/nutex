@@ -245,7 +245,7 @@ window.NUTEX_EXPORT = (() => {
     const top = ranked[0];
     const low = ranked[ranked.length - 1];
     const showFin = S.canViewFinancials();
-    const eur = (n) => '€' + Math.round(n).toLocaleString('de-DE');
+    const eur = (n) => '€' + Math.round(n).toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US');
 
     if (de) {
       return {
@@ -289,7 +289,7 @@ window.NUTEX_EXPORT = (() => {
     const role = S.getRole();
     const showFin = S.canViewFinancials();
     const ai = buildAISummary(metrics, culture);
-    const eur = (n) => '€' + Math.round(n).toLocaleString('de-DE');
+    const eur = (n) => '€' + Math.round(n).toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US');
     const deptName = (id) => D.DEPARTMENTS.find(d => d.id === id)?.name || id;
     const scopeText = `${metrics.tf.label} · ${metrics.totalEmp} ${t('employees')} · ${role.name} (${role.title})`;
 
