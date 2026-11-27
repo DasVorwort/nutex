@@ -110,53 +110,62 @@ window.NUTEX_BUDGET = (() => {
     };
   }
 
-  // Peer strip: every comparable company is a dot; NuTex and the budget are highlighted
+  // Compact peer strip: every comparable company is a dot; NuTex and the budget are highlighted
   function peerChart(share, budgetShare, C, stats) {
-    const W = 760;
-    const H = 132;
-    const L = 16;
-    const R = 744;
+    const W = 420;
+    const H = 118;
+    const L = 10;
+    const R = 410;
     const MAX = 1.2;
     const x = (p) => L + (Math.min(p, MAX) / MAX) * (R - L);
-    const yMid = 70;
+    const yMid = 64;
     const [lo, hi] = C.bench.shareOfRevenue;
-    const peers = C.peers.slice().sort((a, b) => a.share - b.share);
-    // stack dots that sit close together
     const placed = [];
-    const dots = peers.map(p => {
+    const dots = C.peers.slice().sort((a, b) => a.share - b.share).map(p => {
       const px = x(p.share);
       let lane = 0;
-      while (placed.some(q => q.lane === lane && Math.abs(q.x - px) < 13)) lane++;
+      while (placed.some(q => q.lane === lane && Math.abs(q.x - px) < 10)) lane++;
       placed.push({ x: px, lane });
-      const py = yMid + (lane % 2 ? 1 : -1) * Math.ceil(lane / 2) * 13;
-      return `<circle cx="${px}" cy="${py}" r="5.5" fill="#94A3B8" opacity="0.75"><title>${p.name}: ${p.share.toFixed(2)}% of revenue</title></circle>`;
+      const py = yMid + (lane % 2 ? 1 : -1) * Math.ceil(lane / 2) * 10;
+      return `<circle cx="${px}" cy="${py}" r="4.5" fill="#94A3B8" opacity="0.75"><title>${p.name}: ${p.share.toFixed(2)}% of revenue</title></circle>`;
     }).join('');
-    const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2].map(t => `
-      <line x1="${x(t)}" x2="${x(t)}" y1="${H - 26}" y2="${H - 21}" stroke="var(--text-3)"/>
-      <text x="${x(t)}" y="${H - 8}" text-anchor="middle" font-size="10.5" fill="var(--text-3)">${t.toFixed(1)}%</text>
+    const ticks = [0, 0.4, 0.8, 1.2].map(t => `
+      <text x="${x(t)}" y="${H - 4}" text-anchor="${t === 0 ? 'start' : t === MAX ? 'end' : 'middle'}" font-size="10" fill="var(--text-3)">${t.toFixed(1)}%</text>
     `).join('');
-    const bx = x(budgetShare);
     const nx = x(share);
+    const bx = x(budgetShare);
     return `
-      <svg class="b3-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="AI spend as share of revenue vs peers">
-        <rect x="${x(0)}" y="34" width="${x(lo) - x(0)}" height="72" rx="8" fill="rgba(245,158,11,0.08)"/>
-        <rect x="${x(lo)}" y="34" width="${x(hi) - x(lo)}" height="72" rx="8" fill="rgba(16,185,129,0.12)"/>
-        <rect x="${x(hi)}" y="34" width="${x(MAX) - x(hi)}" height="72" rx="8" fill="rgba(239,68,68,0.07)"/>
-        <text x="${(x(0) + x(lo)) / 2}" y="48" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="0.06em" fill="var(--yellow-txt)" opacity="0.8">BELOW PEERS</text>
-        <text x="${(x(lo) + x(hi)) / 2}" y="48" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="0.06em" fill="var(--green-txt)" opacity="0.8">PEER RANGE ${lo}–${hi}%</text>
-        <text x="${(x(hi) + x(MAX)) / 2}" y="48" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="0.06em" fill="var(--red-txt)" opacity="0.7">ABOVE PEERS</text>
-        <line x1="${L}" x2="${R}" y1="${H - 26}" y2="${H - 26}" stroke="var(--border-hover)"/>
-        ${ticks}
-        <line x1="${x(stats.median)}" x2="${x(stats.median)}" y1="54" y2="${H - 26}" stroke="var(--text-3)" stroke-dasharray="3 3"/>
-        <text x="${x(stats.median)}" y="${H - 31}" text-anchor="middle" font-size="9.5" fill="var(--text-3)" dx="${Math.abs(x(stats.median) - nx) < 40 ? -28 : 0}">median</text>
+      <svg class="b4-peer-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="AI spend as share of revenue vs peers">
+        <rect x="${x(0)}" y="36" width="${x(lo) - x(0)}" height="56" rx="6" fill="rgba(245,158,11,0.08)"/>
+        <rect x="${x(lo)}" y="36" width="${x(hi) - x(lo)}" height="56" rx="6" fill="rgba(16,185,129,0.13)"/>
+        <rect x="${x(hi)}" y="36" width="${x(MAX) - x(hi)}" height="56" rx="6" fill="rgba(239,68,68,0.07)"/>
+        <text x="${(x(lo) + x(hi)) / 2}" y="47" text-anchor="middle" font-size="9" font-weight="800" letter-spacing="0.06em" fill="var(--green-txt)" opacity="0.85">PEER RANGE</text>
+        <line x1="${x(stats.median)}" x2="${x(stats.median)}" y1="50" y2="92" stroke="var(--text-3)" stroke-dasharray="3 3"/>
         ${dots}
-        <line x1="${bx}" x2="${bx}" y1="56" y2="${H - 26}" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="4 3"/>
-        <rect x="${bx - 34}" y="${H - 50}" width="68" height="17" rx="8.5" fill="var(--surface)" stroke="#2563EB"/>
-        <text x="${bx}" y="${H - 41.5}" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="700" fill="#2563EB">budget ${fmtPct(budgetShare)}</text>
-        <circle cx="${nx}" cy="${yMid}" r="10" fill="#0F172A" stroke="var(--surface)" stroke-width="3"/>
-        <rect x="${nx - 44}" y="6" width="88" height="20" rx="10" fill="#0F172A"/>
-        <text x="${nx}" y="16" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="#FFFFFF">NuTex ${fmtPct(share)}</text>
-        <line x1="${nx}" x2="${nx}" y1="26" y2="${yMid - 10}" stroke="#0F172A" stroke-width="1.5"/>
+        <line x1="${bx}" x2="${bx}" y1="40" y2="96" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <text x="${bx}" y="${H - 15}" text-anchor="middle" font-size="9.5" font-weight="800" fill="#2563EB">budget</text>
+        <circle cx="${nx}" cy="${yMid}" r="8" fill="#0F172A" stroke="var(--surface)" stroke-width="2.5"/>
+        <rect x="${nx - 38}" y="6" width="76" height="18" rx="9" fill="#0F172A"/>
+        <text x="${nx}" y="15" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="800" fill="#FFFFFF">NuTex ${fmtPct(share)}</text>
+        <line x1="${nx}" x2="${nx}" y1="24" y2="${yMid - 8}" stroke="#0F172A" stroke-width="1.4"/>
+        ${ticks}
+      </svg>
+    `;
+  }
+
+  // Monthly spend vs budget, Jan → selected month
+  function budgetTrend(series, budget) {
+    const w = 300;
+    const h = 64;
+    const hi = Math.max(...series, budget) * 1.1;
+    const x = (i) => 2 + (i / Math.max(1, series.length - 1)) * (w - 6);
+    const y = (v) => h - 2 - (v / hi) * (h - 8);
+    const pts = series.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    return `
+      <svg class="b4-trend" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="0" x2="${w}" y1="${y(budget)}" y2="${y(budget)}" stroke="#2563EB" stroke-dasharray="5 4" stroke-width="1.3" vector-effect="non-scaling-stroke"/>
+        <polygon points="2,${h} ${pts} ${x(series.length - 1)},${h}" fill="rgba(15,23,42,0.07)"/>
+        <polyline points="${pts}" fill="none" stroke="#0F172A" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
       </svg>
     `;
   }
@@ -168,6 +177,7 @@ window.NUTEX_BUDGET = (() => {
     const sel = S.state.filters.dept;
     const C = D.COMPANY;
     const revMo = C.revenueYear / 12;
+    const itMo = revMo * C.itBudgetPct / 100;
     const share = pct(all.totalSpendMo, revMo);
     const budgetShare = pct(all.budgetLimit, revMo);
     const shares = C.peers.map(p => p.share).sort((a, b) => a - b);
@@ -175,8 +185,23 @@ window.NUTEX_BUDGET = (() => {
     const stats = { median, rank: shares.filter(s => s > share).length + 1, n: shares.length + 1 };
     const v = verdict(all, share, C, stats);
     const level = all.budgetUsedPct > 100 ? 'red' : all.budgetUsedPct > 90 ? 'yellow' : 'green';
-    const tips = insights(rows).slice(0, 2);
     const editing = !!S.state.budgetEdit;
+    const keys = D.TREND_2026.keys;
+    const idx = Math.max(0, keys.indexOf(S.state.filters.timeframe));
+    const series = keys.slice(0, idx + 1).map(k => withFilters({ timeframe: k, dept: 'all' }, m => m.totalSpendMo));
+    const ytd = series.reduce((a, b) => a + b, 0);
+    const cats = [
+      { label: 'Licenses', v: all.licenseSpendMo, c: '#3B82F6' },
+      { label: 'Tokens', v: all.tokenSpendMo, c: '#8B5CF6' },
+      { label: 'Projects', v: all.projectSpendMo, c: '#10B981' },
+      { label: 'Trainings', v: all.trainingSpendMo, c: '#F59E0B' }
+    ];
+    const casc = [
+      { label: 'Revenue', val: revMo, note: `${eurK(C.revenueYear)} / year`, w: 100, cls: '' },
+      { label: 'IT budget', val: itMo, note: `${fmtPct(C.itBudgetPct)} of revenue`, w: C.itBudgetPct * 6, cls: '' },
+      { label: 'AI budget', val: all.budgetLimit, note: `${fmtPct(pct(all.budgetLimit, itMo))} of IT · ${fmtPct(budgetShare)} of revenue`, w: Math.max(2, pct(all.budgetLimit, itMo) * C.itBudgetPct * 6 / 100), cls: 'is-budget' },
+      { label: 'AI spend', val: all.totalSpendMo, note: `${fmtPct(pct(all.totalSpendMo, itMo))} of IT · ${fmtPct(share)} of revenue`, w: Math.max(2, pct(all.totalSpendMo, itMo) * C.itBudgetPct * 6 / 100), cls: 'is-ai' }
+    ];
 
     return `
       <div class="b2">
@@ -203,26 +228,51 @@ window.NUTEX_BUDGET = (() => {
           ` : ''}
         </div>
 
-        <section class="b3-hero">
-          <div class="b3-kpis">
-            <div class="b3-kpi b3-kpi-main">
-              <span class="bg-lbl">AI spend as share of revenue</span>
-              <div class="b3-big">${fmtPct(share)}</div>
-              <div class="b2-sub">${eurK(all.totalSpendMo)}/mo of ${eurK(revMo)} revenue · ${eurK(all.totalSpendMo * 12)} per year</div>
+        <section class="b4-hero">
+          <!-- Company context -->
+          <div class="b4-col">
+            <span class="bg-lbl">AI in the company · per month</span>
+            <div class="b4-share"><strong>${fmtPct(share)}</strong><span>of revenue goes to AI</span></div>
+            <div class="b4-casc">
+              ${casc.map(r => `
+                <div class="b4-casc-row ${r.cls}">
+                  <span class="b4-casc-lbl">${r.label}</span>
+                  <strong>${eurK(r.val)}</strong>
+                  <span class="b4-casc-bar"><i style="width:${Math.min(100, r.w)}%"></i></span>
+                  <span class="b4-casc-note">${r.note}</span>
+                </div>
+              `).join('')}
             </div>
-            <div class="b3-kpi">
-              <span class="bg-lbl">Budget ${all.tf.label}</span>
-              <div class="b3-mid">${all.budgetUsedPct}%<small> used</small></div>
-              <div class="b2-budget-bar"><div class="bg-${level}" style="width:${Math.min(100, all.budgetUsedPct)}%"></div></div>
-              <div class="b2-sub">${eurK(all.totalSpendMo)} of ${eurK(all.budgetLimit)} · <span class="${all.budgetRemaining >= 0 ? 'text-green' : 'text-red'}">${eurK(Math.abs(all.budgetRemaining))} ${all.budgetRemaining >= 0 ? 'left' : 'over'}</span></div>
+            <div class="b4-facts">
+              <span><strong>${eurK(all.totalSpendMo * 12)}</strong> per year (run-rate)</span>
+              <span><strong>${eur(all.totalSpendMo / all.totalEmp)}</strong> per employee / mo</span>
             </div>
           </div>
-          <div class="b3-peers">
-            <div class="b3-peers-head">
-              <span class="bg-lbl">Vs. ${C.peers.length} comparable manufacturers</span>
-              <span class="b2-sub">rank <strong>${stats.rank}</strong> of ${stats.n} · median ${fmtPct(median)} · ${eur(all.totalSpendMo / all.totalEmp)} per employee</span>
+
+          <!-- Budget vs spend -->
+          <div class="b4-col">
+            <span class="bg-lbl">Budget vs. spend · ${all.tf.label}</span>
+            <div class="b4-share"><strong>${all.budgetUsedPct}%</strong><span>of the ${eurK(all.budgetLimit)} budget used</span></div>
+            <div class="b2-budget-bar"><div class="bg-${level}" style="width:${Math.min(100, all.budgetUsedPct)}%"></div></div>
+            <div class="b2-budget-meta"><span>${eurK(all.totalSpendMo)} spent</span><span class="${all.budgetRemaining >= 0 ? 'text-green' : 'text-red'}">${eurK(Math.abs(all.budgetRemaining))} ${all.budgetRemaining >= 0 ? 'left' : 'over'}</span></div>
+            <div class="b4-trend-wrap">
+              <div class="b4-trend-head"><span>Monthly spend Jan → ${all.tf.label.split(' ')[0]}</span><span class="b4-key"><i></i>budget</span></div>
+              ${budgetTrend(series, all.budgetLimit)}
+              <div class="b4-trend-foot"><span>YTD ${eurK(ytd)}</span><span>budget YTD ${eurK(all.budgetLimit * series.length)}</span></div>
             </div>
+            <div class="bg-stack">${cats.map(c => `<div style="flex:${Math.max(0.001, c.v)};background:${c.c}" title="${c.label}: ${eur(c.v)}"></div>`).join('')}</div>
+            <div class="b4-cats">${cats.map(c => `<span><i style="background:${c.c}"></i>${c.label} <strong>${eurK(c.v)}</strong></span>`).join('')}</div>
+          </div>
+
+          <!-- Peers (compact) -->
+          <div class="b4-col">
+            <span class="bg-lbl">Vs. ${C.peers.length} peers · % of revenue</span>
             ${peerChart(share, budgetShare, C, stats)}
+            <div class="b4-facts">
+              <span>Rank <strong>${stats.rank}</strong> of ${stats.n}</span>
+              <span>Median <strong>${fmtPct(median)}</strong></span>
+              <span>Budget = <strong>${fmtPct(budgetShare)}</strong></span>
+            </div>
           </div>
         </section>
         <div class="b2-verdict b2-verdict-${v.level}">${v.text}</div>
@@ -232,7 +282,7 @@ window.NUTEX_BUDGET = (() => {
           ${rows.map(r => {
             const lv = r.used > 100 ? 'red' : r.used >= 95 ? 'yellow' : 'green';
             return `
-              <div class="b3-dept ${sel === r.id ? 'is-sel' : ''}" title="${r.name}: ${eur(r.spent)} of ${eur(r.budget)} · €${r.vpe.toFixed(2)} value per € · ${eur(r.perEmp)} per employee">
+              <div class="b3-dept ${sel === r.id ? 'is-sel' : ''}" title="${r.name}: ${eur(r.spent)} of ${eur(r.budget)} · ${eur(r.perEmp)} per employee">
                 <div class="b3-dept-top"><strong>${r.name}</strong><span class="text-${lv}">${r.used}%</span></div>
                 <div class="b2-dept-bar"><div class="bg-${lv}" style="width:${Math.min(100, r.used)}%"></div></div>
                 <div class="b3-dept-amt">${k1(r.spent)} / ${k1(r.budget)}</div>
@@ -240,7 +290,6 @@ window.NUTEX_BUDGET = (() => {
             `;
           }).join('')}
         </div>
-        ${tips.length ? `<div class="b2-tips">${tips.map(t => `<div class="bg-tip bg-tip-${t.level}">${t.text}</div>`).join('')}</div>` : ''}
       </div>
     `;
   }
