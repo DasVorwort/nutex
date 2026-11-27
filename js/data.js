@@ -465,7 +465,8 @@ window.NUTEX_DATA = (() => {
       timeline: 'Timeline',
       title: 'Title',
       employees: 'Employees',
-      restricted: 'Restricted'
+      restricted: 'Restricted',
+      nav_readiness: 'Readiness'
     },
     de: {
       nav_overview: 'Übersicht',
@@ -599,7 +600,8 @@ window.NUTEX_DATA = (() => {
       timeline: 'Zeitraum',
       title: 'Titel',
       employees: 'Mitarbeitende',
-      restricted: 'Eingeschränkt'
+      restricted: 'Eingeschränkt',
+      nav_readiness: 'Readiness'
     }
   };
 

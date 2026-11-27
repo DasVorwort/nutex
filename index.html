@@ -4,26 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Executive Dashboard</title>
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=34">
   <style id="print-page-style"></style>
 </head>
 <body>
   <!-- Full-bleed print backdrop (eliminates white PDF margins/hairlines in Dark & Light Mode) -->
   <div class="print-bg" aria-hidden="true"></div>
 
-  <!-- Clean Top Navigation Header -->
+  <!-- Single slim header: context/back · filters · role & export (no tab bar) -->
   <header class="header">
     <div class="header-inner">
       <div class="header-left">
-        <nav class="main-nav" aria-label="Primary Navigation">
-          <button type="button" class="nav-tab active" data-nav="overview" data-i18n="nav_overview">Overview</button>
-          <button type="button" class="nav-tab" data-nav="departments" data-i18n="nav_departments">Departments</button>
-          <button type="button" class="nav-tab" data-nav="culture" data-i18n="nav_culture">Culture</button>
-          <button type="button" class="nav-tab" data-nav="projects"><span data-i18n="nav_projects">Projects</span> <span id="nav-pending-badge" class="nav-count"></span></button>
-          <button type="button" class="nav-tab" data-nav="trainings"><span data-i18n="nav_trainings">Trainings</span> <span id="nav-train-badge" class="nav-count"></span></button>
-          <button type="button" class="nav-tab" data-nav="licenses" data-i18n="nav_licenses">Licenses</button>
-          <button type="button" class="nav-tab" data-nav="budget" data-i18n="nav_budget">Budget</button>
-        </nav>
+        <button type="button" id="btn-back" class="btn-back" data-nav="overview">&larr; Overview</button>
+        <span id="page-title" class="page-title">AI Executive Dashboard</span>
+        <span class="header-sep"></span>
+        <select id="filter-dept" class="control-select" aria-label="Department"></select>
+        <select id="filter-time" class="control-select" aria-label="Month"></select>
+        <button type="button" id="btn-reset" class="btn-reset" data-i18n="reset">Reset</button>
       </div>
 
       <div class="header-right">
@@ -34,16 +31,6 @@
           <button type="button" id="btn-settings" class="btn-icon-gear" aria-label="Settings" title="Settings">⚙</button>
           <div id="settings-menu" class="settings-menu"></div>
         </div>
-      </div>
-    </div>
-
-    <!-- Slim Global Filter Bar -->
-    <div class="filterbar">
-      <div class="filterbar-inner">
-        <span class="filter-label" data-i18n="filters">Filters</span>
-        <select id="filter-dept" class="control-select" aria-label="Department"></select>
-        <select id="filter-time" class="control-select" aria-label="Month"></select>
-        <button type="button" id="btn-reset" class="btn-reset" data-i18n="reset">Reset</button>
       </div>
     </div>
   </header>
@@ -58,12 +45,12 @@
   <div id="modal-root"></div>
   <div id="kpi-popover" class="kpi-popover" role="dialog"></div>
 
-  <script src="js/data.js?v=28"></script>
-  <script src="js/state.js?v=28"></script>
-  <script src="js/charts.js?v=28"></script>
-  <script src="js/roadmap.js?v=28"></script>
-  <script src="js/views.js?v=28"></script>
-  <script src="js/export.js?v=28"></script>
-  <script src="js/app.js?v=28"></script>
+  <script src="js/data.js?v=34"></script>
+  <script src="js/state.js?v=34"></script>
+  <script src="js/charts.js?v=34"></script>
+  <script src="js/roadmap.js?v=34"></script>
+  <script src="js/views.js?v=34"></script>
+  <script src="js/export.js?v=34"></script>
+  <script src="js/app.js?v=34"></script>
 </body>
 </html>
