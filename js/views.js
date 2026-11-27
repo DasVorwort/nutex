@@ -140,7 +140,7 @@ window.NUTEX_VIEWS = (() => {
     `;
   }
 
-  function overviewRow({ tag, title, question, tiles, todos }) {
+  function overviewRow({ tag, title, question, tiles, todos, cols = 3 }) {
     return `
       <section class="ov-row">
         <div class="ov-row-main">
@@ -149,7 +149,7 @@ window.NUTEX_VIEWS = (() => {
             <h2 class="ov-row-title">${title}</h2>
             <span class="ov-row-q">${question}</span>
           </div>
-          <div class="ov-tile-grid">${tiles.join('')}</div>
+          <div class="ov-tile-grid ov-cols-${cols}">${tiles.join('')}</div>
         </div>
         <div class="ov-row-side">
           <div class="ov-todo-block">
@@ -170,8 +170,6 @@ window.NUTEX_VIEWS = (() => {
     return out;
   }
 
-  const SHORT_TOOL = { m365: 'Copilot', textilegpt: 'TextileGPT', chatgpt: 'ChatGPT', supplyai: 'CAD-AI' };
-
   function renderOverview(metrics) {
     const role = S.getRole();
     const isCEO = role.isCEO;
@@ -184,8 +182,7 @@ window.NUTEX_VIEWS = (() => {
     const critLate = rm.overdue.filter(m => m.onPath);
     const lamp = (l) => `<span class="ov-lamp ov-lamp-${l} ${rm.level === l ? 'on' : ''}"></span>`;
     const t1 = tile({
-      title: 'Roadmap status', level: rm.level, action: 'toggle-roadmap',
-      cls: S.state.roadmapOpen ? 'is-open' : '',
+      title: 'Roadmap status', level: rm.level, action: 'open-roadmap',
       hero: rm.overdue.length, unit: ' late',
       context: `${critLate.length} on critical path`,
       extra: `<span class="ov-lights">${lamp('red')}${lamp('yellow')}${lamp('green')}</span>`,
@@ -200,13 +197,13 @@ window.NUTEX_VIEWS = (() => {
           `).join('')}
         </div>
       `,
-      foot: `<span class="link-btn">${S.state.roadmapOpen ? 'Hide roadmap ▴' : 'Open roadmap ▾'}</span>`
+      foot: `<span class="link-btn">Open roadmap →</span>`
     });
 
     const scoreLevel = rm.score >= 90 ? 'green' : rm.score >= 75 ? 'yellow' : 'red';
     const upcoming = rm.planned - rm.done - rm.overdue.length;
     const t2 = tile({
-      title: 'Roadmap score', level: scoreLevel, action: 'toggle-roadmap',
+      title: 'Roadmap score', level: scoreLevel, action: 'open-roadmap',
       hero: rm.score, unit: '%',
       context: `${rm.done} of ${rm.dueByToday} due milestones done`,
       visual: segments([
@@ -215,17 +212,6 @@ window.NUTEX_VIEWS = (() => {
         { label: 'Upcoming', n: upcoming, color: 'var(--border-hover)' }
       ]),
       foot: `Phase <strong>${rm.phase}</strong> · ${rm.planned} milestones planned`
-    });
-
-    const toolLevel = ppLevel(metrics.licenseActivePct, D.TARGETS.licenseActivePct);
-    const t3 = tile({
-      title: 'Tool usage', level: toolLevel, nav: 'licenses',
-      hero: metrics.licenseActivePct, unit: '%',
-      context: `of paid seats active · target ${D.TARGETS.licenseActivePct}%`,
-      visual: miniBars(metrics.toolUsage.slice().sort((a, b) => b.activePct - a.activePct).map(tl => ({
-        label: SHORT_TOOL[tl.id] || tl.name, value: tl.activePct, level: ppLevel(tl.activePct, D.TARGETS.licenseActivePct)
-      })), { target: D.TARGETS.licenseActivePct }),
-      foot: `<strong>${metrics.unusedLicenses}</strong> seats unused${showFin && metrics.unusedCostMo ? ` · <span class="text-red">${eur(metrics.unusedCostMo)}/mo</span>` : ''}`
     });
 
     const fixTodos = [];
@@ -442,13 +428,21 @@ window.NUTEX_VIEWS = (() => {
           </div>
         </div>
 
-        ${overviewRow({ tag: 'FIX', title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t1, t2, t3], todos: fixTodos })}
-        ${S.state.roadmapOpen ? `<div class="ov-roadmap-wrap">${R.render()}</div>` : ''}
+        ${overviewRow({ tag: 'FIX', title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t2, t1], todos: fixTodos, cols: 2 })}
         ${overviewRow({ tag: 'PUSH', title: 'AI Adoption', question: 'Are our people using AI?', tiles: [t4, t5, t6], todos: pushTodos })}
         ${overviewRow({ tag: 'FUND', title: 'AI Projects', question: 'Does AI pay off?', tiles: [t7, t8, t9], todos: fundTodos })}
       </div>
+      ${S.state.roadmapOpen ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="AI roadmap">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            ${R.render()}
+          </div>
+        </div>
+      ` : ''}
     `;
   }
+
   // ==========================================================================
   // 1b. READINESS — Drill-down: Roadmap + Data Sources + Systems
   // ==========================================================================

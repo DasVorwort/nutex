@@ -25,6 +25,8 @@
     el.btnPrint = document.getElementById('btn-print');
     el.btnSettings = document.getElementById('btn-settings');
     el.settingsMenu = document.getElementById('settings-menu');
+    el.btnBack = document.getElementById('btn-back');
+    el.pageTitle = document.getElementById('page-title');
 
     el.filterTime.innerHTML = Object.entries(D.TIMEFRAMES)
       .map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
@@ -79,6 +81,9 @@
       if (b.dataset.nav === 'budget') b.style.display = showFin ? '' : 'none';
       b.classList.toggle('active', b.dataset.nav === S.state.activeTab);
     });
+    const onOverview = S.state.activeTab === 'overview';
+    if (el.btnBack) el.btnBack.style.display = onOverview ? 'none' : '';
+    if (el.pageTitle) el.pageTitle.textContent = onOverview ? 'AI Executive Dashboard' : S.t('nav_' + S.state.activeTab);
     if (el.btnSettings) el.btnSettings.classList.toggle('active', S.state.showSettings);
     if (el.settingsMenu) el.settingsMenu.innerHTML = V.renderSettingsMenu();
   }
@@ -167,17 +172,15 @@
       const info = e.target.closest('[data-kpi-info]');
       if (info) { e.stopPropagation(); showPopover(info.dataset.kpiInfo, info); return; }
 
-      if (e.target.closest('[data-action="toggle-roadmap"]')) {
-        S.state.roadmapOpen = !S.state.roadmapOpen;
+      if (e.target.closest('[data-action="open-roadmap"]')) {
+        S.state.roadmapOpen = true;
         render(); return;
       }
 
-      if (e.target.closest('[data-action="open-roadmap"]')) {
-        S.state.roadmapOpen = true;
-        render();
-        const wrap = el.viewRoot.querySelector('.ov-roadmap-wrap');
-        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        return;
+      // Roadmap overlay closes via the ✕ button or a click on the backdrop itself
+      if (e.target.closest('[data-action="close-roadmap"]') && (e.target.closest('.ov-modal-close') || e.target.classList.contains('ov-modal-backdrop'))) {
+        S.state.roadmapOpen = false;
+        render(); return;
       }
 
       if (e.target.closest('[data-action="open-project-modal"]')) {
@@ -312,6 +315,7 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         closeModals();
+        if (S.state.roadmapOpen) { S.state.roadmapOpen = false; render(); }
         if (S.state.showSettings) { S.state.showSettings = false; render(); }
       }
     });

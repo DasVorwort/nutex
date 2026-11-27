@@ -98,7 +98,22 @@ button { color: inherit; }
   gap: 16px;
 }
 
-.header-inner { height: 60px; }
+.header-inner { height: 56px; max-width: 1360px; padding: 0 24px; }
+.header-left { gap: 8px; min-width: 0; }
+.header-sep { width: 1px; height: 22px; background: var(--border); margin: 0 6px; }
+.page-title { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; letter-spacing: -0.01em; }
+.btn-back {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-back:hover { border-color: var(--border-hover); }
 
 .header-left, .header-right {
   display: flex;
@@ -239,8 +254,8 @@ button { color: inherit; }
 }
 
 .workspace.overview-mode {
-  max-width: 1280px;
-  padding: 12px 24px 16px;
+  max-width: 1360px;
+  padding: 14px 24px 12px;
 }
 
 .overview-screen {
@@ -1873,7 +1888,7 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   gap: 10px;
   font-size: 12px;
   color: var(--text-3);
-  padding-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid var(--border);
 }
 
@@ -1910,7 +1925,7 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 
 /* --- Overview: 3 rows (FIX · PUSH · FUND) × 3 tiles (3/4) + To-dos per row (1/4) --- */
 .workspace.overview-mode { max-width: 1360px; }
-.ov-screen { gap: 18px; }
+.ov-screen { gap: 12px; }
 
 .ov-head,
 .ov-row {
@@ -1919,7 +1934,7 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   gap: 16px;
 }
 
-.ov-head { align-items: center; padding: 0 2px; margin-bottom: -6px; }
+.ov-head { align-items: center; padding: 0 2px; margin-bottom: -4px; }
 .ov-head-scope {
   font-size: 11px;
   font-weight: 700;
@@ -1929,7 +1944,7 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 }
 .ov-head-side { display: flex; align-items: center; justify-content: space-between; }
 
-.ov-row-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.ov-row-main { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .ov-row-head { display: flex; align-items: center; gap: 10px; padding: 0 2px; height: 22px; }
 .ov-row-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--text); }
 .ov-row-q { font-size: 13px; color: var(--text-3); }
@@ -1948,14 +1963,15 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 
 /* Tiles: identical anatomy & height */
 .ov-tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ov-tile-grid.ov-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .ov-tile {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
-  gap: 10px;
-  height: 218px;
+  gap: 7px;
+  height: 184px;
   min-width: 0;
-  padding: 16px 18px 14px;
+  padding: 13px 16px 11px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -1995,7 +2011,7 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 .ov-tile-hero { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .ov-num {
   flex-shrink: 0;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 750;
   letter-spacing: -0.025em;
   line-height: 1;
@@ -2018,17 +2034,17 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid var(--border);
 }
 .ov-tile-foot strong { color: var(--text); font-weight: 600; }
 
 /* Visual: sparkline */
-.ov-spark { width: 100%; height: 56px; display: block; }
+.ov-spark { width: 100%; height: 50px; display: block; }
 
 /* Visual: mini bars */
-.ov-mini { display: flex; flex-direction: column; gap: 5px; }
-.ov-mini-row { display: grid; grid-template-columns: 84px 1fr 34px; align-items: center; gap: 8px; font-size: 11.5px; }
+.ov-mini { display: flex; flex-direction: column; gap: 3px; }
+.ov-mini-row { display: grid; grid-template-columns: 84px 1fr 34px; align-items: center; gap: 8px; font-size: 11px; line-height: 12px; }
 .ov-mini-lbl { color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ov-mini-val { text-align: right; font-weight: 600; color: var(--text); }
 .ov-mini-track { position: relative; height: 7px; border-radius: 99px; background: var(--track); }
@@ -2064,15 +2080,15 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 .ov-donut.is-own span { color: var(--blue); font-weight: 700; }
 
 /* To-do column */
-.ov-row-side { display: flex; padding-top: 32px; min-width: 0; }
+.ov-row-side { display: flex; padding-top: 29px; min-width: 0; }
 .ov-todo-block {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  height: 218px;
+  gap: 6px;
+  height: 184px;
   min-width: 0;
-  padding: 10px;
+  padding: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -2122,13 +2138,45 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 .rm-leg-today { width: 0; height: 14px; border-left: 1.5px dashed var(--text-3); }
 .roadmap-section .rm-legend { margin-top: 6px; }
 
+/* Roadmap overlay (keeps the overview scroll-free) */
+.ov-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  animation: ov-fade 0.18s ease;
+}
+.ov-modal { position: relative; width: min(1240px, 100%); max-height: 100%; overflow: auto; border-radius: 16px; }
+.ov-modal .roadmap-section { margin: 0; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3); }
+.ov-modal .roadmap-head { padding-right: 40px; }
+.ov-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+}
+.ov-modal-close:hover { color: var(--text); border-color: var(--border-hover); }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row { grid-template-columns: 1fr; }
   .ov-head-side { display: none; }
   .ov-row-side { padding-top: 0; }
   .ov-tile-grid { grid-template-columns: 1fr 1fr; }
-  .ov-tile, .ov-todo-block { height: auto; min-height: 218px; }
+  .ov-tile, .ov-todo-block { height: auto; min-height: 184px; }
   .kpi-row-4 { grid-template-columns: repeat(2, 1fr); }
   .hero-row, .split-2, .overview-cols, .project-cards-grid { grid-template-columns: 1fr; }
   .paired-grid-3 { grid-template-columns: 1fr; gap: 16px; }
