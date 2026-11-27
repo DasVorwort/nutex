@@ -2307,6 +2307,78 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 .rm-filter.active { border-color: var(--text); color: var(--text); background: var(--track); }
 .rm-filter:disabled { opacity: 0.4; cursor: default; }
 
+/* Level 2 · Which pilots should we implement? */
+.vl-card { margin: 0; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3); }
+.vl-card .panel-head { padding-right: 40px; }
+.vl-wrap { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
+.vl-left { display: flex; flex-direction: column; gap: 3px; }
+.vl-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.vl-big { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; color: var(--text); margin: 4px 0 6px; }
+.vl-meta { font-size: 12.5px; color: var(--text-2); }
+.vl-meta strong { color: var(--text); }
+.vl-meta.text-green strong { color: var(--green-txt); }
+.vl-meta.text-red strong { color: var(--red-txt); }
+.vl-spark { width: 100%; height: auto; margin-top: 12px; display: block; }
+.vl-axis { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-3); margin-top: -12px; }
+.vl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.vl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: default;
+}
+.vl-chip i { width: 9px; height: 9px; border-radius: 50%; }
+.vl-chip strong { color: var(--text); }
+.vl-chip:hover { border-color: var(--border-hover); }
+
+.vl-right { position: relative; min-width: 0; }
+.vl-chart { width: 100%; height: auto; display: block; }
+.vl-foot { margin-top: 2px; text-align: center; font-size: 11px; color: var(--text-3); }
+.vl-bubble { cursor: pointer; outline: none; transition: opacity 0.15s ease; }
+.vl-bubble circle { transition: transform 0.15s ease; transform-box: fill-box; transform-origin: center; }
+.vl-bubble:hover circle,
+.vl-bubble.is-active circle,
+.vl-bubble:focus-visible circle { transform: scale(1.08); }
+.vl-wrap.vl-focus .vl-bubble:not(.is-active) { opacity: 0.3; }
+.vl-wrap:has(.vl-chip[data-q="implement"]:hover) .vl-bubble:not([data-q="implement"]),
+.vl-wrap:has(.vl-chip[data-q="niche"]:hover) .vl-bubble:not([data-q="niche"]),
+.vl-wrap:has(.vl-chip[data-q="improve"]:hover) .vl-bubble:not([data-q="improve"]),
+.vl-wrap:has(.vl-chip[data-q="stop"]:hover) .vl-bubble:not([data-q="stop"]) { opacity: 0.15; }
+
+.vl-tooltip {
+  position: absolute;
+  z-index: 5;
+  width: 290px;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.vl-tooltip.open { opacity: 1; transform: none; }
+.vl-tip-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vl-tip-head strong { font-size: 15px; color: var(--text); }
+.vl-tip-zone { padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 800; }
+.vl-tip-sub { margin-top: 2px; font-size: 11.5px; color: var(--text-3); }
+.vl-tip-grid { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; margin-top: 10px; font-size: 12px; color: var(--text-3); }
+.vl-tip-grid strong { text-align: right; color: var(--text); font-weight: 650; }
+.vl-tip-trend { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-3); }
+.vl-tip-result { margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--text); }
+.vl-tip-next { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface-soft); font-size: 12px; color: var(--text-2); }
+.vl-tip-next span { display: block; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }

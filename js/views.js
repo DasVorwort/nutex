@@ -326,12 +326,17 @@ window.NUTEX_VIEWS = (() => {
 
     // ======================= 3 · AI PROJECTS =======================
     let t7;
+    let valueData = null;
     if (showFin) {
       const ratio = metrics.costSavedMo / Math.max(1, metrics.totalSpendMo);
       const rSeries = monthSeries(m => m.costSavedMo / Math.max(1, m.totalSpendMo));
       const rLevel = ratio >= 1.5 ? 'green' : ratio >= 1 ? 'yellow' : 'red';
+      valueData = {
+        ratio, valueMo: metrics.costSavedMo, costMo: metrics.totalSpendMo, series: rSeries,
+        labels: D.TREND_2026.labelsEn.slice(0, rSeries.length).map(l => l.split(' ')[0])
+      };
       t7 = tile({
-        title: 'Value per € spent', level: rLevel, nav: 'budget',
+        title: 'Value per € spent', level: rLevel, action: 'open-value',
         hero: `€${ratio.toFixed(2)}`,
         context: `${eurK(metrics.costSavedMo)} value · ${eurK(metrics.totalSpendMo)} cost`,
         visual: sparkline(rSeries, { color: LV[rLevel], ref: 1 }),
@@ -444,6 +449,14 @@ window.NUTEX_VIEWS = (() => {
           <div class="ov-modal" role="dialog" aria-label="AI roadmap">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
             ${R.render({ filter: S.state.roadmapFilter || null })}
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.valueOpen && valueData && window.NUTEX_VALUE ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="Which pilots should we implement?">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            ${window.NUTEX_VALUE.render(valueData)}
           </div>
         </div>
       ` : ''}
