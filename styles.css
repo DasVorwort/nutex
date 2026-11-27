@@ -2577,6 +2577,39 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 .vl-big { font-size: 48px !important; margin: 2px 0 4px !important; }
 .vl-spark { margin-top: 6px !important; }
 
+/* Detail pop-ups (departments, culture, budget, projects, trainings, licenses) */
+.ov-detail { margin: 0; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3); background: var(--surface); }
+.ov-detail-head { padding-right: 40px; }
+.ov-detail .page-stack { gap: 12px; }
+.ov-detail .page-stack > .card,
+.ov-detail .page-stack .card { box-shadow: none; background: var(--surface-soft); }
+.ov-detail .roadmap-section { background: var(--surface); }
+
+/* Compact density inside detail pop-ups (no scrolling) */
+.ov-detail.card-lg { padding: 14px 18px 16px; }
+.ov-detail .page-stack { gap: 10px; }
+.ov-detail .card-lg { padding: 10px 16px; }
+.ov-detail .panel-head { margin-bottom: 8px; }
+.ov-detail .split-2, .ov-detail .hero-row { gap: 10px; }
+.ov-detail .summary-highlights { gap: 8px; margin-bottom: 6px; }
+.ov-detail .highlight-tile { padding: 8px 12px; }
+.ov-detail .dept-vp-list { gap: 0; }
+.ov-detail .dept-vp-row { padding: 4px 10px; min-height: 0; }
+.ov-detail .funnel-simple { gap: 8px; }
+.ov-detail .wish-list { gap: 8px; }
+
+.ov-detail .project-cards-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ov-detail .project-card { padding: 12px 14px; }
+.ov-detail .project-outcome-box { padding: 8px 10px; margin: 8px 0; }
+.ov-detail .projects-toolbar { margin: 0; }
+.ov-detail .clean-table th, .ov-detail .clean-table td { padding-top: 6px; padding-bottom: 6px; }
+.ov-detail .big-num { font-size: 34px; }
+.ov-detail .hero-main { margin-bottom: 8px; }
+.ov-detail .todo-row { padding: 8px 12px; }
+.ov-detail .page-stack > .card:last-child svg[viewBox="0 0 1200 220"] { max-height: 170px; }
+
+.ov-detail .hero-row > .card:nth-child(2) > svg { max-height: 190px; }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }

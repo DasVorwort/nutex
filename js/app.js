@@ -201,11 +201,13 @@
 
       if (e.target.closest('[data-action="open-loss"]')) {
         S.state.lossOpen = true;
+        S.state.detailOpen = null;
         render(); return;
       }
 
       if (e.target.closest('[data-action="open-value"]')) {
         S.state.valueOpen = true;
+        S.state.detailOpen = null;
         render(); return;
       }
 
@@ -213,6 +215,7 @@
       if (openRm) {
         S.state.roadmapOpen = true;
         S.state.roadmapFilter = openRm.dataset.level || null;
+        S.state.detailOpen = null;
         render(); return;
       }
 
@@ -228,6 +231,7 @@
         S.state.roadmapOpen = false;
         S.state.valueOpen = false;
         S.state.lossOpen = false;
+        S.state.detailOpen = null;
         render(); return;
       }
 
@@ -311,7 +315,17 @@
 
       const navTab = e.target.closest('[data-nav-tab], [data-nav-card]');
       if (navTab) {
-        S.state.activeTab = navTab.dataset.navTab || navTab.dataset.navCard;
+        const tab = navTab.dataset.navTab || navTab.dataset.navCard;
+        if (S.state.activeTab === 'overview' && tab !== 'overview') {
+          // Overview: details always open as a pop-up
+          S.state.roadmapOpen = false;
+          S.state.valueOpen = false;
+          S.state.lossOpen = false;
+          S.state.todoOpen = null;
+          S.state.detailOpen = tab;
+        } else {
+          S.state.activeTab = tab;
+        }
         render();
       }
     });
@@ -380,7 +394,7 @@
       if (e.key === 'Escape') {
         closeModals();
         if (S.state.todoOpen) { S.state.todoOpen = null; render(); return; }
-        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; render(); }
+        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen || S.state.detailOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; S.state.detailOpen = null; render(); }
         if (S.state.showSettings) { S.state.showSettings = false; render(); }
       }
     });

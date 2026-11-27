@@ -220,6 +220,17 @@ window.NUTEX_VIEWS = (() => {
     return out;
   }
 
+  // Every tile / to-do detail opens as a pop-up over the overview (same pattern as Value per € spent)
+  const DETAILS = {
+    departments: { title: 'Weekly use by department', render: (m) => renderDepartments(m) },
+    culture:     { title: 'People score · monthly pulse', render: () => renderCulture() },
+    budget:      { title: 'Budget used', render: (m) => renderBudget(m) },
+    projects:    { title: 'Pilots & AI projects', render: (m) => renderProjects(m) },
+    trainings:   { title: 'Trainings', render: (m) => renderTrainings(m) },
+    licenses:    { title: 'Licenses & seats', render: (m) => renderLicenses(m) },
+    readiness:   { title: 'AI readiness · data & systems', render: (m) => renderReadiness(m) }
+  };
+
   function renderOverview(metrics) {
     const role = S.getRole();
     const isCEO = role.isCEO;
@@ -505,6 +516,17 @@ window.NUTEX_VIEWS = (() => {
           <div class="ov-modal" role="dialog" aria-label="AI roadmap">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
             ${R.render({ filter: S.state.roadmapFilter || null })}
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.detailOpen && DETAILS[S.state.detailOpen] ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal ov-modal-detail" role="dialog" aria-label="${DETAILS[S.state.detailOpen].title}">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            <section class="card card-lg ov-detail">
+              <div class="panel-head ov-detail-head"><h3>${DETAILS[S.state.detailOpen].title}</h3></div>
+              ${DETAILS[S.state.detailOpen].render(metrics)}
+            </section>
           </div>
         </div>
       ` : ''}
@@ -973,7 +995,8 @@ window.NUTEX_VIEWS = (() => {
               target: bm.target,
               unit: bm.unit,
               clickableAttr: 'data-select-trend-dept',
-              selectedId: trendData.activeDeptId
+              selectedId: trendData.activeDeptId,
+              compact: true
             })}
           </div>
 

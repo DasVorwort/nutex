@@ -78,6 +78,7 @@ window.NUTEX_STATE = (() => {
     roadmapFilter: null,
     valueOpen: false,
     lossOpen: false,
+    detailOpen: null,
     todoOpen: null,
     delegations: (() => {
       try { return JSON.parse(localStorage.getItem(DELEGATE_KEY) || '{}') || {}; } catch (_) { return {}; }
