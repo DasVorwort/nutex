@@ -69,7 +69,7 @@ window.NUTEX_DATA = (() => {
   // 6 Departments = 300 Employees exact
   const DEPARTMENTS = [
     {
-      id: 'rd', name: 'R&D', vp: 'Sarah Klein', employees: 45, targetUsers: 44, budgetShare: 0.32,
+      id: 'rd', name: 'R&D', vp: 'Sarah Klein', employees: 45, targetUsers: 44, licensedUsers: 44, budgetShare: 0.32,
       dataSourcesReady: 1, dataSourcesTotal: 1,
       trainedEmployees: 40, weeklyUsers: 38, dailyUsers: 26, openRequests: 0,
       hoursSavedMo: 340, costSavedMo: 14200, errorRatePct: 2.4, cycleDays: 3.0,
@@ -88,9 +88,9 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'marketing', name: 'Marketing', vp: 'Marcus Weber', employees: 30, targetUsers: 30, budgetShare: 0.10,
+      id: 'marketing', name: 'Marketing', vp: 'Marcus Weber', employees: 30, targetUsers: 30, licensedUsers: 29, budgetShare: 0.10,
       dataSourcesReady: 1, dataSourcesTotal: 1,
-      trainedEmployees: 25, weeklyUsers: 24, dailyUsers: 15, openRequests: 2,
+      trainedEmployees: 25, weeklyUsers: 24, dailyUsers: 15, openRequests: 1,
       hoursSavedMo: 225, costSavedMo: 8900, errorRatePct: 2.9, cycleDays: 2.8,
       tokensM: 6.8, tokenRate: 45,
       seats: {
@@ -106,9 +106,9 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'sales', name: 'Sales', vp: 'Marcus Weber', employees: 50, targetUsers: 48, budgetShare: 0.19,
+      id: 'sales', name: 'Sales', vp: 'Marcus Weber', employees: 50, targetUsers: 50, licensedUsers: 48, budgetShare: 0.19,
       dataSourcesReady: 1, dataSourcesTotal: 2,
-      trainedEmployees: 38, weeklyUsers: 37, dailyUsers: 22, openRequests: 5,
+      trainedEmployees: 38, weeklyUsers: 37, dailyUsers: 22, openRequests: 2,
       hoursSavedMo: 310, costSavedMo: 11800, errorRatePct: 2.8, cycleDays: 3.1,
       tokensM: 8.5, tokenRate: 46,
       seats: {
@@ -125,9 +125,9 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'production', name: 'Production', vp: 'Dr. Thomas Berg', employees: 90, targetUsers: 60, budgetShare: 0.18,
+      id: 'production', name: 'Production', vp: 'Dr. Thomas Berg', employees: 90, targetUsers: 50, licensedUsers: 50, budgetShare: 0.18,
       dataSourcesReady: 0, dataSourcesTotal: 2,
-      trainedEmployees: 49, weeklyUsers: 42, dailyUsers: 19, openRequests: 8,
+      trainedEmployees: 49, weeklyUsers: 42, dailyUsers: 19, openRequests: 0,
       hoursSavedMo: 245, costSavedMo: 9400, errorRatePct: 3.5, cycleDays: 4.1,
       tokensM: 9.2, tokenRate: 52,
       seats: {
@@ -145,9 +145,9 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'logistics', name: 'Logistics', vp: 'Julia Hoffmann', employees: 45, targetUsers: 36, budgetShare: 0.10,
+      id: 'logistics', name: 'Logistics', vp: 'Julia Hoffmann', employees: 45, targetUsers: 30, licensedUsers: 29, budgetShare: 0.10,
       dataSourcesReady: 0, dataSourcesTotal: 2,
-      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 14, openRequests: 4,
+      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 14, openRequests: 1,
       hoursSavedMo: 155, costSavedMo: 5800, errorRatePct: 3.2, cycleDays: 3.7,
       tokensM: 4.1, tokenRate: 48,
       seats: {
@@ -164,9 +164,9 @@ window.NUTEX_DATA = (() => {
       ]
     },
     {
-      id: 'purchasing', name: 'Purchasing', vp: 'Andreas Richter', employees: 40, targetUsers: 37, budgetShare: 0.11,
+      id: 'purchasing', name: 'Purchasing', vp: 'Andreas Richter', employees: 40, targetUsers: 32, licensedUsers: 32, budgetShare: 0.11,
       dataSourcesReady: 1, dataSourcesTotal: 1,
-      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 15, openRequests: 5,
+      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 15, openRequests: 0,
       hoursSavedMo: 145, costSavedMo: 7100, errorRatePct: 2.9, cycleDays: 3.4,
       tokensM: 3.6, tokenRate: 46,
       seats: {
@@ -781,12 +781,12 @@ window.NUTEX_DATA = (() => {
   ];
 
   // Company-wide adoption over time (employees of 300) + the changes that moved it.
-  // Nov values match the live metrics (210 trained, 193 weekly users, target group 255).
+  // Nov values match the live metrics (210 trained, 193 weekly users, 232 licensed, target group 236).
   // m = position on the month axis (0 = Jan); a change sits just before the month it shows up in.
   const ADOPTION_2026 = {
     year: 2026,
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
-    target: 255,
+    target: 236,
     // Each month-to-month step is either exactly one change event below or organic growth.
     trained:  [30, 60, 104, 116, 136, 138, 156, 166, 182, 186, 210],
     licensed: [40, 70, 96, 120, 182, 182, 196, 168, 210, 194, 232],

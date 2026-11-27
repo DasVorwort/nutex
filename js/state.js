@@ -285,7 +285,8 @@ window.NUTEX_STATE = (() => {
     const idx = Object.fromEntries(depts.map((d, i) => [d.id, i]));
     const novW = depts.map(d => d.weeklyUsers);
     const novT = depts.map(d => d.trainedEmployees);
-    const novL = allocInt(C.licensed[n - 1], depts.map((d, i) => novW[i] + novT[i]));
+    // licensed employees per department (fixed in data, never above the target group)
+    const novL = depts.map((d, i) => d.licensedUsers !== undefined ? d.licensedUsers : allocInt(C.licensed[n - 1], depts.map((x, j) => novW[j] + novT[j]))[i]);
     const nov = { weekly: novW, trained: novT, licensed: novL };
 
     // per event: integer share per department for each field
@@ -317,6 +318,11 @@ window.NUTEX_STATE = (() => {
           return Math.max(0, Math.min(d.employees, v));
         });
       });
+    });
+    // a weekly AI user always holds a license: licensed >= weekly in every month
+    depts.forEach(d => {
+      const h = perDept[d.id];
+      h.licensed = h.licensed.map((v, i) => Math.max(v, h.weekly[i]));
     });
     ADOPT = { labels: C.labels, perDept, events };
     return ADOPT;
