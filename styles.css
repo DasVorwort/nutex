@@ -1755,7 +1755,7 @@ body.dark .badge-blue { background: var(--highlight-row); color: var(--blue); }
 .rm-leg-open { background: #FFFFFF; border: 2px solid #1E293B; }
 .rm-leg-overdue { background: #FFFFFF; border: 2.2px solid #EF4444; }
 .rm-leg-proposed { background: var(--surface); border: 1.8px dashed #94A3B8; }
-.rm-leg-path { background: transparent; border: 2.2px solid #D9622B; }
+.rm-leg-path { background: transparent; border: 2.2px solid #1E293B; }
 
 .roadmap-stage {
   position: relative;
@@ -1824,7 +1824,7 @@ body.dark .rm-here-text {
 }
 
 .roadmap-stage.rm-path-active .rm-node[data-on-path="true"] .rm-label {
-  fill: #D9622B;
+  fill: #1E293B;
   font-weight: 700;
 }
 
@@ -1913,7 +1913,7 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #D9622B;
+  color: #1E293B;
   margin-bottom: 2px;
 }
 
@@ -2428,7 +2428,7 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 }
 .ad-leak-step strong { font-size: 16px; color: var(--text); }
 .ad-leak-step span { font-size: 12px; color: var(--text-2); }
-.ad-leak-step.is-last { background: rgba(249, 115, 22, 0.14); }
+.ad-leak-step.is-last { background: rgba(37, 99, 235, 0.12); }
 .ad-leak-drop { font-size: 12px; font-weight: 800; color: var(--red-txt); white-space: nowrap; }
 .ad-leak-drop::before { content: '→ '; color: var(--text-3); font-weight: 500; }
 
@@ -3112,6 +3112,10 @@ body.dark .ip-chart circle[fill="#0F172A"] { fill: #F8FAFC; }
 .rm2-soft-card span { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-3); }
 .rm2-soft-card strong { font-size: 13px; color: var(--text); }
 .rm2-soft-card small { font-size: 10.5px; color: var(--text-3); }
+
+/* Color system: blue = progress / primary · green-amber-red = status only · grey = neutral */
+body.dark .rm-onpath-ring { stroke: #CBD5E1; }
+.bg-key-spent { background: #2563EB !important; }
 
 /* --- Responsive --- */
 @media (max-width: 1020px) {

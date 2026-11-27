@@ -11,8 +11,8 @@ window.NUTEX_ADOPTION = (() => {
 
   const SERIES = [
     { key: 'trained',  label: 'Trained',      color: '#14B8A6', fill: 'rgba(20,184,166,0.05)' },
-    { key: 'licensed', label: 'With license', color: '#3B82F6', fill: 'rgba(59,130,246,0.05)' },
-    { key: 'weekly',   label: 'Weekly users', color: '#F97316', fill: 'rgba(249,115,22,0.22)' }
+    { key: 'licensed', label: 'With license', color: '#94A3B8', fill: 'rgba(148,163,184,0.05)' },
+    { key: 'weekly',   label: 'Weekly users', color: '#2563EB', fill: 'rgba(37,99,235,0.14)' }
   ];
 
   const pct = (n) => Math.round((n / TOTAL) * 100);

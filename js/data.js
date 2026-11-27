@@ -783,13 +783,13 @@ window.NUTEX_DATA = (() => {
     hourlyRate: 40, // € fully loaded cost per employee hour
     drivers: [
       {
-        id: 'time', label: 'Time saved', color: '#3B82F6',
+        id: 'time', label: 'Time saved', color: '#2563EB',
         formula: 'Net hours saved × €40 fully loaded hourly rate',
         detail: 'Hours from everyday AI use (logs + monthly survey), net of rework for checking and fixing output.',
         source: 'Tool logs · pulse survey', owner: 'HR / Finance', freq: 'Monthly', confidence: 'estimate'
       },
       {
-        id: 'quality', label: 'Quality', color: '#10B981',
+        id: 'quality', label: 'Quality', color: '#14B8A6',
         formula: 'Fewer defects & returns × cost per case (scrap, credit note, re-shipment)',
         detail: 'Defects per 1,000 m and returns rate vs. 3-month pre-AI baseline; Plant B as control group.',
         source: 'QA system · ERP returns', owner: 'Production', freq: 'Monthly', confidence: 'measured'
@@ -801,7 +801,7 @@ window.NUTEX_DATA = (() => {
         source: 'CRM · lab system', owner: 'Sales / R&D', freq: 'Monthly', confidence: 'measured'
       },
       {
-        id: 'cost', label: 'Cost avoided', color: '#F59E0B',
+        id: 'cost', label: 'Cost avoided', color: '#0EA5E9',
         formula: 'Avoided external spend: penalties, express freight, agency fees, better contract prices',
         detail: 'Invoices before vs. after go-live, adjusted for volume.',
         source: 'Finance · procurement', owner: 'Finance', freq: 'Quarterly', confidence: 'estimate'

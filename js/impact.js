@@ -11,7 +11,7 @@ window.NUTEX_IMPACT = (() => {
   const S = window.NUTEX_STATE;
   const I = () => D.IMPACT;
   const OFFSET = 3; // series start 3 months before Jan 2026 (Oct–Dec 2025 = pre-AI baseline period)
-  const LINE_COLORS = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+  const LINE_COLORS = ['#2563EB', '#14B8A6', '#8B5CF6', '#0EA5E9', '#6366F1', '#94A3B8', '#3B82F6', '#2DD4BF'];
 
   const avg = (a) => a.reduce((s, v) => s + v, 0) / Math.max(1, a.length);
   const fmt = (v, k) => (k.unit === '%' ? `${v.toFixed(1)}%` : k.unit === 'h' ? (v < 12 ? `${v.toFixed(1)} h` : `${Math.round(v)} h`) : k.unit === 'd' ? `${v.toFixed(1)} d` : k.unit === 'k' ? `€${v.toFixed(1)}k` : v.toFixed(1));

@@ -157,7 +157,7 @@ window.NUTEX_ROADMAP = (() => {
     const cy = m.y;
     const parts = [];
     if (m.onPath && m.status !== 'done') {
-      parts.push(`<circle class="rm-onpath-ring" cx="${cx}" cy="${cy}" r="${r + 4.5}" fill="none" stroke="#D9622B" stroke-width="1.8"/>`);
+      parts.push(`<circle class="rm-onpath-ring" cx="${cx}" cy="${cy}" r="${r + 4.5}" fill="none" stroke="#1E293B" stroke-width="1.8"/>`);
     }
     if (m.visualState === 'done') {
       parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="#2563EB"/>`);
@@ -292,7 +292,7 @@ window.NUTEX_ROADMAP = (() => {
 
   // Milestone filters used by the overlay and the overview tile
   const FILTERS = {
-    critical: { label: 'Critical path', color: '#D9622B', match: (m) => m.onPath && m.status !== 'done' },
+    critical: { label: 'Critical path', color: '#1E293B', match: (m) => m.onPath && m.status !== 'done' },
     overdue:  { label: 'Overdue',       color: '#E5484D', match: (m) => m.visualState === 'overdue' }
   };
 
@@ -355,7 +355,7 @@ window.NUTEX_ROADMAP = (() => {
         <path d="M${w - 8},${y - 3.5} L${w - 1},${y} L${w - 8},${y + 3.5} z" fill="var(--border-hover)"/>
         ${l.placed.map(m => {
           const cx = px(m.date).toFixed(1);
-          const ring = m.onPath && m.status !== 'done' ? `<circle cx="${cx}" cy="${y}" r="6.2" fill="none" stroke="#D9622B" stroke-width="1.2"/>` : '';
+          const ring = m.onPath && m.status !== 'done' ? `<circle cx="${cx}" cy="${y}" r="6.2" fill="none" stroke="#1E293B" stroke-width="1.2"/>` : '';
           return ring + (m.visualState === 'done'
             ? `<circle cx="${cx}" cy="${y}" r="4" fill="${col.done}"/>`
             : `<circle cx="${cx}" cy="${y}" r="3.6" fill="var(--surface)" stroke="${col[m.visualState]}" stroke-width="1.8" ${m.visualState === 'proposed' ? 'stroke-dasharray="1.8 1.6"' : ''}/>`);

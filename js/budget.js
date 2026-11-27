@@ -194,10 +194,10 @@ window.NUTEX_BUDGET = (() => {
     const series = keys.slice(0, idx + 1).map(k => withFilters({ timeframe: k, dept: 'all' }, m => m.totalSpendMo));
     const ytd = series.reduce((a, b) => a + b, 0);
     const cats = [
-      { label: 'Licenses', v: all.licenseSpendMo, c: '#3B82F6' },
+      { label: 'Licenses', v: all.licenseSpendMo, c: '#2563EB' },
       { label: 'Tokens', v: all.tokenSpendMo, c: '#8B5CF6' },
-      { label: 'Projects', v: all.projectSpendMo, c: '#10B981' },
-      { label: 'Trainings', v: all.trainingSpendMo, c: '#F59E0B' }
+      { label: 'Projects', v: all.projectSpendMo, c: '#14B8A6' },
+      { label: 'Trainings', v: all.trainingSpendMo, c: '#0EA5E9' }
     ];
     const [lo, hi] = C.bench.shareOfRevenue;
     const eMax = Math.max(revMo * 1.2 / 100, all.budgetLimit, all.totalSpendMo);

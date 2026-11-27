@@ -18,7 +18,7 @@ window.NUTEX_VALUE = (() => {
   }
   const ZONES = {
     implement: { label: 'Implement',  color: '#10B981', bg: 'rgba(16,185,129,0.09)', txt: 'var(--green-txt)', hint: 'pays off for many people' },
-    niche:     { label: 'Niche win',  color: '#3B82F6', bg: 'rgba(59,130,246,0.07)', txt: 'var(--blue)',      hint: 'pays off, few people' },
+    niche:     { label: 'Niche win',  color: '#64748B', bg: 'rgba(100,116,139,0.07)', txt: 'var(--text-2)',    hint: 'pays off, few people' },
     improve:   { label: 'Improve',    color: '#F59E0B', bg: 'rgba(245,158,11,0.09)', txt: 'var(--yellow-txt)', hint: 'many people, not paying off yet' },
     stop:      { label: 'Stop',       color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  txt: 'var(--red-txt)',   hint: 'costs more than it returns' }
   };
@@ -257,7 +257,7 @@ window.NUTEX_VALUE = (() => {
             <div class="vl-meta">target ≥ €1.00</div>
             <div class="vl-meta"><strong>${eurK(valueMo)} return</strong> vs <strong>${eurK(costMo)} cost</strong> per month</div>
             <div class="vl-meta ${diff >= 0 ? 'text-green' : 'text-red'}"><strong>${diff >= 0 ? '+' : ''}${diff.toFixed(2)}</strong> vs last month</div>
-            ${spark(series, { color: ratio >= 1 ? '#10B981' : '#EF4444' })}
+            ${spark(series, { color: '#2563EB' })}
             <div class="vl-axis"><span>${labels[0]}</span><span>${labels[labels.length - 1]}</span></div>
 
             <span class="vl-lbl" style="margin-top:12px">Where the return comes from</span>
