@@ -172,6 +172,33 @@
       const info = e.target.closest('[data-kpi-info]');
       if (info) { e.stopPropagation(); showPopover(info.dataset.kpiInfo, info); return; }
 
+      // To-do delegation popover
+      const tdPick = e.target.closest('[data-action="todo-delegate"]');
+      if (tdPick) {
+        S.setDelegation(tdPick.dataset.todo, tdPick.dataset.person);
+        S.state.todoOpen = null;
+        render(); return;
+      }
+      const tdUndo = e.target.closest('[data-action="todo-undo"]');
+      if (tdUndo) {
+        S.setDelegation(tdUndo.dataset.todo, null);
+        S.state.todoOpen = null;
+        render(); return;
+      }
+      const tdOpen = e.target.closest('[data-action="todo-open"]');
+      if (tdOpen) {
+        S.state.todoOpen = S.state.todoOpen === tdOpen.dataset.todo ? null : tdOpen.dataset.todo;
+        render();
+        const input = el.viewRoot.querySelector('[data-todo-search]');
+        if (input) input.focus({ preventScroll: true });
+        return;
+      }
+      if (e.target.closest('.ov-pop')) {
+        const inPopNav = e.target.closest('[data-nav-tab], [data-action]');
+        if (!inPopNav) return;
+        S.state.todoOpen = null;
+      }
+
       if (e.target.closest('[data-action="open-loss"]')) {
         S.state.lossOpen = true;
         render(); return;
@@ -289,6 +316,22 @@
       }
     });
 
+    // Live name filter inside the delegate popover (no re-render, keeps focus)
+    el.viewRoot.addEventListener('input', e => {
+      if (!e.target.matches('[data-todo-search]')) return;
+      const q = e.target.value.trim().toLowerCase();
+      const list = e.target.parentElement.querySelector('[data-todo-results]');
+      const quick = e.target.parentElement.querySelectorAll('.ov-pop-quick .ov-person');
+      let hits = 0;
+      list.querySelectorAll('.ov-person-row').forEach(b => {
+        const show = !q || b.dataset.q.includes(q);
+        b.hidden = !show;
+        if (show) hits++;
+      });
+      quick.forEach(b => { b.hidden = !!q && !b.dataset.q.includes(q); if (!b.hidden && q) hits++; });
+      list.querySelector('.ov-pop-none').hidden = hits > 0;
+    });
+
     el.viewRoot.addEventListener('submit', e => {
       if (e.target.id === 'budget-form') {
         e.preventDefault();
@@ -336,6 +379,7 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         closeModals();
+        if (S.state.todoOpen) { S.state.todoOpen = null; render(); return; }
         if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; render(); }
         if (S.state.showSettings) { S.state.showSettings = false; render(); }
       }
@@ -353,6 +397,10 @@
 
     document.addEventListener('click', e => {
       if (!e.target.closest('#kpi-popover') && !e.target.closest('[data-kpi-info]')) hidePopover();
+      if (S.state.todoOpen && !e.target.closest('.ov-todo-wrap')) {
+        S.state.todoOpen = null;
+        render();
+      }
       if (S.state.showSettings && !e.target.closest('.settings-wrap')) {
         S.state.showSettings = false;
         render();

@@ -633,7 +633,7 @@ window.NUTEX_DATA = (() => {
       next: 'Blocked by ERP link for full rollout'
     },
     {
-      id: 'yarnprice', name: 'YarnPrice', full: 'Raw Yarn Price Forecast', deptId: 'purchasing', owner: 'Andreas Richter',
+      id: 'yarnprice', name: 'YarnPrice', label: 'right', full: 'Raw Yarn Price Forecast', deptId: 'purchasing', owner: 'Andreas Richter',
       status: 'Pilot', since: 'Sep 2026', costMo: 1500, valueMo: 4200, employees: 12,
       result: '€35k saved on two fiber contracts', trend: [0, 0, 0, 1.2, 2.1, 2.8],
       next: 'Keep small — high value, few users'
@@ -645,7 +645,7 @@ window.NUTEX_DATA = (() => {
       next: 'Add finishing team to reach implement zone'
     },
     {
-      id: 'shopfloor', name: 'ShopFloor Copilot', full: 'Shopfloor Assistant (work instructions)', deptId: 'production', owner: 'Dr. Thomas Berg',
+      id: 'shopfloor', name: 'ShopFloor Copilot', label: 'above-left', full: 'Shopfloor Assistant (work instructions)', deptId: 'production', owner: 'Dr. Thomas Berg',
       status: 'Pilot', since: 'May 2026', costMo: 3800, valueMo: 2900, employees: 110,
       result: 'Only 31% of operators use it weekly', trend: [0.5, 0.6, 0.6, 0.7, 0.7, 0.76],
       next: 'Fix adoption: shopfloor training wave 2 before more spend'
@@ -656,6 +656,22 @@ window.NUTEX_DATA = (() => {
       result: 'Errors flat — vendor tool covers it already', trend: [0.7, 0.6, 0.6, 0.5, 0.55, 0.55],
       next: 'Stop at end of contract (Jan 2027), save €1.1k/mo'
     }
+  ];
+
+  // People the CEO can delegate to-dos to (quick choose + search)
+  const PEOPLE = [
+    { id: 'sarah',   name: 'Sarah Klein',     role: 'VP R&D' },
+    { id: 'marcus',  name: 'Marcus Weber',    role: 'VP Commercial' },
+    { id: 'thomas',  name: 'Dr. Thomas Berg', role: 'VP Production' },
+    { id: 'julia',   name: 'Julia Hoffmann',  role: 'VP Logistics' },
+    { id: 'andreas', name: 'Andreas Richter', role: 'VP Purchasing' },
+    { id: 'lena',    name: 'Lena Vogt',       role: 'Head of IT' },
+    { id: 'tobias',  name: 'Tobias Kern',     role: 'IT lead · ERP' },
+    { id: 'nina',    name: 'Nina Schäfer',    role: 'HR / Learning' },
+    { id: 'paul',    name: 'Paul Brandt',     role: 'Finance' },
+    { id: 'miriam',  name: 'Miriam Koch',     role: 'Legal & Compliance' },
+    { id: 'jonas',   name: 'Jonas Fischer',   role: 'Data owner Production' },
+    { id: 'eva',     name: 'Eva Lorenz',      role: 'AI program lead' }
   ];
 
   // Company-wide adoption over time (employees of 300) + the changes that moved it.
@@ -709,7 +725,7 @@ window.NUTEX_DATA = (() => {
   };
 
   return {
-    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026,
+    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE,
     TOOLS, TIMEFRAMES, DEPARTMENTS, INITIAL_PROJECTS, INITIAL_TRAININGS, SYSTEMS, CULTURE_SURVEY, TREND_2026, I18N
   };
 })();

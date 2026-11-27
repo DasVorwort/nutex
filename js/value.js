@@ -77,9 +77,18 @@ window.NUTEX_VALUE = (() => {
     const ys = py(Y_SPLIT);
     const zone = (k, x, y, w, h, ax, ay, anchor) => `
       <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${ZONES[k].bg}"/>
-      <text x="${ax}" y="${ay}" text-anchor="${anchor}" font-size="11.5" font-weight="700" fill="${ZONES[k].txt}">${ZONES[k].label}</text>
+      <text x="${ax}" y="${ay}" text-anchor="${anchor}" font-size="10" font-weight="600" letter-spacing="0.08em" fill="${ZONES[k].txt}" opacity="0.6">${ZONES[k].label.toUpperCase()}</text>
     `;
     const rOf = (c) => 6 + Math.sqrt(c) * 0.34;
+    // Label placement avoids collisions: right of the bubble, above, or below (default)
+    const label = (p, cx, cy, r) => {
+      const pos = p.label || (p.employees < 20 ? 'above' : 'below');
+      const at = pos === 'right' ? { x: cx + r + 7, y: cy, a: 'start', b: 'central' }
+        : pos === 'above' ? { x: cx, y: cy - r - 7, a: 'middle', b: 'auto' }
+        : pos === 'above-left' ? { x: cx + r, y: cy - r - 7, a: 'end', b: 'auto' }
+        : { x: cx, y: cy + r + 14, a: 'middle', b: 'auto' };
+      return `<text x="${at.x}" y="${at.y}" text-anchor="${at.a}" dominant-baseline="${at.b}" font-size="11.5" font-weight="600" fill="var(--text-2)">${p.name}</text>`;
+    };
 
     const ticksX = [0, 1, 2, 3, 4].map(v => `
       <text x="${px(v)}" y="${B + 16}" text-anchor="middle" font-size="10.5" fill="var(--text-3)">${v === 1 ? '1.0 break-even' : `€${v}`}</text>
@@ -97,7 +106,7 @@ window.NUTEX_VALUE = (() => {
       return `
         <g class="vl-bubble" data-q="${p.zone}" data-pilot="${p.id}" tabindex="0" role="button" aria-label="${p.name}: €${p.vpe.toFixed(2)} per €, ${p.employees} employees">
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="${z.color}" fill-opacity="${live ? 0.95 : 0.8}" stroke="${live ? 'var(--text)' : 'var(--surface)'}" stroke-width="${live ? 2 : 1.5}"/>
-          <text x="${cx}" y="${p.employees < 20 ? cy - r - 6 : cy + r + 13}" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--text-2)">${p.name}</text>
+          ${label(p, cx, cy, r)}
         </g>
       `;
     }).join('');
