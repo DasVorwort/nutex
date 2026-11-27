@@ -160,13 +160,13 @@ window.NUTEX_ROADMAP = (() => {
       parts.push(`<circle class="rm-onpath-ring" cx="${cx}" cy="${cy}" r="${r + 4.5}" fill="none" stroke="#D9622B" stroke-width="1.8"/>`);
     }
     if (m.visualState === 'done') {
-      parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="#22A06B"/>`);
+      parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="#2563EB"/>`);
     } else if (m.visualState === 'overdue') {
       parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="var(--surface)" stroke="#E5484D" stroke-width="2.6"/>`);
     } else if (m.visualState === 'proposed') {
       parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="var(--surface)" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="2.6 2.2"/>`);
     } else {
-      parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="var(--surface)" stroke="#2563EB" stroke-width="2.6"/>`);
+      parts.push(`<circle class="rm-dot" cx="${cx}" cy="${cy}" r="${r}" fill="var(--surface)" stroke="#60A5FA" stroke-width="2.6"/>`);
     }
     parts.push(`<circle cx="${cx}" cy="${cy}" r="15" fill="transparent"/>`);
     if (m.labeled) {
@@ -201,9 +201,9 @@ window.NUTEX_ROADMAP = (() => {
     const tx = xOf(TODAY);
     const inRange = TODAY >= '2026-01-01' && TODAY <= '2027-12-31';
     const PH = {
-      pilot: { fill: 'var(--green-bg)', text: 'var(--green-txt)', band: 'rgba(16,185,129,0.045)', sub: 'done' },
-      scale: { fill: '#2563EB', text: '#FFFFFF', band: 'rgba(37,99,235,0.06)', sub: 'we are here' },
-      embed: { fill: 'var(--track)', text: 'var(--text-3)', band: 'rgba(148,163,184,0.07)', sub: 'next' }
+      pilot: { fill: '#DBEAFE', text: '#2563EB', band: 'rgba(37,99,235,0.035)', sub: 'done' },
+      scale: { fill: '#2563EB', text: '#FFFFFF', band: 'rgba(37,99,235,0.07)', sub: 'we are here' },
+      embed: { fill: 'var(--track)', text: 'var(--text-3)', band: 'rgba(148,163,184,0.06)', sub: 'next' }
     };
 
     // Phase chevrons (arrow-shaped) + tinted bands behind the lanes
@@ -340,11 +340,11 @@ window.NUTEX_ROADMAP = (() => {
     const gap = 21;
     const h = top + LAYOUT.length * gap;
     const px = (iso) => lx + ((ms(iso) - T0) / (T1 - T0)) * (w - lx - 12);
-    const col = { done: '#22A06B', overdue: '#E5484D', open: '#2563EB', proposed: '#94A3B8' };
+    const col = { done: '#2563EB', overdue: '#E5484D', open: '#60A5FA', proposed: '#94A3B8' };
     const ph = PHASES.map((p, i) => {
       const x1 = px(p.from) + (i ? 1.5 : 0);
       const x2 = px(p.to);
-      const fill = p.id === 'pilot' ? 'var(--green-bg)' : p.id === 'scale' ? '#2563EB' : 'var(--track)';
+      const fill = p.id === 'pilot' ? '#DBEAFE' : p.id === 'scale' ? '#2563EB' : 'var(--track)';
       return `<polygon points="${x1},2 ${x2 - 6},2 ${x2},8.5 ${x2 - 6},15 ${x1},15 ${i ? x1 + 6 : x1},8.5" fill="${fill}"/>`;
     }).join('');
     const rows = LAYOUT.map((l, i) => {

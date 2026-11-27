@@ -101,7 +101,19 @@ window.NUTEX_PEOPLE = (() => {
     const c = S.computeCulture();
     const prev = idx > 0 ? withFilters({ timeframe: keys[idx - 1] }, () => S.computeCulture()) : null;
     const prevById = prev ? Object.fromEntries(prev.questions.map(q => [q.id, q.pct])) : {};
-    const weakest = c.questions.slice().sort((a, b) => a.pct - b.pct)[0];
+    // lowest department per statement (within the current scope)
+    const lowest = {};
+    const scopeDepts = S.getFilteredDepts();
+    if (scopeDepts.length > 1) {
+      c.questions.forEach(q => {
+        let best = null;
+        scopeDepts.forEach(d => {
+          const v = withFilters({ dept: d.id }, () => S.computeCulture()).questions.find(x => x.id === q.id).pct;
+          if (!best || v < best.v) best = { name: d.name, v };
+        });
+        lowest[q.id] = best;
+      });
+    }
 
     const sel = S.state.barrierDept || (S.state.filters.dept !== 'all' ? S.state.filters.dept : 'all');
     const bars = barriers(sel);
@@ -123,7 +135,7 @@ window.NUTEX_PEOPLE = (() => {
           <!-- 1 · Survey -->
           <section class="pp-card">
             <div class="pp-head"><h4>Monthly survey</h4><span>${c.totalResponses} / ${c.totalEmp} (${c.responsePct}%)</span></div>
-            <div class="pp-qs">
+            <div class="pp-qs pp-fill">
               ${c.questions.map(q => {
                 const lv = lvlPct(q.pct, 75);
                 const d = prevById[q.id] !== undefined ? q.pct - prevById[q.id] : null;
@@ -134,17 +146,11 @@ window.NUTEX_PEOPLE = (() => {
                       <span class="pp-q-val">${d !== null ? `<em class="${d >= 0 ? 'text-green' : 'text-red'}">${d >= 0 ? '▲' : '▼'}${Math.abs(d)}</em>` : ''}<strong class="text-${lv}">${q.pct}%</strong></span>
                     </div>
                     <div class="pp-track"><div style="width:${q.pct}%;background:${LV[lv]}"></div><i style="left:75%"></i></div>
+                    ${lowest[q.id] ? `<span class="pp-note">lowest: <strong class="text-${lvlPct(lowest[q.id].v, 75)}">${lowest[q.id].name} ${lowest[q.id].v}%</strong> · target 75%</span>` : '<span class="pp-note">target 75%</span>'}
                   </div>
                 `;
               }).join('')}
             </div>
-            <div class="pp-wish">
-              <span class="pp-sub">Most wanted tools</span>
-              ${c.wishRanking.slice(0, 3).map((w, i) => `
-                <div class="pp-wish-row"><em>#${i + 1}</em><span>${w.name}</span><strong>${w.votes} votes</strong></div>
-              `).join('')}
-            </div>
-            <div class="pp-foot">Weakest: <strong>${weakest.label} · ${weakest.pct}%</strong></div>
           </section>
 
           <!-- 2 · Barriers -->
@@ -156,15 +162,16 @@ window.NUTEX_PEOPLE = (() => {
                 ${S.getAccessibleDepts().map(d => `<option value="${d.id}" ${sel === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}
               </select>
             </div>
-            <div class="pp-qs">
+            <div class="pp-qs pp-fill">
               ${bars.map(b => `
-                <div class="pp-q" title="Lever: ${b.lever}">
+                <div class="pp-q">
                   <div class="pp-q-top"><span>${b.label}</span><strong class="pp-blue">${b.pct}%</strong></div>
                   <div class="pp-track"><div style="width:${(b.pct / maxB) * 100}%;background:#3B82F6"></div></div>
+                  <span class="pp-note">→ ${b.lever}</span>
                 </div>
               `).join('')}
             </div>
-            <div class="pp-foot">Top lever: <strong>${top.lever}</strong> · Biggest drop-off: <strong>Target group → Trained · ${dropOff} people</strong></div>
+            <div class="pp-foot">Biggest drop-off: <strong>Target group → Trained · ${dropOff} people</strong></div>
           </section>
 
           <!-- 3 · Time saved -->
@@ -178,7 +185,7 @@ window.NUTEX_PEOPLE = (() => {
               </div>
             </div>
             <div class="pp-sub">Net saved by department · target ${TARGET_H.toFixed(1)} h</div>
-            <div class="pp-dept">
+            <div class="pp-dept pp-fill">
               ${ts.rows.map(r => {
                 const lv = r.net >= TARGET_H ? 'green' : r.net >= TARGET_H * 0.85 ? 'yellow' : 'red';
                 return `
@@ -190,7 +197,6 @@ window.NUTEX_PEOPLE = (() => {
                 `;
               }).join('')}
             </div>
-            <div class="pp-foot">${metrics.rows.length > 1 ? 'Company-wide' : metrics.rows[0].dept.name}: <strong>≈ ${Math.round(ts.hours).toLocaleString('en-US')} h per month</strong> (${ts.users} AI users)</div>
           </section>
         </div>
 
