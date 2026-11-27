@@ -449,16 +449,16 @@ window.NUTEX_VIEWS = (() => {
     const blockN = metrics.blockedProjects.length;
     const liveValue = metrics.approvedProjects.reduce((s, p) => s + annualValue(p.outcome), 0);
     const nextP = metrics.pendingProjects.slice().sort((a, b) => annualValue(b.outcome) - annualValue(a.outcome))[0];
+    // Business impact since AI go-live (replaces the Pilots tile)
+    const IM = window.NUTEX_IMPACT;
+    const im = IM.summary();
+    const imLevel = im.avgBetter >= 10 ? 'green' : im.avgBetter >= 3 ? 'yellow' : 'red';
     const t9 = tile({
-      title: 'Pilots', level: blockN ? 'yellow' : 'green', nav: 'projects',
-      hero: liveN, unit: ' live',
-      context: `${eurK(liveValue)} value per year`,
-      visual: segments([
-        { label: 'Live', n: liveN, color: 'var(--green)' },
-        { label: 'In approval', n: pendN, color: 'var(--yellow)' },
-        { label: 'Blocked', n: blockN, color: 'var(--red)' }
-      ]),
-      foot: nextP ? `Next: <strong>${nextP.name}</strong>` : 'No pilot waiting'
+      title: 'Business impact', level: im.live.length ? imLevel : 'yellow', action: 'open-impact',
+      hero: im.live.length ? `+${im.avgBetter.toFixed(0)}` : '—', unit: im.live.length ? '%' : '',
+      context: `${im.improved} of ${im.live.length} KPIs better since AI go-live`,
+      visual: IM.mini(),
+      foot: im.best ? `Biggest: <strong>${im.best.k.name} ${im.best.s.delta}</strong>` : 'No AI use case live yet'
     });
 
     const fundTodos = [];
@@ -526,6 +526,17 @@ window.NUTEX_VIEWS = (() => {
             <section class="card card-lg ov-detail">
               <div class="panel-head ov-detail-head"><h3>${DETAILS[S.state.detailOpen].title}</h3></div>
               ${DETAILS[S.state.detailOpen].render(metrics)}
+            </section>
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.impactOpen && window.NUTEX_IMPACT ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="Business impact">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            <section class="card card-lg ov-detail">
+              <div class="panel-head ov-detail-head"><h3>Business impact since AI go-live</h3></div>
+              ${window.NUTEX_IMPACT.render()}
             </section>
           </div>
         </div>
