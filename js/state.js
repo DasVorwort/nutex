@@ -4,7 +4,7 @@
 
 window.NUTEX_STATE = (() => {
   const D = window.NUTEX_DATA;
-  const STORAGE_KEY = 'nutex_ai_projects_v1';
+  const STORAGE_KEY = 'nutex_ai_projects_v2';
   const TRAIN_KEY = 'nutex_ai_trainings_v1';
   const BUDGET_KEY = 'nutex_ai_monthly_budget_v2';
   const THEME_KEY = 'nutex_ai_theme_v1';

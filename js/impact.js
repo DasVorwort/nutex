@@ -135,12 +135,13 @@ window.NUTEX_IMPACT = (() => {
     const st = stats(sel, ni);
     const conf = CONF[sel.confidence];
     const eur = (n) => '€' + Math.round(n / 1000) + 'k';
+    const totalYear = S.computeMetrics().costSavedMo * 12;
 
     return `
       <div class="ip ip-clean">
         <div class="ip-head">
           <span class="b2-q">What has AI changed for our customers and operations?${sm.fallback ? ' <span class="ov-scope-pill">Company-wide</span>' : ''}</span>
-          <span class="ip-sum">${sm.improved} of ${sm.live.length} KPIs better · ≈ ${eur(sm.euro)} per year</span>
+          <span class="ip-sum">${sm.improved} of ${sm.live.length} KPIs better · ≈ ${eur(sm.euro)}/yr measurable here — part of ${eur(totalYear)}/yr total AI value</span>
         </div>
         <div class="ip-grid">
           <div class="ip-list">

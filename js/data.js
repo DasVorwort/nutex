@@ -71,7 +71,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'rd', name: 'R&D', vp: 'Sarah Klein', employees: 45, targetUsers: 44, budgetShare: 0.32,
       dataSourcesReady: 1, dataSourcesTotal: 1,
-      trainedEmployees: 40, weeklyUsers: 38, dailyUsers: 26, openRequests: 9,
+      trainedEmployees: 40, weeklyUsers: 38, dailyUsers: 26, openRequests: 0,
       hoursSavedMo: 340, costSavedMo: 14200, errorRatePct: 2.4, cycleDays: 3.0,
       tokensM: 16.4, tokenRate: 55,
       seats: {
@@ -90,7 +90,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'marketing', name: 'Marketing', vp: 'Marcus Weber', employees: 30, targetUsers: 30, budgetShare: 0.10,
       dataSourcesReady: 1, dataSourcesTotal: 1,
-      trainedEmployees: 25, weeklyUsers: 24, dailyUsers: 15, openRequests: 5,
+      trainedEmployees: 25, weeklyUsers: 24, dailyUsers: 15, openRequests: 2,
       hoursSavedMo: 225, costSavedMo: 8900, errorRatePct: 2.9, cycleDays: 2.8,
       tokensM: 6.8, tokenRate: 45,
       seats: {
@@ -108,7 +108,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'sales', name: 'Sales', vp: 'Marcus Weber', employees: 50, targetUsers: 48, budgetShare: 0.19,
       dataSourcesReady: 1, dataSourcesTotal: 2,
-      trainedEmployees: 38, weeklyUsers: 37, dailyUsers: 22, openRequests: 10,
+      trainedEmployees: 38, weeklyUsers: 37, dailyUsers: 22, openRequests: 5,
       hoursSavedMo: 310, costSavedMo: 11800, errorRatePct: 2.8, cycleDays: 3.1,
       tokensM: 8.5, tokenRate: 46,
       seats: {
@@ -127,7 +127,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'production', name: 'Production', vp: 'Dr. Thomas Berg', employees: 90, targetUsers: 60, budgetShare: 0.18,
       dataSourcesReady: 0, dataSourcesTotal: 2,
-      trainedEmployees: 49, weeklyUsers: 42, dailyUsers: 19, openRequests: 6,
+      trainedEmployees: 49, weeklyUsers: 42, dailyUsers: 19, openRequests: 8,
       hoursSavedMo: 245, costSavedMo: 9400, errorRatePct: 3.5, cycleDays: 4.1,
       tokensM: 9.2, tokenRate: 52,
       seats: {
@@ -147,7 +147,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'logistics', name: 'Logistics', vp: 'Julia Hoffmann', employees: 45, targetUsers: 36, budgetShare: 0.10,
       dataSourcesReady: 0, dataSourcesTotal: 2,
-      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 14, openRequests: 5,
+      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 14, openRequests: 4,
       hoursSavedMo: 155, costSavedMo: 5800, errorRatePct: 3.2, cycleDays: 3.7,
       tokensM: 4.1, tokenRate: 48,
       seats: {
@@ -166,7 +166,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'purchasing', name: 'Purchasing', vp: 'Andreas Richter', employees: 40, targetUsers: 37, budgetShare: 0.11,
       dataSourcesReady: 1, dataSourcesTotal: 1,
-      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 15, openRequests: 3,
+      trainedEmployees: 29, weeklyUsers: 26, dailyUsers: 15, openRequests: 5,
       hoursSavedMo: 145, costSavedMo: 7100, errorRatePct: 2.9, cycleDays: 3.4,
       tokensM: 3.6, tokenRate: 46,
       seats: {
@@ -191,7 +191,7 @@ window.NUTEX_DATA = (() => {
       name: 'Optical Fabric Defect Camera',
       deptId: 'production',
       owner: 'Dr. Thomas Berg',
-      outcome: 'Cut weaving scrap by 35% (€185,000/yr)',
+      outcome: 'Roll out to all looms: defects −27% (€185,000/yr)',
       budget: 48000,
       timeline: 'Q1 2027',
       status: 'Pending'
@@ -201,7 +201,7 @@ window.NUTEX_DATA = (() => {
       name: 'Raw Yarn Price Forecast',
       deptId: 'purchasing',
       owner: 'Andreas Richter',
-      outcome: 'Save €120,000/yr on fiber contracts',
+      outcome: 'Scale to all fiber contracts (€120,000/yr)',
       budget: 24000,
       timeline: 'Q1 2027',
       status: 'Pending'
@@ -211,7 +211,7 @@ window.NUTEX_DATA = (() => {
       name: 'Automated Quote & Spec Drafting',
       deptId: 'sales',
       owner: 'Marcus Weber',
-      outcome: 'Quotes 38% faster (€142,000/yr)',
+      outcome: 'Quotes 44% faster (€103,000/yr)',
       budget: 18000,
       timeline: 'Live',
       status: 'Approved'
@@ -221,7 +221,7 @@ window.NUTEX_DATA = (() => {
       name: 'Yarn Formulation Assistant',
       deptId: 'rd',
       owner: 'Sarah Klein',
-      outcome: '30% faster lab tests (€165,000/yr)',
+      outcome: '30% faster lab tests (€118,000/yr)',
       budget: 32000,
       timeline: 'Live',
       status: 'Approved'
@@ -630,7 +630,7 @@ window.NUTEX_DATA = (() => {
     {
       id: 'quotedraft', name: 'QuoteDraft', full: 'Automated Quote & Spec Drafting', deptId: 'sales', owner: 'Marcus Weber',
       status: 'Live', since: 'Mar 2026', costMo: 2500, valueMo: 8600, employees: 50,
-      result: 'Quotes 38% faster · win rate +4 pp', trend: [1.9, 2.4, 2.8, 3.1, 3.3, 3.47],
+      result: 'Quotes 44% faster (27 h → 15 h) · win rate +4 pp', trend: [1.9, 2.4, 2.8, 3.1, 3.3, 3.47],
       next: 'Roll out to Apparel & Retail team (18 reps)'
     },
     {
@@ -641,13 +641,13 @@ window.NUTEX_DATA = (() => {
     },
     {
       id: 'fabricvision', name: 'FabricVision', full: 'Optical Fabric Defect Camera', deptId: 'production', owner: 'Dr. Thomas Berg',
-      status: 'Pilot', since: 'Jul 2026', costMo: 2000, valueMo: 4800, employees: 90,
-      result: 'Scrap −18% on 4 looms in Plant A', trend: [0.4, 0.9, 1.4, 1.8, 2.2, 2.4],
+      status: 'Pilot', since: 'Jul 2026', costMo: 1500, valueMo: 3600, employees: 90,
+      result: 'Defects −27%, returns −25% in Plant A', trend: [0.4, 0.9, 1.4, 1.8, 2.2, 2.4],
       next: 'Approve rollout to all looms (€48k) — needs works council sign-off'
     },
     {
       id: 'weaveopt', name: 'WeaveOpt', full: 'Loom Setting Optimizer', deptId: 'production', owner: 'Dr. Thomas Berg',
-      status: 'Pilot', since: 'Aug 2026', costMo: 1100, valueMo: 2300, employees: 62,
+      status: 'Pilot', since: 'Aug 2026', costMo: 800, valueMo: 1700, employees: 62,
       result: 'Changeover time −22%', trend: [0, 0.6, 1.1, 1.6, 1.9, 2.1],
       next: 'Blocked by ERP link for full rollout'
     },
@@ -665,7 +665,7 @@ window.NUTEX_DATA = (() => {
     },
     {
       id: 'shopfloor', name: 'ShopFloor Copilot', label: 'above-left', full: 'Shopfloor Assistant (work instructions)', deptId: 'production', owner: 'Dr. Thomas Berg',
-      status: 'Pilot', since: 'May 2026', costMo: 1700, valueMo: 1300, employees: 80,
+      status: 'Pilot', since: 'May 2026', costMo: 1300, valueMo: 1000, employees: 80,
       result: 'Only 31% of operators use it weekly', trend: [0.5, 0.6, 0.6, 0.7, 0.7, 0.76],
       next: 'Fix adoption: shopfloor training wave 2 before more spend'
     },
@@ -726,14 +726,14 @@ window.NUTEX_DATA = (() => {
         depts: ['production', 'sales'], goLive: 9, confidence: 'high', target: 2.5,
         series:  [3.2, 3.0, 3.1, 3.1, 3.2, 3.0, 3.1, 3.0, 3.1, 2.9, 2.7, 2.5, 2.4, 2.3],
         control: [3.1, 3.0, 3.2, 3.0, 3.1, 3.0, 3.1, 3.0, 3.0, 3.0, 2.9, 3.0, 2.9, 2.9], controlLabel: 'Plant B (no camera)',
-        driver: 'FabricVision', owner: 'Dr. Thomas Berg · Production', euroYear: 57600, euroNote: 'fewer credit notes & re-shipments'
+        driver: 'FabricVision', owner: 'Dr. Thomas Berg · Production', euroYear: 43200, euroNote: 'fewer credit notes & re-shipments'
       },
       {
         id: 'quality', name: 'Quality issues', unit: '', unitLabel: 'defects per 1,000 m fabric', lowerIsBetter: true,
         depts: ['production'], goLive: 9, confidence: 'high', target: 6.0,
         series:  [8.6, 8.3, 8.5, 8.4, 8.6, 8.2, 8.4, 8.3, 8.5, 7.6, 7.0, 6.6, 6.3, 6.1],
         control: [8.5, 8.4, 8.6, 8.3, 8.5, 8.4, 8.4, 8.2, 8.4, 8.3, 8.2, 8.3, 8.1, 8.2], controlLabel: 'Plant B (no camera)',
-        driver: 'FabricVision + WeaveOpt', owner: 'Dr. Thomas Berg · Production', euroYear: 27600, euroNote: 'less scrap and rework'
+        driver: 'FabricVision + WeaveOpt', owner: 'Dr. Thomas Berg · Production', euroYear: 20400, euroNote: 'less scrap and rework'
       },
       {
         id: 'response', name: 'Customer response time', unit: 'h', unitLabel: 'hours to first quote', lowerIsBetter: true,

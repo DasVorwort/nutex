@@ -19,7 +19,7 @@ window.NUTEX_ROADMAP = (() => {
     { id: 'embed', label: 'Embed', from: '2027-07-01', to: '2027-12-31' }
   ];
 
-  const P3 = '3 Production pilots, €120k a year';
+  const P3 = '3 Production pilots (≈ €76k a year)';
 
   const LANES = [
     {
