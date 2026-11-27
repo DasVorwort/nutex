@@ -715,6 +715,55 @@ window.NUTEX_DATA = (() => {
     ]
   };
 
+  // Business KPIs before / after AI go-live. Series: Oct 2025 … Nov 2026 (index 0–13);
+  // goLive = index of the first month with AI. control = comparable team / site without AI.
+  // € impact per year matches the pilot values (×12) so it stays consistent with "Value per €".
+  const IMPACT = {
+    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+    kpis: [
+      {
+        id: 'returns', name: 'Customer returns rate', unit: '%', unitLabel: '% of shipped orders', lowerIsBetter: true,
+        depts: ['production', 'sales'], goLive: 9, confidence: 'high', target: 2.5,
+        series:  [3.2, 3.0, 3.1, 3.1, 3.2, 3.0, 3.1, 3.0, 3.1, 2.9, 2.7, 2.5, 2.4, 2.3],
+        control: [3.1, 3.0, 3.2, 3.0, 3.1, 3.0, 3.1, 3.0, 3.0, 3.0, 2.9, 3.0, 2.9, 2.9], controlLabel: 'Plant B (no camera)',
+        driver: 'FabricVision', owner: 'Dr. Thomas Berg · Production', euroYear: 57600, euroNote: 'fewer credit notes & re-shipments'
+      },
+      {
+        id: 'quality', name: 'Quality issues', unit: '', unitLabel: 'defects per 1,000 m fabric', lowerIsBetter: true,
+        depts: ['production'], goLive: 9, confidence: 'high', target: 6.0,
+        series:  [8.6, 8.3, 8.5, 8.4, 8.6, 8.2, 8.4, 8.3, 8.5, 7.6, 7.0, 6.6, 6.3, 6.1],
+        control: [8.5, 8.4, 8.6, 8.3, 8.5, 8.4, 8.4, 8.2, 8.4, 8.3, 8.2, 8.3, 8.1, 8.2], controlLabel: 'Plant B (no camera)',
+        driver: 'FabricVision + WeaveOpt', owner: 'Dr. Thomas Berg · Production', euroYear: 27600, euroNote: 'less scrap and rework'
+      },
+      {
+        id: 'response', name: 'Customer response time', unit: 'h', unitLabel: 'hours to first quote', lowerIsBetter: true,
+        depts: ['sales'], goLive: 5, confidence: 'high', target: 12,
+        series:  [27, 25, 28, 26, 26, 24, 21, 19, 18, 17, 16, 16, 15, 15],
+        control: [26, 26, 27, 25, 26, 25, 25, 24, 24, 25, 24, 23, 24, 23], controlLabel: 'Apparel team (no QuoteDraft)',
+        driver: 'QuoteDraft', owner: 'Marcus Weber · Sales', euroYear: 103200, euroNote: 'more quotes per rep, higher win rate'
+      },
+      {
+        id: 'feedback', name: 'Positive customer feedback', unit: '%', unitLabel: '% positive survey answers', lowerIsBetter: false,
+        depts: ['marketing', 'sales'], goLive: 6, confidence: 'low', target: 80,
+        series:  [70, 71, 70, 71, 72, 71, 72, 74, 75, 76, 77, 77, 78, 79],
+        driver: 'ContentStudio + QuoteDraft', owner: 'Marcus Weber · Commercial', euroYear: 0, euroNote: 'retention effect, not priced'
+      },
+      {
+        id: 'otd', name: 'On-time delivery', unit: '%', unitLabel: '% orders delivered on time', lowerIsBetter: false,
+        depts: ['logistics', 'purchasing'], goLive: 9, confidence: 'medium', target: 95,
+        series:  [88, 87, 89, 88, 87, 88, 89, 88, 88, 90, 91, 91, 92, 92],
+        control: [88, 88, 87, 89, 88, 88, 88, 89, 88, 88, 89, 88, 89, 88], controlLabel: 'Warehouse 2 (no RouteAssist)',
+        driver: 'RouteAssist', owner: 'Julia Hoffmann · Logistics', euroYear: 31200, euroNote: 'fewer penalties & express shipments'
+      },
+      {
+        id: 'labcycle', name: 'Lab test cycle time', unit: 'd', unitLabel: 'days per material test', lowerIsBetter: true,
+        depts: ['rd'], goLive: 4, confidence: 'medium', target: 3.5,
+        series:  [5.1, 5.0, 4.9, 5.0, 4.4, 4.1, 3.9, 3.8, 3.7, 3.6, 3.6, 3.5, 3.5, 3.5],
+        driver: 'YarnLab', owner: 'Sarah Klein · R&D', euroYear: 117600, euroNote: 'faster development, fewer lab hours'
+      }
+    ]
+  };
+
   // People the CEO can delegate to-dos to (quick choose + search)
   const PEOPLE = [
     { id: 'sarah',   name: 'Sarah Klein',     role: 'VP R&D' },
@@ -789,7 +838,7 @@ window.NUTEX_DATA = (() => {
   };
 
   return {
-    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE, COMPANY,
+    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE, COMPANY, IMPACT,
     TOOLS, TIMEFRAMES, DEPARTMENTS, INITIAL_PROJECTS, INITIAL_TRAININGS, SYSTEMS, CULTURE_SURVEY, TREND_2026, I18N
   };
 })();

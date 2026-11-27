@@ -199,6 +199,17 @@
         S.state.todoOpen = null;
       }
 
+      if (e.target.closest('[data-action="open-impact"]')) {
+        S.state.impactOpen = true;
+        S.state.detailOpen = null;
+        render(); return;
+      }
+      const impKpi = e.target.closest('[data-action="impact-kpi"]');
+      if (impKpi) {
+        S.state.impactKpi = impKpi.dataset.kpi;
+        render(); return;
+      }
+
       if (e.target.closest('[data-action="open-loss"]')) {
         S.state.lossOpen = true;
         S.state.detailOpen = null;
@@ -232,6 +243,7 @@
         S.state.valueOpen = false;
         S.state.lossOpen = false;
         S.state.detailOpen = null;
+        S.state.impactOpen = false;
         render(); return;
       }
 
@@ -406,7 +418,7 @@
       if (e.key === 'Escape') {
         closeModals();
         if (S.state.todoOpen) { S.state.todoOpen = null; render(); return; }
-        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen || S.state.detailOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; S.state.detailOpen = null; render(); }
+        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen || S.state.detailOpen || S.state.impactOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; S.state.detailOpen = null; S.state.impactOpen = false; render(); }
         if (S.state.showSettings) { S.state.showSettings = false; render(); }
       }
     });
