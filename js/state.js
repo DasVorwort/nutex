@@ -9,6 +9,7 @@ window.NUTEX_STATE = (() => {
   const BUDGET_KEY = 'nutex_ai_monthly_budget_v2';
   const THEME_KEY = 'nutex_ai_theme_v1';
   const LANG_KEY = 'nutex_ai_lang_v1';
+  const DELEGATE_KEY = 'nutex_ai_delegations_v1';
   const DEFAULT_MONTHLY_BUDGET = 32000;
 
   function loadString(key, fallback) {
@@ -75,6 +76,12 @@ window.NUTEX_STATE = (() => {
     showSettings: false,
     roadmapOpen: false,
     roadmapFilter: null,
+    valueOpen: false,
+    lossOpen: false,
+    todoOpen: null,
+    delegations: (() => {
+      try { return JSON.parse(localStorage.getItem(DELEGATE_KEY) || '{}') || {}; } catch (_) { return {}; }
+    })(),
     showProjectModal: false,
     showTrainingModal: false
   };
@@ -91,6 +98,12 @@ window.NUTEX_STATE = (() => {
   function setTheme(mode) {
     state.theme = mode === 'dark' ? 'dark' : 'light';
     try { if (typeof localStorage !== 'undefined') localStorage.setItem(THEME_KEY, state.theme); } catch (_) {}
+  }
+
+  function setDelegation(todoId, personId) {
+    if (personId) state.delegations[todoId] = personId;
+    else delete state.delegations[todoId];
+    try { localStorage.setItem(DELEGATE_KEY, JSON.stringify(state.delegations)); } catch (_) {}
   }
 
   function setLang(lang) {
@@ -562,7 +575,7 @@ window.NUTEX_STATE = (() => {
   }
 
   return {
-    state, r1, r2, t, setTheme, setLang,
+    state, r1, r2, t, setTheme, setLang, setDelegation,
     getRole, getPerms, canViewDept, canViewFinancials, getAccessibleDepts,
     getStatus, addProject, setProjectStatus, getVisibleProjects,
     addTraining, setTrainingStatus, getVisibleTrainings,

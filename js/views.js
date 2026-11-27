@@ -126,17 +126,59 @@ window.NUTEX_VIEWS = (() => {
     `;
   }
 
-  function todoItem({ title, sub, badge, level = 'yellow', nav, action }) {
-    const a = action ? `data-action="${action}"` : `data-nav-tab="${nav}"`;
+  // To-do: click opens a delegate popover (3 quick picks + name search + details link)
+  const slug = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const initials = (n) => n.replace(/^Dr\.\s*/, '').split(' ').map(w => w[0]).slice(0, 2).join('');
+  const person = (id) => D.PEOPLE.find(p => p.id === id);
+
+  function todoItem({ title, sub, badge, level = 'yellow', nav, action, suggest = ['eva', 'lena', 'paul'] }) {
+    const id = slug(title);
+    const open = S.state.todoOpen === id;
+    const who = person(S.state.delegations[id]);
+    const detail = action ? `data-action="${action}"` : `data-nav-tab="${nav}"`;
+    const picks = suggest.map(person).filter(Boolean);
     return `
-      <button type="button" class="ov-todo" ${a}>
-        <span class="ov-todo-bar ov-todo-bar-${level}"></span>
-        <span class="ov-todo-main">
-          <strong>${title}</strong>
-          <span>${sub}</span>
-        </span>
-        ${badge ? `<span class="ov-badge ov-badge-${level}">${badge}</span>` : ''}
-      </button>
+      <div class="ov-todo-wrap ${open ? 'is-open' : ''}">
+        <button type="button" class="ov-todo ${who ? 'is-delegated' : ''}" data-action="todo-open" data-todo="${id}" aria-expanded="${open}">
+          <span class="ov-todo-bar ov-todo-bar-${level}"></span>
+          <span class="ov-todo-main">
+            <strong>${title}</strong>
+            ${who
+              ? `<span class="ov-todo-who"><i>${initials(who.name)}</i>Delegated to ${who.name}</span>`
+              : `<span>${sub}</span>`}
+          </span>
+          ${badge ? `<span class="ov-badge ov-badge-${level}">${badge}</span>` : ''}
+        </button>
+        ${open ? `
+          <div class="ov-pop" role="dialog" aria-label="Delegate ${title}">
+            <div class="ov-pop-head">
+              <span class="ov-pop-lbl">Delegate</span>
+              <strong>${title}</strong>
+            </div>
+            <div class="ov-pop-lbl">Quick choose</div>
+            <div class="ov-pop-quick">
+              ${picks.map(p => `
+                <button type="button" class="ov-person ${who && who.id === p.id ? 'is-picked' : ''}" data-action="todo-delegate" data-todo="${id}" data-person="${p.id}" data-q="${(p.name + ' ' + p.role).toLowerCase()}">
+                  <i>${initials(p.name)}</i><span><strong>${p.name}</strong><small>${p.role}</small></span>
+                </button>
+              `).join('')}
+            </div>
+            <input type="search" class="ov-pop-search" data-todo-search placeholder="Search a name…" aria-label="Search a name" autocomplete="off">
+            <div class="ov-pop-list" data-todo-results>
+              ${D.PEOPLE.filter(p => !suggest.includes(p.id)).map(p => `
+                <button type="button" class="ov-person ov-person-row" data-action="todo-delegate" data-todo="${id}" data-person="${p.id}" data-q="${(p.name + ' ' + p.role).toLowerCase()}">
+                  <i>${initials(p.name)}</i><span><strong>${p.name}</strong><small>${p.role}</small></span>
+                </button>
+              `).join('')}
+              <div class="ov-pop-none" hidden>No match</div>
+            </div>
+            <div class="ov-pop-foot">
+              ${who ? `<button type="button" class="link-btn" data-action="todo-undo" data-todo="${id}">Undo delegation</button>` : '<span></span>'}
+              <button type="button" class="link-btn" ${detail}>Open details →</button>
+            </div>
+          </div>
+        ` : ''}
+      </div>
     `;
   }
 
@@ -224,7 +266,8 @@ window.NUTEX_VIEWS = (() => {
         sub: `${m.lane} · ${m.owner || 'no owner'}`,
         badge: late ? `${rm.daysLate(m.date)}d late` : 'no owner',
         level: late && m.onPath ? 'red' : 'yellow',
-        action: 'open-roadmap'
+        action: 'open-roadmap',
+        suggest: m.lane === 'Technology' ? ['tobias', 'lena', 'eva'] : m.lane === 'Data' ? ['jonas', 'lena', 'thomas'] : m.lane === 'Compliance' ? ['miriam', 'nina', 'eva'] : ['nina', 'eva', 'lena']
       }));
     });
     const reallocN = Math.min(metrics.unusedLicenses, metrics.openRequests);
@@ -233,7 +276,8 @@ window.NUTEX_VIEWS = (() => {
         title: `Reallocate ${reallocN} seats`,
         sub: `${metrics.openRequests} employees waiting for a license`,
         badge: showFin && metrics.unusedCostMo ? `${eur(Math.round(metrics.unusedCostMo * reallocN / Math.max(1, metrics.unusedLicenses)))}/mo` : null,
-        nav: 'licenses'
+        nav: 'licenses',
+        suggest: ['lena', 'paul', 'eva']
       }));
     }
 
@@ -258,29 +302,17 @@ window.NUTEX_VIEWS = (() => {
       foot: lag ? `Lowest: <strong>${lag.dept.name} ${lag.weeklyPct}%</strong>` : ''
     });
 
-    const steps = [
-      { label: 'All', n: metrics.totalEmp },
-      { label: 'Target group', n: metrics.targetUsers },
-      { label: 'Trained', n: metrics.trainedCount },
-      { label: 'Weekly users', n: metrics.weeklyUsers }
-    ];
-    let gapIdx = 2;
-    let gapN = 0;
-    for (let i = 2; i < steps.length; i++) {
-      const drop = steps[i - 1].n - steps[i].n;
-      if (drop > gapN) { gapN = drop; gapIdx = i; }
-    }
+    // Where do we lose employees? — Level 1 time horizon (Level 2 opens the loss timeline)
+    const AD = window.NUTEX_ADOPTION;
+    const ad = AD.summary();
     const t5 = tile({
-      title: 'Where do we lose employees?', level: ppLevel(metrics.trainedPct, D.TARGETS.trainingPct), nav: 'trainings',
-      hero: gapN, unit: ' lost',
-      context: `${steps[gapIdx - 1].label.toLowerCase()} → ${steps[gapIdx].label.toLowerCase()}`,
-      visual: miniBars(steps.map((s, i) => ({
-        label: s.label,
-        value: Math.round((s.n / Math.max(1, metrics.totalEmp)) * 100),
-        color: i === gapIdx ? 'var(--red)' : i === 3 ? 'var(--blue)' : '#93A9F0',
-        display: `${s.n}`
-      }))),
-      foot: `${metrics.untrainedCount} employees not trained yet`
+      title: 'Where do we lose employees?', level: ppLevel(Math.round((ad.weekly / D.ADOPTION_2026.target) * 100), 100), action: 'open-loss',
+      hero: ad.gap, unit: ' short',
+      context: `weekly users vs. target group ${D.ADOPTION_2026.target}`,
+      visual: AD.mini(),
+      foot: ad.biggest
+        ? `Biggest loss: <strong>${ad.biggest.title}</strong> <span class="text-red">−${Math.abs(ad.biggest.weekly)}</span>`
+        : 'No losses this year'
     });
 
     const culture = S.computeCulture();
@@ -304,7 +336,8 @@ window.NUTEX_VIEWS = (() => {
         title: isCEO ? `Approve ${pendT.length} trainings` : `${pendT.length} trainings awaiting CEO`,
         sub: `${pendT.reduce((s, x) => s + x.participants, 0)} employees · closes the training gap`,
         badge: showFin ? eur(pendT.reduce((s, x) => s + (x.budget || 0), 0)) : null,
-        nav: 'trainings'
+        nav: 'trainings',
+        suggest: ['nina', 'thomas', 'julia']
       }));
     }
     if (lag && lag.weeklyPct < D.TARGETS.weeklyPct) {
@@ -312,7 +345,8 @@ window.NUTEX_VIEWS = (() => {
         title: `Adoption plan for ${lag.dept.name}`,
         sub: `with ${lag.dept.vp}`,
         badge: `${lag.weeklyPct}%`, level: ppLevel(lag.weeklyPct, D.TARGETS.weeklyPct),
-        nav: 'departments'
+        nav: 'departments',
+        suggest: ['thomas', 'nina', 'eva']
       }));
     }
     if (weakest && weakest.pct < 75) {
@@ -320,18 +354,24 @@ window.NUTEX_VIEWS = (() => {
         title: 'Close the tool gap',
         sub: `Top wish: ${culture.wishRanking[0]?.name || '—'}`,
         badge: `${weakest.pct}%`, level: ppLevel(weakest.pct, 75),
-        nav: 'culture'
+        nav: 'culture',
+        suggest: ['lena', 'eva', 'nina']
       }));
     }
 
     // ======================= 3 · AI PROJECTS =======================
     let t7;
+    let valueData = null;
     if (showFin) {
       const ratio = metrics.costSavedMo / Math.max(1, metrics.totalSpendMo);
       const rSeries = monthSeries(m => m.costSavedMo / Math.max(1, m.totalSpendMo));
       const rLevel = ratio >= 1.5 ? 'green' : ratio >= 1 ? 'yellow' : 'red';
+      valueData = {
+        ratio, valueMo: metrics.costSavedMo, costMo: metrics.totalSpendMo, series: rSeries,
+        labels: D.TREND_2026.labelsEn.slice(0, rSeries.length).map(l => l.split(' ')[0])
+      };
       t7 = tile({
-        title: 'Value per € spent', level: rLevel, nav: 'budget',
+        title: 'Value per € spent', level: rLevel, action: 'open-value',
         hero: `€${ratio.toFixed(2)}`,
         context: `${eurK(metrics.costSavedMo)} value · ${eurK(metrics.totalSpendMo)} cost`,
         visual: sparkline(rSeries, { color: LV[rLevel], ref: 1 }),
@@ -398,7 +438,8 @@ window.NUTEX_VIEWS = (() => {
         title: isCEO ? `Approve ${pendN} AI projects` : `${pendN} projects awaiting CEO`,
         sub: `${eurK(metrics.pendingProjects.reduce((s, p) => s + annualValue(p.outcome), 0))}/yr potential`,
         badge: showFin ? eur(metrics.pendingProjects.reduce((s, p) => s + (p.budget || 0), 0)) : null,
-        nav: 'projects'
+        nav: 'projects',
+        suggest: ['paul', 'eva', 'thomas']
       }));
     }
     metrics.blockedProjects.slice(0, 1).forEach(p => {
@@ -406,7 +447,8 @@ window.NUTEX_VIEWS = (() => {
         title: `Unblock ${p.name}`,
         sub: p.outcome.replace(/^Blocked:\s*/i, ''),
         badge: 'blocked', level: 'red',
-        action: 'open-roadmap'
+        action: 'open-roadmap',
+        suggest: ['thomas', 'jonas', 'tobias']
       }));
     });
     if (showFin && metrics.budgetUsedPct > 85) {
@@ -414,7 +456,8 @@ window.NUTEX_VIEWS = (() => {
         title: 'Review AI budget',
         sub: 'Approvals need more headroom',
         badge: `${metrics.budgetUsedPct}%`,
-        nav: 'budget'
+        nav: 'budget',
+        suggest: ['paul', 'lena', 'eva']
       }));
     }
 
@@ -444,6 +487,22 @@ window.NUTEX_VIEWS = (() => {
           <div class="ov-modal" role="dialog" aria-label="AI roadmap">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
             ${R.render({ filter: S.state.roadmapFilter || null })}
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.lossOpen && window.NUTEX_ADOPTION ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="Where did we lose our people?">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            ${window.NUTEX_ADOPTION.render()}
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.valueOpen && valueData && window.NUTEX_VALUE ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="Which pilots should we implement?">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            ${window.NUTEX_VALUE.render(valueData)}
           </div>
         </div>
       ` : ''}
