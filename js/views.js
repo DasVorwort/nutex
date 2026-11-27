@@ -456,7 +456,7 @@ window.NUTEX_VIEWS = (() => {
     const t9 = tile({
       title: 'Business impact', level: im.live.length ? imLevel : 'yellow', action: 'open-impact',
       hero: im.live.length ? `+${im.avgBetter.toFixed(0)}` : '—', unit: im.live.length ? '%' : '',
-      context: `${im.improved} of ${im.live.length} KPIs better since AI go-live`,
+      context: `${im.improved} of ${im.live.length} KPIs better · ${eurK(im.euro)}/mo return`,
       visual: IM.mini(),
       foot: im.best ? `Biggest: <strong>${im.best.k.name} ${im.best.s.delta}</strong>` : 'No AI use case live yet'
     });
