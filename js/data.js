@@ -710,9 +710,10 @@ window.NUTEX_DATA = (() => {
     year: 2026,
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
     target: 255,
-    trained:  [30, 60, 104, 118, 130, 140, 150, 158, 172, 186, 210],
-    licensed: [40, 72, 98, 122, 184, 186, 198, 172, 196, 182, 232],
-    weekly:   [24, 45, 74, 92, 121, 112, 134, 141, 168, 158, 193],
+    // Each month-to-month step is either exactly one change event below or organic growth.
+    trained:  [30, 60, 104, 116, 136, 138, 156, 166, 182, 186, 210],
+    licensed: [40, 70, 96, 120, 182, 182, 196, 168, 210, 194, 232],
+    weekly:   [30, 52, 81, 104, 133, 119, 151, 142, 180, 158, 193],
     events: [
       {
         id: 'ev-training1', m: 1.9, date: '2 Mar 2026', title: 'AI basics training · wave 1',
@@ -722,7 +723,7 @@ window.NUTEX_DATA = (() => {
       },
       {
         id: 'ev-licenses', m: 3.85, date: '28 Apr 2026', title: 'License expansion (+60 seats)',
-        weekly: 29, licensed: 62, trained: 12, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
+        weekly: 29, licensed: 62, trained: 20, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
         why: 'Seats went to whole departments at once; only half started using them weekly.',
         fix: 'Tie new seats to a training slot.'
       },
@@ -739,6 +740,12 @@ window.NUTEX_DATA = (() => {
         fix: 'Offer a one-click re-request instead of a ticket.'
       },
       {
+        id: 'ev-copilot', m: 7.85, date: '26 Aug 2026', title: 'M365 Copilot rollout (ops teams)',
+        weekly: 38, licensed: 42, trained: 16, recovered: 0, depts: ['production', 'logistics', 'purchasing'],
+        why: 'Copilot inside Outlook and Teams meant no new tool to learn; usage started on day one.',
+        fix: 'Add short role-based prompts for shift leads.'
+      },
+      {
         id: 'ev-supplyai', m: 8.9, date: '28 Sep 2026', title: 'SupplyAI chat module removed',
         weekly: -22, licensed: -16, trained: 0, recovered: 12, depts: ['logistics', 'purchasing'],
         why: 'The vendor dropped the chat module; warehouse teams lost their main AI entry point without a replacement.',
@@ -746,7 +753,7 @@ window.NUTEX_DATA = (() => {
       },
       {
         id: 'ev-bootcamp', m: 9.6, date: '20 Oct 2026', title: 'Prompting bootcamp & AI champions',
-        weekly: 35, licensed: 50, trained: 24, recovered: 0, depts: ['sales', 'rd'],
+        weekly: 35, licensed: 38, trained: 24, recovered: 0, depts: ['sales', 'rd'],
         why: 'Champions in every team answered questions on the spot; usage grew fastest where they were active.',
         fix: 'Name champions in Production and Logistics.'
       }

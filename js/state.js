@@ -255,6 +255,75 @@ window.NUTEX_STATE = (() => {
     return visible;
   }
 
+  // ---------- Adoption history per department (Jan–Nov) ----------
+  // Built from the company series: each department gets only the change events it was part of
+  // (split by headcount, largest remainder so shares add up exactly) plus its share of organic
+  // growth. Nov values equal each department's live figures; the company curve is the sum.
+  function allocInt(total, weights) {
+    const sum = weights.reduce((a, b) => a + b, 0) || 1;
+    const raw = weights.map(w => (total * w) / sum);
+    const base = raw.map(v => (total >= 0 ? Math.floor(v) : Math.ceil(v)));
+    let rest = total - base.reduce((a, b) => a + b, 0);
+    const order = raw.map((v, i) => [Math.abs(v - base[i]), i]).sort((a, b) => b[0] - a[0]);
+    for (let k = 0; rest !== 0 && k < order.length; k++) {
+      base[order[k][1]] += Math.sign(rest);
+      rest -= Math.sign(rest);
+    }
+    return base;
+  }
+
+  let ADOPT = null;
+  function adoption() {
+    if (ADOPT) return ADOPT;
+    const C = D.ADOPTION_2026;
+    const n = C.labels.length;
+    const depts = D.DEPARTMENTS;
+    const idx = Object.fromEntries(depts.map((d, i) => [d.id, i]));
+    const novW = depts.map(d => d.weeklyUsers);
+    const novT = depts.map(d => d.trainedEmployees);
+    const novL = allocInt(C.licensed[n - 1], depts.map((d, i) => novW[i] + novT[i]));
+    const nov = { weekly: novW, trained: novT, licensed: novL };
+
+    // per event: integer share per department for each field
+    const events = C.events.map(e => {
+      const w = e.depts.map(id => depts[idx[id]].employees);
+      const share = {};
+      ['weekly', 'trained', 'licensed', 'recovered'].forEach(f => {
+        const parts = allocInt(e[f] || 0, w);
+        share[f] = Object.fromEntries(e.depts.map((id, k) => [id, parts[k]]));
+      });
+      return { ...e, at: Math.ceil(e.m), share };
+    });
+
+    const perDept = Object.fromEntries(depts.map(d => [d.id, { target: d.targetUsers, employees: d.employees }]));
+    ['weekly', 'trained', 'licensed'].forEach(f => {
+      const comp = C[f];
+      const evAt = Array(n).fill(0);
+      events.forEach(e => { evAt[e.at] += e[f] || 0; });
+      const cumOrg = [0];
+      for (let i = 1; i < n; i++) cumOrg[i] = cumOrg[i - 1] + (comp[i] - comp[i - 1] - evAt[i]);
+      const orgTotal = cumOrg[n - 1] || 1;
+      const start = allocInt(comp[0], nov[f]);
+      depts.forEach((d, di) => {
+        const evCum = Array(n).fill(0);
+        events.forEach(e => { if (e.share[f][d.id] !== undefined) for (let i = e.at; i < n; i++) evCum[i] += e.share[f][d.id]; });
+        const o = (nov[f][di] - start[di] - evCum[n - 1]) / orgTotal;
+        perDept[d.id][f] = cumOrg.map((c, i) => {
+          const v = i === n - 1 ? nov[f][di] : start[di] + Math.round(o * c) + evCum[i];
+          return Math.max(0, Math.min(d.employees, v));
+        });
+      });
+    });
+    ADOPT = { labels: C.labels, perDept, events };
+    return ADOPT;
+  }
+
+  function tfIndex(tf) {
+    const key = Object.keys(D.TIMEFRAMES).find(k => D.TIMEFRAMES[k] === tf);
+    const i = D.TREND_2026.keys.indexOf(key);
+    return i < 0 ? D.TREND_2026.keys.length - 1 : i;
+  }
+
   function computeDept(dept, tf) {
     let purchased = 0, assigned = 0, activeSeats = 0, monthlyCost = 0;
     const seatScale = 0.42 + 0.58 * tf.factor;
@@ -267,11 +336,15 @@ window.NUTEX_STATE = (() => {
       monthlyCost += p * tDef.costPerSeat;
     });
 
-    const weeklyUsers = Math.round(dept.weeklyUsers * tf.factor);
-    const dailyUsers = Math.round(dept.dailyUsers * tf.factor);
+    // Weekly users & trained come from the adoption history (same numbers as the loss timeline)
+    const hist = adoption().perDept[dept.id];
+    const mi = tfIndex(tf);
+    const weeklyUsers = hist ? hist.weekly[mi] : Math.round(dept.weeklyUsers * tf.factor);
+    const prevWeekly = hist ? hist.weekly[Math.max(0, mi - 1)] : Math.round(dept.weeklyUsers * tf.prevFactor);
+    const dailyUsers = Math.min(weeklyUsers, Math.round(dept.dailyUsers * tf.factor));
     const weeklyPct = Math.round((weeklyUsers / dept.employees) * 100);
     const dailyPct = Math.round((dailyUsers / dept.employees) * 100);
-    const trainedCount = Math.min(dept.employees, Math.round(dept.trainedEmployees * (0.35 + 0.65 * tf.factor)));
+    const trainedCount = hist ? hist.trained[mi] : Math.min(dept.employees, Math.round(dept.trainedEmployees * (0.35 + 0.65 * tf.factor)));
     const trainedPct = Math.round((trainedCount / dept.employees) * 100);
     const unusedLicenses = Math.max(0, purchased - activeSeats);
     const licenseActivePct = purchased > 0 ? Math.round((activeSeats / purchased) * 100) : 0;
@@ -289,7 +362,7 @@ window.NUTEX_STATE = (() => {
       dataSourcesReady: dept.dataSourcesReady,
       dataSourcesTotal: dept.dataSourcesTotal,
       weeklyUsers, weeklyPct,
-      weeklyPrevPct: Math.round(weeklyPct * (tf.prevFactor / tf.factor)),
+      weeklyPrevPct: Math.round((prevWeekly / dept.employees) * 100),
       dailyUsers, dailyPct,
       trainedCount, trainedPct,
       untrainedCount: dept.employees - trainedCount,
@@ -579,7 +652,7 @@ window.NUTEX_STATE = (() => {
 
   return {
     state, r1, r2, t, setTheme, setLang, setDelegation,
-    getRole, getPerms, canViewDept, canViewFinancials, getAccessibleDepts, getFilteredDepts,
+    getRole, getPerms, canViewDept, canViewFinancials, getAccessibleDepts, getFilteredDepts, adoption,
     getStatus, addProject, setProjectStatus, getVisibleProjects,
     addTraining, setTrainingStatus, getVisibleTrainings,
     reallocateSeats, cancelUnusedSeats, resetLicenseActions,

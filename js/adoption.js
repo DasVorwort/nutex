@@ -9,40 +9,40 @@ window.NUTEX_ADOPTION = (() => {
   const D = window.NUTEX_DATA;
   let TOTAL = 300;
 
-  // Company series, or scaled to the filtered department (Nov values = live department metrics).
-  // Events are kept only if they touched the department, impact split by headcount.
-  function data() {
-    const S = window.NUTEX_STATE;
-    const C = D.ADOPTION_2026;
-    const sel = S.state.filters.dept;
-    const dept = sel !== 'all' && S.canViewDept(sel) ? D.DEPARTMENTS.find(d => d.id === sel) : null;
-    if (!dept) { TOTAL = 300; return C; }
-    const n = C.labels.length - 1;
-    const nov = S.computeDept(dept, D.TIMEFRAMES.nov_2026);
-    const kw = nov.weeklyUsers / C.weekly[n];
-    const kt = nov.trainedCount / C.trained[n];
-    const kl = (kw + kt) / 2;
-    const sc = (arr, k) => arr.map(v => Math.min(dept.employees, Math.round(v * k)));
-    const empOf = (id) => (D.DEPARTMENTS.find(d => d.id === id) || {}).employees || 0;
-    const events = C.events.filter(e => e.depts.includes(sel)).map(e => {
-      const share = dept.employees / Math.max(1, e.depts.reduce((sum, id) => sum + empOf(id), 0));
-      const r = (v) => Math.round(v * share);
-      const weekly = r(e.weekly) || Math.sign(e.weekly);
-      return { ...e, weekly, licensed: r(e.licensed), trained: r(e.trained), recovered: Math.min(Math.abs(weekly), r(e.recovered)), depts: [sel] };
-    });
-    TOTAL = dept.employees;
-    return { ...C, target: dept.targetUsers, trained: sc(C.trained, kt), licensed: sc(C.licensed, kl), weekly: sc(C.weekly, kw), events };
-  }
-
   const SERIES = [
-    { key: 'trained',  label: 'Trained',        color: '#14B8A6', fill: 'rgba(20,184,166,0.05)' },
-    { key: 'licensed', label: 'With license',   color: '#3B82F6', fill: 'rgba(59,130,246,0.05)' },
-    { key: 'weekly',   label: 'Weekly users',   color: '#F97316', fill: 'rgba(249,115,22,0.22)' }
+    { key: 'trained',  label: 'Trained',      color: '#14B8A6', fill: 'rgba(20,184,166,0.05)' },
+    { key: 'licensed', label: 'With license', color: '#3B82F6', fill: 'rgba(59,130,246,0.05)' },
+    { key: 'weekly',   label: 'Weekly users', color: '#F97316', fill: 'rgba(249,115,22,0.22)' }
   ];
 
   const pct = (n) => Math.round((n / TOTAL) * 100);
   const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
   const deptName = (id) => (D.DEPARTMENTS.find(d => d.id === id) || {}).name || id;
+
+  // Company = sum of all departments; a department filter shows only its own history and the
+  // change events it was part of (its share). Each marker equals the step in the weekly line.
+  function data() {
+    const S = window.NUTEX_STATE;
+    const H = S.adoption();
+    const C = D.ADOPTION_2026;
+    const sel = S.state.filters.dept;
+    const ids = sel !== 'all' && S.canViewDept(sel) ? [sel] : D.DEPARTMENTS.map(d => d.id);
+    const sum = (f) => H.labels.map((_, i) => ids.reduce((acc, id) => acc + H.perDept[id][f][i], 0));
+    TOTAL = ids.reduce((acc, id) => acc + H.perDept[id].employees, 0);
+    const events = H.events
+      .filter(e => ids.some(id => e.share.weekly[id] !== undefined))
+      .map(e => {
+        const pick = (f) => ids.reduce((acc, id) => acc + (e.share[f][id] || 0), 0);
+        return { ...e, weekly: pick('weekly'), trained: pick('trained'), licensed: pick('licensed'), recovered: pick('recovered'), depts: e.depts.filter(id => ids.includes(id)) };
+      })
+      .filter(e => e.weekly !== 0);
+    return {
+      ...C,
+      target: ids.reduce((acc, id) => acc + H.perDept[id].target, 0),
+      weekly: sum('weekly'), trained: sum('trained'), licensed: sum('licensed'),
+      events
+    };
+  }
 
   // Month index (0 = Jan) of the selected timeframe
   function upTo() {
