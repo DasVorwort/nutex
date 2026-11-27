@@ -80,6 +80,7 @@ window.NUTEX_STATE = (() => {
     lossOpen: false,
     detailOpen: null,
     budgetEdit: false,
+    barrierDept: null,
     todoOpen: null,
     delegations: (() => {
       try { return JSON.parse(localStorage.getItem(DELEGATE_KEY) || '{}') || {}; } catch (_) { return {}; }
