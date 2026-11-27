@@ -2156,8 +2156,8 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 .ov-modal .roadmap-head { padding-right: 40px; }
 .ov-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 14px;
   z-index: 2;
   width: 30px;
   height: 30px;

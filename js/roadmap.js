@@ -70,8 +70,8 @@ window.NUTEX_ROADMAP = (() => {
 
   // ---------- Geometry ----------
   const W = 1160;
-  const X0 = 150;
-  const X1 = 1126;
+  const X0 = 112;
+  const X1 = 1152;
   const TOP = 34;
   const LANE_GAP = 50;
   const AXIS_Y = TOP + (LANES.length - 1) * LANE_GAP + 22 + 42;
@@ -185,7 +185,7 @@ window.NUTEX_ROADMAP = (() => {
     const PH = {
       pilot: { fill: 'var(--green-bg)', text: 'var(--green-txt)', band: 'rgba(16,185,129,0.045)', sub: 'done' },
       scale: { fill: '#2563EB', text: '#FFFFFF', band: 'rgba(37,99,235,0.06)', sub: 'we are here' },
-      embed: { fill: 'var(--track)', text: 'var(--text-3)', band: 'transparent', sub: 'next' }
+      embed: { fill: 'var(--track)', text: 'var(--text-3)', band: 'rgba(148,163,184,0.07)', sub: 'next' }
     };
 
     // Phase chevrons (arrow-shaped) + tinted bands behind the lanes
@@ -225,19 +225,19 @@ window.NUTEX_ROADMAP = (() => {
           <text x="2" y="${l.y}" dominant-baseline="central" font-size="12.5">
             <tspan font-weight="700" fill="var(--text)">${l.label}</tspan>
           </text>
-          <line x1="${X0 - 6}" y1="${l.y}" x2="${X1 + 14}" y2="${l.y}" stroke="var(--border-hover)" stroke-width="1.6" stroke-linecap="round" marker-end="url(#rm-arrow)"/>
+          <line x1="${X0 - 6}" y1="${l.y}" x2="${X1 - 5}" y2="${l.y}" stroke="var(--border-hover)" stroke-width="1.6" stroke-linecap="round" marker-end="url(#rm-arrow)"/>
           ${l.placed.map(nodeMark).join('')}
         </g>
       `;
     }).join('');
 
-    const todayLabel = `Today · ${fmt(TODAY)}`;
-    const pillW = todayLabel.length * 6.1 + 18;
+    const pillW = 44;
     const today = inRange ? `
       <g class="rm-today">
-        <line x1="${tx}" y1="30" x2="${tx}" y2="${AXIS_Y}" stroke="var(--text)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.55"/>
-        <rect x="${tx - pillW / 2}" y="${AXIS_Y - 10}" width="${pillW}" height="20" rx="10" fill="var(--text)"/>
-        <text x="${tx}" y="${AXIS_Y}" dominant-baseline="central" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--surface)">${todayLabel}</text>
+        <title>Today · ${fmt(TODAY)}</title>
+        <line x1="${tx}" y1="30" x2="${tx}" y2="${AXIS_Y - 8}" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+        <rect x="${tx - pillW / 2}" y="${AXIS_Y - 8}" width="${pillW}" height="16" rx="8" fill="var(--surface)" stroke="var(--border-hover)"/>
+        <text x="${tx}" y="${AXIS_Y}" dominant-baseline="central" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--text-3)">Today</text>
       </g>
     ` : '';
 
@@ -252,7 +252,7 @@ window.NUTEX_ROADMAP = (() => {
           </marker>
         </defs>
         ${phases}
-        <line x1="${X0 - 6}" y1="${AXIS_Y}" x2="${X1 + 22}" y2="${AXIS_Y}" stroke="var(--text-3)" stroke-width="1.3" marker-end="url(#rm-axis-arrow)"/>
+        <line x1="${X0 - 6}" y1="${AXIS_Y}" x2="${X1 - 5}" y2="${AXIS_Y}" stroke="var(--text-3)" stroke-width="1.3" marker-end="url(#rm-axis-arrow)"/>
         ${ticks.join('')}
         ${lanes}
         ${today}
