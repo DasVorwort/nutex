@@ -39,100 +39,108 @@ window.NUTEX_VIEWS = (() => {
     const n = Number(m[1].replace(/[.,]/g, ''));
     return m[2] ? n * 1000 : n;
   };
-  const eurK = (n) => Math.abs(n) >= 10000 ? `€${Math.round(n / 1000)}k` : eur(n);
+  const eurK = (n) => Math.abs(n) >= 10000 ? `€${(n / 1000).toFixed(Math.abs(n) >= 100000 ? 0 : 1).replace(/\.0$/, '')}k` : eur(n);
   const LV = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)', blue: 'var(--blue)', gray: 'var(--border-hover)' };
-  // Screenshot rule: target met = green · within 15 pp = yellow · more than 15 pp below = red
+  const STATUS_TXT = { green: 'On track', yellow: 'Watch', red: 'Action' };
+  // target met = green · within 15 pp = yellow · more than 15 pp below = red
   const ppLevel = (v, target) => v >= target ? 'green' : v >= target - 15 ? 'yellow' : 'red';
 
-  function sparkline(values, { color = 'var(--blue)', ref = null, w = 240, h = 38 } = {}) {
+  function sparkline(values, { color = 'var(--blue)', ref = null, w = 300, h = 56 } = {}) {
     if (!values || values.length < 2) return '';
     const all = ref !== null ? values.concat([ref]) : values;
     const lo = Math.min(...all);
     const hi = Math.max(...all);
     const pad = (hi - lo) * 0.12 || 1;
-    const y = (v) => h - 3 - ((v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (h - 6);
-    const x = (i) => (i / (values.length - 1)) * (w - 6) + 3;
+    const y = (v) => h - 4 - ((v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (h - 8);
+    const x = (i) => (i / (values.length - 1)) * (w - 8) + 4;
     const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
     const last = values.length - 1;
     return `
       <svg class="ov-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
-        ${ref !== null ? `<line x1="0" x2="${w}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--text-3)" stroke-dasharray="3 3" stroke-width="1" opacity="0.6"/>` : ''}
-        <polygon points="3,${h} ${pts} ${x(last).toFixed(1)},${h}" fill="${color}" opacity="0.08"/>
-        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${x(last).toFixed(1)}" cy="${y(values[last]).toFixed(1)}" r="3" fill="${color}"/>
+        ${ref !== null ? `<line x1="0" x2="${w}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--text-3)" stroke-dasharray="3 4" stroke-width="1" opacity="0.5" vector-effect="non-scaling-stroke"/>` : ''}
+        <polygon points="4,${h} ${pts} ${x(last).toFixed(1)},${h}" fill="${color}" opacity="0.10"/>
+        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
       </svg>
     `;
   }
 
-  function ring(pct, level, size = 86, label = '') {
-    const r = size / 2 - 7;
+  function donut(pct, level, size = 40) {
+    const r = size / 2 - 4;
     const c = 2 * Math.PI * r;
     const dash = (Math.max(0, Math.min(100, pct)) / 100) * c;
     return `
-      <svg class="ov-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
-        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="8"/>
-        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${LV[level]}" stroke-width="8" stroke-linecap="round"
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="5"/>
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${LV[level]}" stroke-width="5" stroke-linecap="round"
           stroke-dasharray="${dash.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
-        <text x="50%" y="${label ? '47%' : '50%'}" text-anchor="middle" dominant-baseline="central" font-size="${size > 70 ? 19 : 13}" font-weight="750" fill="var(--text)">${pct}%</text>
-        ${label ? `<text x="50%" y="68%" text-anchor="middle" font-size="9.5" fill="var(--text-3)">${label}</text>` : ''}
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="700" fill="var(--text)">${pct}</text>
       </svg>
     `;
   }
 
-  function barRows(items, { target = null, unit = '%' } = {}) {
+  function miniBars(items, { target = null } = {}) {
     return `
-      <div class="ov-bars">
+      <div class="ov-mini">
         ${items.map(it => `
-          <div class="ov-bar-row">
-            <span class="ov-bar-lbl" title="${it.label}">${it.label}</span>
-            <div class="ov-bar-track">
-              <div class="ov-bar-fill" style="width:${Math.max(2, Math.min(100, it.value))}%;background:${LV[it.level] || LV.blue};"></div>
-              ${target !== null ? `<div class="ov-bar-target" style="left:${target}%"></div>` : ''}
+          <div class="ov-mini-row">
+            <span class="ov-mini-lbl">${it.label}</span>
+            <div class="ov-mini-track">
+              <div class="ov-mini-fill" style="width:${Math.max(2, Math.min(100, it.value))}%;background:${it.color || LV[it.level] || LV.blue};"></div>
+              ${target !== null ? `<i class="ov-mini-target" style="left:${target}%"></i>` : ''}
             </div>
-            <strong class="ov-bar-val">${it.display ?? `${it.value}${unit}`}</strong>
+            <span class="ov-mini-val">${it.display ?? `${it.value}%`}</span>
           </div>
         `).join('')}
       </div>
     `;
   }
 
-  function card({ tag, title, sub, body, nav, action, cls = '' }) {
-    const attr = action ? `data-action="${action}"` : nav ? `data-nav-tab="${nav}"` : '';
+  function segments(parts) {
+    const total = Math.max(1, parts.reduce((s, p) => s + p.n, 0));
     return `
-      <div class="ov-card ${cls}" ${attr} ${attr ? 'role="button" tabindex="0"' : ''}>
-        <div class="ov-card-head">
-          <span class="ov-tag ov-tag-${tag.toLowerCase()}">${tag}</span>
-          <span class="ov-card-title">${title}</span>
-          ${sub ? `<span class="ov-card-sub">${sub}</span>` : ''}
+      <div class="ov-seg">
+        ${parts.filter(p => p.n > 0).map(p => `<div style="flex:${p.n};background:${p.color};" title="${p.label}: ${p.n}"></div>`).join('')}
+      </div>
+      <div class="ov-seg-legend">
+        ${parts.filter(p => p.legend !== false).map(p => `<span><i style="background:${p.color}"></i>${p.label} <strong>${p.display ?? p.n}</strong></span>`).join('')}
+      </div>
+    `.replace('TOTAL', total);
+  }
+
+  function tile({ title, level, hero, unit, context, visual, foot, nav, action, extra = '', cls = '' }) {
+    const attr = action ? `data-action="${action}"` : `data-nav-tab="${nav}"`;
+    return `
+      <div class="ov-tile ${cls}" ${attr} role="button" tabindex="0">
+        <div class="ov-tile-head">
+          <span class="ov-tile-title">${title}</span>
+          <span class="ov-status ov-status-${level}">${STATUS_TXT[level]}</span>
         </div>
-        ${body}
+        <div class="ov-tile-hero">
+          <span class="ov-num">${hero}${unit ? `<small>${unit}</small>` : ''}</span>
+          <span class="ov-ctx">${context}</span>
+          ${extra}
+        </div>
+        <div class="ov-tile-vis">${visual}</div>
+        <div class="ov-tile-foot">${foot}</div>
       </div>
     `;
   }
 
-  function todoItem({ title, sub, badge, badgeLevel = 'yellow', nav, action, attr }) {
-    const a = attr || (action ? `data-action="${action}"` : `data-nav-tab="${nav}"`);
+  function todoItem({ title, sub, badge, level = 'yellow', nav, action }) {
+    const a = action ? `data-action="${action}"` : `data-nav-tab="${nav}"`;
     return `
       <button type="button" class="ov-todo" ${a}>
-        <div class="ov-todo-main">
+        <span class="ov-todo-bar ov-todo-bar-${level}"></span>
+        <span class="ov-todo-main">
           <strong>${title}</strong>
           <span>${sub}</span>
-        </div>
-        ${badge ? `<span class="ov-badge ov-badge-${badgeLevel}">${badge}</span>` : ''}
+        </span>
+        ${badge ? `<span class="ov-badge ov-badge-${level}">${badge}</span>` : ''}
       </button>
     `;
   }
 
-  function todoBlock(label, items) {
-    return `
-      <div class="ov-todo-block">
-        <span class="ov-todo-lbl">${label}</span>
-        ${items.length ? items.join('') : `<div class="ov-todo-empty">✓ Nothing open</div>`}
-      </div>
-    `;
-  }
-
-  function overviewRow({ tag, title, question, cards, todo }) {
+  function overviewRow({ tag, title, question, tiles, todos }) {
     return `
       <section class="ov-row">
         <div class="ov-row-main">
@@ -141,9 +149,13 @@ window.NUTEX_VIEWS = (() => {
             <h2 class="ov-row-title">${title}</h2>
             <span class="ov-row-q">${question}</span>
           </div>
-          <div class="ov-card-grid">${cards.join('')}</div>
+          <div class="ov-tile-grid">${tiles.join('')}</div>
         </div>
-        <div class="ov-row-side">${todo}</div>
+        <div class="ov-row-side">
+          <div class="ov-todo-block">
+            ${todos.length ? todos.slice(0, 3).join('') : `<div class="ov-todo-empty">✓ Nothing open</div>`}
+          </div>
+        </div>
       </section>
     `;
   }
@@ -158,169 +170,129 @@ window.NUTEX_VIEWS = (() => {
     return out;
   }
 
+  const SHORT_TOOL = { m365: 'Copilot', textilegpt: 'TextileGPT', chatgpt: 'ChatGPT', supplyai: 'CAD-AI' };
+
   function renderOverview(metrics) {
     const role = S.getRole();
     const isCEO = role.isCEO;
     const showFin = S.canViewFinancials();
     const R = window.NUTEX_ROADMAP;
-    const rm = R ? R.summary() : null;
+    const rm = R.summary();
     const tfIdx = Math.max(0, D.TREND_2026.keys.indexOf(S.state.filters.timeframe));
 
-    // ======================= ROW 1 · AI READINESS (FIX) =======================
-    const lightLevel = rm ? rm.level : 'green';
-    const critOverdue = rm ? rm.overdue.filter(m => m.onPath) : [];
-    const lightHead = lightLevel === 'red'
-      ? `${critOverdue.length} critical ${critOverdue.length === 1 ? 'item' : 'items'} overdue`
-      : lightLevel === 'yellow' ? 'Delays outside critical path' : 'All milestones on track';
-
-    const roadmapLight = card({
-      tag: 'FIX', title: 'Roadmap status', action: 'toggle-roadmap',
-      cls: `ov-light-card ov-light-${lightLevel} ${S.state.roadmapOpen ? 'is-open' : ''}`,
-      body: `
-        <div class="ov-light-wrap">
-          <div class="ov-light" aria-label="Traffic light ${lightLevel}">
-            <span class="ov-lamp ov-lamp-red ${lightLevel === 'red' ? 'on' : ''}"></span>
-            <span class="ov-lamp ov-lamp-yellow ${lightLevel === 'yellow' ? 'on' : ''}"></span>
-            <span class="ov-lamp ov-lamp-green ${lightLevel === 'green' ? 'on' : ''}"></span>
-          </div>
-          <div class="ov-light-main">
-            <strong class="text-${lightLevel}">${lightHead}</strong>
-            <div class="ov-lane-list">
-              ${(rm ? rm.lanes : []).map(l => `
-                <div class="ov-lane-row">
-                  ${dot(l.level)}
-                  <span>${l.label}</span>
-                  <span class="muted-sm">${l.overdue.length ? `<span class="text-red">${l.overdue.length} late</span>` : `${l.done}/${l.total}`}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-        <div class="ov-card-foot"><span class="link-btn">${S.state.roadmapOpen ? 'Hide roadmap ▴' : 'Open roadmap ▾'}</span></div>
-      `
-    });
-
-    const scoreLevel = rm ? (rm.score >= 90 ? 'green' : rm.score >= 75 ? 'yellow' : 'red') : 'green';
-    const roadmapScore = card({
-      tag: 'FIX', title: 'Roadmap score', sub: 'on schedule', action: 'toggle-roadmap',
-      body: rm ? `
-        <div class="ov-score-wrap">
-          ${ring(rm.score, scoreLevel, 88)}
-          <div class="ov-score-main">
-            <div class="ov-big">${rm.done}<small> / ${rm.dueByToday}</small></div>
-            <span class="muted-sm">due milestones done</span>
-            <div class="ov-score-meta">
-              <span><strong>${rm.done}</strong> of ${rm.planned} planned</span>
-              <span>Phase <strong>${rm.phase}</strong></span>
-            </div>
-          </div>
-        </div>
-        <div class="ov-lane-bars">
+    // ======================= FIX · AI READINESS =======================
+    const critLate = rm.overdue.filter(m => m.onPath);
+    const lamp = (l) => `<span class="ov-lamp ov-lamp-${l} ${rm.level === l ? 'on' : ''}"></span>`;
+    const t1 = tile({
+      title: 'Roadmap status', level: rm.level, action: 'toggle-roadmap',
+      cls: S.state.roadmapOpen ? 'is-open' : '',
+      hero: rm.overdue.length, unit: ' late',
+      context: `${critLate.length} on critical path`,
+      extra: `<span class="ov-lights">${lamp('red')}${lamp('yellow')}${lamp('green')}</span>`,
+      visual: `
+        <div class="ov-lanes">
           ${rm.lanes.map(l => `
-            <div class="ov-lane-bar" title="${l.label}: ${l.done} of ${l.total}">
+            <div class="ov-lane">
+              <i style="background:${LV[l.level]}"></i>
               <span>${l.label}</span>
-              <div class="ov-bar-track"><div class="ov-bar-fill" style="width:${Math.round((l.done / Math.max(1, l.total)) * 100)}%;background:${LV[l.level]};"></div></div>
+              <strong class="${l.overdue.length ? 'text-red' : ''}">${l.overdue.length ? `${l.overdue.length} late` : `${l.done}/${l.total}`}</strong>
             </div>
           `).join('')}
         </div>
-      ` : ''
+      `,
+      foot: `<span class="link-btn">${S.state.roadmapOpen ? 'Hide roadmap ▴' : 'Open roadmap ▾'}</span>`
     });
 
-    const toolItems = metrics.toolUsage.slice().sort((a, b) => b.activePct - a.activePct).map(tl => ({
-      label: tl.name, value: tl.activePct, level: ppLevel(tl.activePct, D.TARGETS.licenseActivePct)
-    }));
-    const toolCard = card({
-      tag: 'FIX', title: 'Tool usage', sub: `active seats · target ${D.TARGETS.licenseActivePct}%`, nav: 'licenses',
-      body: `
-        ${barRows(toolItems, { target: D.TARGETS.licenseActivePct })}
-        <div class="ov-card-note">
-          <strong>${metrics.unusedLicenses}</strong> of ${metrics.purchased} seats unused${showFin && metrics.unusedCostMo ? ` · <span class="text-red">${eur(metrics.unusedCostMo)}/mo</span>` : ''}
-        </div>
-      `
+    const scoreLevel = rm.score >= 90 ? 'green' : rm.score >= 75 ? 'yellow' : 'red';
+    const upcoming = rm.planned - rm.done - rm.overdue.length;
+    const t2 = tile({
+      title: 'Roadmap score', level: scoreLevel, action: 'toggle-roadmap',
+      hero: rm.score, unit: '%',
+      context: `${rm.done} of ${rm.dueByToday} due milestones done`,
+      visual: segments([
+        { label: 'Done', n: rm.done, color: 'var(--green)' },
+        { label: 'Late', n: rm.overdue.length, color: 'var(--red)' },
+        { label: 'Upcoming', n: upcoming, color: 'var(--border-hover)' }
+      ]),
+      foot: `Phase <strong>${rm.phase}</strong> · ${rm.planned} milestones planned`
+    });
+
+    const toolLevel = ppLevel(metrics.licenseActivePct, D.TARGETS.licenseActivePct);
+    const t3 = tile({
+      title: 'Tool usage', level: toolLevel, nav: 'licenses',
+      hero: metrics.licenseActivePct, unit: '%',
+      context: `of paid seats active · target ${D.TARGETS.licenseActivePct}%`,
+      visual: miniBars(metrics.toolUsage.slice().sort((a, b) => b.activePct - a.activePct).map(tl => ({
+        label: SHORT_TOOL[tl.id] || tl.name, value: tl.activePct, level: ppLevel(tl.activePct, D.TARGETS.licenseActivePct)
+      })), { target: D.TARGETS.licenseActivePct }),
+      foot: `<strong>${metrics.unusedLicenses}</strong> seats unused${showFin && metrics.unusedCostMo ? ` · <span class="text-red">${eur(metrics.unusedCostMo)}/mo</span>` : ''}`
     });
 
     const fixTodos = [];
-    (rm ? rm.openSorted : []).filter(m => m.visualState === 'overdue' || !m.owner).slice(0, 2).forEach(m => {
+    rm.openSorted.filter(m => m.visualState === 'overdue' || !m.owner).slice(0, 2).forEach(m => {
       const late = m.visualState === 'overdue';
       fixTodos.push(todoItem({
-        title: !m.owner ? `Assign owner: ${m.short}` : m.onPath ? `Escalate: ${m.short}` : `Close: ${m.short}`,
-        sub: `${m.lane} · ${m.owner || 'no owner'} · ${late ? `due ${rm.fmt(m.date)}` : rm.fmt(m.date)}${m.unlocks ? ` · unlocks ${m.unlocks}` : ''}`,
+        title: !m.owner ? `Name owner: ${m.short.toLowerCase()}` : m.onPath ? `Escalate ${m.short}` : `Close ${m.short.toLowerCase()}`,
+        sub: `${m.lane} · ${m.owner || 'no owner'}`,
         badge: late ? `${rm.daysLate(m.date)}d late` : 'no owner',
-        badgeLevel: late ? 'red' : 'yellow',
+        level: late && m.onPath ? 'red' : 'yellow',
         action: 'open-roadmap'
       }));
     });
     const reallocN = Math.min(metrics.unusedLicenses, metrics.openRequests);
     if (reallocN > 0) {
       fixTodos.push(todoItem({
-        title: `Move ${reallocN} unused seats`,
-        sub: `${metrics.unusedLicenses} unused · ${metrics.openRequests} open requests`,
+        title: `Reallocate ${reallocN} seats`,
+        sub: `${metrics.openRequests} employees waiting for a license`,
         badge: showFin && metrics.unusedCostMo ? `${eur(Math.round(metrics.unusedCostMo * reallocN / Math.max(1, metrics.unusedLicenses)))}/mo` : null,
         nav: 'licenses'
       }));
     }
 
-    // ======================= ROW 2 · AI ADOPTION (PUSH) =======================
-    const deptPies = metrics.rows.slice().sort((a, b) => b.weeklyPct - a.weeklyPct).map(r => {
-      const lvl = ppLevel(r.weeklyPct, D.TARGETS.weeklyPct);
-      const isOwn = !isCEO && role.ownDepts.includes(r.dept.id);
-      return `
-        <div class="ov-pie ${isOwn ? 'is-own' : ''}" title="${r.dept.name}: ${r.weeklyUsers} of ${r.employees} weekly">
-          ${ring(r.weeklyPct, lvl, 58)}
-          <span>${r.dept.name}</span>
-        </div>
-      `;
-    }).join('');
-    const weeklySeries = monthSeries(m => m.weeklyPct);
+    // ======================= PUSH · AI ADOPTION =======================
     const diff = metrics.weeklyPct - metrics.weeklyPrevPct;
-    const weeklyCard = card({
-      tag: 'PUSH', title: 'Weekly use by department', sub: `target ${D.TARGETS.weeklyPct}%`, nav: 'departments',
-      body: `
-        <div class="ov-kpi-line">
-          <span class="ov-big">${metrics.weeklyPct}<small>%</small></span>
-          <span class="muted-sm">company · <span class="${diff >= 0 ? 'text-green' : 'text-red'}">${diff >= 0 ? '+' : ''}${diff} pp</span> vs. prev. month</span>
+    const deptSorted = metrics.rows.slice().sort((a, b) => b.weeklyPct - a.weeklyPct);
+    const lag = deptSorted[deptSorted.length - 1];
+    const t4 = tile({
+      title: 'Weekly use by department', level: ppLevel(metrics.weeklyPct, D.TARGETS.weeklyPct), nav: 'departments',
+      hero: metrics.weeklyPct, unit: '%',
+      context: `<span class="${diff >= 0 ? 'text-green' : 'text-red'}">${diff >= 0 ? '+' : ''}${diff} pp</span> vs. last month · target ${D.TARGETS.weeklyPct}%`,
+      visual: `
+        <div class="ov-donuts">
+          ${deptSorted.map(r => `
+            <div class="ov-donut ${!isCEO && role.ownDepts.includes(r.dept.id) ? 'is-own' : ''}" title="${r.dept.name}: ${r.weeklyPct}%">
+              ${donut(r.weeklyPct, ppLevel(r.weeklyPct, D.TARGETS.weeklyPct))}
+              <span>${r.dept.name === 'Purchasing' ? 'Purch.' : r.dept.name === 'Production' ? 'Prod.' : r.dept.name === 'Marketing' ? 'Mktg.' : r.dept.name === 'Logistics' ? 'Logist.' : r.dept.name}</span>
+            </div>
+          `).join('')}
         </div>
-        <div class="ov-pie-grid">${deptPies}</div>
-        <div class="ov-legend">
-          <span>${dot('green')} target met</span><span>${dot('yellow')} within 15 pp</span><span>${dot('red')} &gt;15 pp below</span>
-        </div>
-      `
+      `,
+      foot: lag ? `Lowest: <strong>${lag.dept.name} ${lag.weeklyPct}%</strong>` : ''
     });
 
     const steps = [
-      { label: 'All employees', n: metrics.totalEmp },
+      { label: 'All', n: metrics.totalEmp },
       { label: 'Target group', n: metrics.targetUsers },
       { label: 'Trained', n: metrics.trainedCount },
       { label: 'Weekly users', n: metrics.weeklyUsers }
     ];
-    let gapIdx = 1;
+    let gapIdx = 2;
     let gapN = 0;
-    for (let i = 1; i < steps.length; i++) {
+    for (let i = 2; i < steps.length; i++) {
       const drop = steps[i - 1].n - steps[i].n;
-      if (i > 1 && drop > gapN) { gapN = drop; gapIdx = i; }
+      if (drop > gapN) { gapN = drop; gapIdx = i; }
     }
-    const funnelCard = card({
-      tag: 'PUSH', title: 'Where do we lose employees?', nav: 'trainings',
-      body: `
-        <div class="ov-funnel">
-          ${steps.map((s, i) => {
-            const pct = Math.round((s.n / Math.max(1, metrics.totalEmp)) * 100);
-            const col = i === 3 ? 'var(--blue)' : i === 0 ? '#BFCBF5' : i === 1 ? '#93A9F0' : '#6E8CEB';
-            return `
-              <div class="ov-funnel-row">
-                <span class="ov-bar-lbl">${s.label}</span>
-                <div class="ov-bar-track ov-funnel-track">
-                  <div class="ov-bar-fill" style="width:${pct}%;background:${col};"></div>
-                  ${i === 3 ? `<div class="ov-bar-target" style="left:${D.TARGETS.weeklyPct}%"></div>` : ''}
-                </div>
-                <strong class="ov-bar-val">${s.n}${i ? ` · ${pct}%` : ''}</strong>
-              </div>
-              ${i === gapIdx && gapN > 0 ? `<div class="ov-funnel-gap">▼ ${gapN} lost here · biggest gap</div>` : ''}
-            `;
-          }).join('')}
-        </div>
-        <div class="ov-card-note">Dashed line = weekly target ${D.TARGETS.weeklyPct}% of all employees</div>
-      `
+    const t5 = tile({
+      title: 'Where do we lose employees?', level: ppLevel(metrics.trainedPct, D.TARGETS.trainingPct), nav: 'trainings',
+      hero: gapN, unit: ' lost',
+      context: `${steps[gapIdx - 1].label.toLowerCase()} → ${steps[gapIdx].label.toLowerCase()}`,
+      visual: miniBars(steps.map((s, i) => ({
+        label: s.label,
+        value: Math.round((s.n / Math.max(1, metrics.totalEmp)) * 100),
+        color: i === gapIdx ? 'var(--red)' : i === 3 ? 'var(--blue)' : '#93A9F0',
+        display: `${s.n}`
+      }))),
+      foot: `${metrics.untrainedCount} employees not trained yet`
     });
 
     const culture = S.computeCulture();
@@ -328,158 +300,132 @@ window.NUTEX_VIEWS = (() => {
     const pPrev = pSeries.length > 1 ? pSeries[pSeries.length - 2] : culture.overallPct;
     const pDiff = culture.overallPct - pPrev;
     const pLevel = ppLevel(culture.overallPct, 75);
-    const weakest = culture.questions.slice().sort((a, b) => a.pct - b.pct);
-    const peopleCard = card({
-      tag: 'PUSH', title: 'People score', sub: 'monthly pulse · target 75%', nav: 'culture',
-      body: `
-        <div class="ov-kpi-line">
-          <span class="ov-big">${culture.overallPct}<small>%</small></span>
-          <span class="muted-sm"><span class="${pDiff >= 0 ? 'text-green' : 'text-red'}">${pDiff >= 0 ? '+' : ''}${pDiff} pp</span> · ${culture.responsePct}% responded</span>
-        </div>
-        ${sparkline(pSeries, { color: LV[pLevel], ref: 75 })}
-        ${barRows(culture.questions.map(q => ({ label: q.label, value: q.pct, level: ppLevel(q.pct, 75) })), { target: 75 })}
-      `
+    const weakest = culture.questions.slice().sort((a, b) => a.pct - b.pct)[0];
+    const t6 = tile({
+      title: 'People score', level: pLevel, nav: 'culture',
+      hero: culture.overallPct, unit: '%',
+      context: `<span class="${pDiff >= 0 ? 'text-green' : 'text-red'}">${pDiff >= 0 ? '+' : ''}${pDiff} pp</span> · ${culture.responsePct}% responded`,
+      visual: sparkline(pSeries, { color: LV[pLevel], ref: 75 }),
+      foot: weakest ? `Weakest: <strong>${weakest.label}</strong> ${weakest.pct}%` : ''
     });
 
     const pushTodos = [];
     const pendT = metrics.pendingTrainings;
     if (pendT.length) {
       pushTodos.push(todoItem({
-        title: isCEO ? `Approve ${pendT.length} training${pendT.length > 1 ? 's' : ''}` : `${pendT.length} training${pendT.length > 1 ? 's' : ''} awaiting CEO`,
-        sub: `${pendT.reduce((s, x) => s + x.participants, 0)} employees · closes the "trained" gap`,
-        badge: showFin ? eur(pendT.reduce((s, x) => s + (x.budget || 0), 0)) : `${pendT.length} pending`,
+        title: isCEO ? `Approve ${pendT.length} trainings` : `${pendT.length} trainings awaiting CEO`,
+        sub: `${pendT.reduce((s, x) => s + x.participants, 0)} employees · closes the training gap`,
+        badge: showFin ? eur(pendT.reduce((s, x) => s + (x.budget || 0), 0)) : null,
         nav: 'trainings'
       }));
     }
-    const lag = metrics.rows.slice().sort((a, b) => a.weeklyPct - b.weeklyPct)[0];
     if (lag && lag.weeklyPct < D.TARGETS.weeklyPct) {
       pushTodos.push(todoItem({
-        title: `Adoption plan with ${lag.dept.vp}`,
-        sub: `${lag.dept.name} at ${lag.weeklyPct}% weekly · ${lag.untrainedCount} untrained`,
-        badge: `${lag.weeklyPct - D.TARGETS.weeklyPct} pp`, badgeLevel: ppLevel(lag.weeklyPct, D.TARGETS.weeklyPct),
+        title: `Adoption plan for ${lag.dept.name}`,
+        sub: `with ${lag.dept.vp}`,
+        badge: `${lag.weeklyPct}%`, level: ppLevel(lag.weeklyPct, D.TARGETS.weeklyPct),
         nav: 'departments'
       }));
     }
-    if (weakest[0] && weakest[0].pct < 75) {
+    if (weakest && weakest.pct < 75) {
       pushTodos.push(todoItem({
-        title: `Address: ${weakest[0].label}`,
-        sub: `Weakest pulse question · top wish: ${culture.wishRanking[0]?.name || '—'}`,
-        badge: `${weakest[0].pct}%`, badgeLevel: ppLevel(weakest[0].pct, 75),
+        title: 'Close the tool gap',
+        sub: `Top wish: ${culture.wishRanking[0]?.name || '—'}`,
+        badge: `${weakest.pct}%`, level: ppLevel(weakest.pct, 75),
         nav: 'culture'
       }));
     }
 
-    // ======================= ROW 3 · AI PROJECTS (FUND) =======================
-    let valueCard;
+    // ======================= FUND · AI PROJECTS =======================
+    let t7;
     if (showFin) {
       const ratio = metrics.costSavedMo / Math.max(1, metrics.totalSpendMo);
-      const rSeries = monthSeries(m => Math.round((m.costSavedMo / Math.max(1, m.totalSpendMo)) * 100) / 100);
+      const rSeries = monthSeries(m => m.costSavedMo / Math.max(1, m.totalSpendMo));
       const rLevel = ratio >= 1.5 ? 'green' : ratio >= 1 ? 'yellow' : 'red';
-      valueCard = card({
-        tag: 'FUND', title: 'Value per € spent', sub: 'savings ÷ AI cost', nav: 'budget',
-        body: `
-          <div class="ov-kpi-line">
-            <span class="ov-big">€${ratio.toFixed(2)}</span>
-            <span class="muted-sm">${eur(metrics.costSavedMo)} value · ${eur(metrics.totalSpendMo)} cost</span>
-          </div>
-          ${sparkline(rSeries, { color: LV[rLevel], ref: 1 })}
-          <div class="ov-card-note">Jan → ${metrics.tf.label} · dashed = break-even €1.00 · ${metrics.hoursSavedMo.toLocaleString('en-US')} h saved</div>
-        `
+      t7 = tile({
+        title: 'Value per € spent', level: rLevel, nav: 'budget',
+        hero: `€${ratio.toFixed(2)}`,
+        context: `${eurK(metrics.costSavedMo)} value · ${eurK(metrics.totalSpendMo)} cost`,
+        visual: sparkline(rSeries, { color: LV[rLevel], ref: 1 }),
+        foot: `Dashed = break-even · <strong>${metrics.hoursSavedMo.toLocaleString('en-US')} h</strong> saved`
       });
     } else {
       const hSeries = monthSeries(m => m.hoursSavedMo);
-      valueCard = card({
-        tag: 'FUND', title: 'Hours saved', sub: 'per month', nav: 'departments',
-        body: `
-          <div class="ov-kpi-line"><span class="ov-big">${metrics.hoursSavedMo.toLocaleString('en-US')}<small> h</small></span></div>
-          ${sparkline(hSeries, { color: LV.green })}
-          <div class="ov-card-note">Jan → ${metrics.tf.label}</div>
-        `
+      const hT = Math.round(D.TARGETS.hoursSavedMo * (metrics.totalEmp / 300));
+      t7 = tile({
+        title: 'Hours saved', level: ppLevel(Math.round((metrics.hoursSavedMo / Math.max(1, hT)) * 100), 100), nav: 'departments',
+        hero: metrics.hoursSavedMo.toLocaleString('en-US'), unit: ' h',
+        context: `per month · target ${hT.toLocaleString('en-US')} h`,
+        visual: sparkline(hSeries, { color: LV.green }),
+        foot: `Jan → ${metrics.tf.label}`
       });
     }
 
-    let budgetCard;
+    let t8;
     if (showFin) {
-      const bLevel = metrics.budgetUsedPct > 95 ? 'red' : metrics.budgetUsedPct > 85 ? 'yellow' : 'green';
-      const parts = [
-        { label: 'Licenses', v: metrics.licenseSpendMo, c: '#3B82F6' },
-        { label: 'API tokens', v: metrics.tokenSpendMo, c: '#8B5CF6' },
-        { label: 'Projects', v: metrics.projectSpendMo, c: '#10B981' },
-        { label: 'Trainings', v: metrics.trainingSpendMo, c: '#F59E0B' }
-      ];
-      const lim = Math.max(1, metrics.budgetLimit, metrics.totalSpendMo);
-      budgetCard = card({
-        tag: 'FUND', title: 'Budget used', sub: metrics.tf.label, nav: 'budget',
-        body: `
-          <div class="ov-kpi-line">
-            <span class="ov-big text-${bLevel === 'green' ? '' : bLevel}">${metrics.budgetUsedPct}<small>%</small></span>
-            <span class="muted-sm"><strong>${eur(metrics.totalSpendMo)}</strong> of ${eur(metrics.budgetLimit)}</span>
-          </div>
-          <div class="ov-stack">
-            ${parts.map(p => `<div style="width:${(p.v / lim) * 100}%;background:${p.c};" title="${p.label}: ${eur(p.v)}"></div>`).join('')}
-          </div>
-          <div class="ov-stack-legend">
-            ${parts.map(p => `<span><i style="background:${p.c}"></i>${p.label} <strong>${eur(p.v)}</strong></span>`).join('')}
-          </div>
-          <div class="ov-card-note">${metrics.budgetRemaining >= 0 ? `<span class="text-green">${eur(metrics.budgetRemaining)} left</span>` : `<span class="text-red">${eur(-metrics.budgetRemaining)} over budget</span>`} · details →</div>
-        `
+      const bLevel = metrics.budgetUsedPct > 100 ? 'red' : metrics.budgetUsedPct > 85 ? 'yellow' : 'green';
+      t8 = tile({
+        title: 'Budget used', level: bLevel, nav: 'budget',
+        hero: metrics.budgetUsedPct, unit: '%',
+        context: `${eur(metrics.totalSpendMo)} of ${eur(metrics.budgetLimit)}`,
+        visual: segments([
+          { label: 'Licenses', n: metrics.licenseSpendMo, color: '#3B82F6', display: eurK(metrics.licenseSpendMo) },
+          { label: 'Tokens', n: metrics.tokenSpendMo, color: '#8B5CF6', display: eurK(metrics.tokenSpendMo) },
+          { label: 'Projects', n: metrics.projectSpendMo, color: '#10B981', display: eurK(metrics.projectSpendMo) },
+          { label: 'Training', n: metrics.trainingSpendMo, color: '#F59E0B', display: eurK(metrics.trainingSpendMo) },
+          { label: '', n: Math.max(0, metrics.budgetRemaining), color: 'transparent', legend: false }
+        ]),
+        foot: metrics.budgetRemaining >= 0
+          ? `<strong>${eur(metrics.budgetRemaining)}</strong> left this month`
+          : `<strong class="text-red">${eur(-metrics.budgetRemaining)}</strong> over budget`
       });
     } else {
-      budgetCard = card({
-        tag: 'FUND', title: 'Proposals in approval', nav: 'projects',
-        body: `<div class="ov-kpi-line"><span class="ov-big">${metrics.pendingProjects.length}</span><span class="muted-sm">waiting for CEO decision</span></div>`
+      t8 = tile({
+        title: 'Proposals in approval', level: metrics.pendingProjects.length ? 'yellow' : 'green', nav: 'projects',
+        hero: metrics.pendingProjects.length, context: 'waiting for CEO decision',
+        visual: '', foot: ''
       });
     }
 
-    const pilotList = metrics.projects.slice().sort((a, b) => {
-      const o = { Approved: 0, Pending: 1, Blocked: 2, Declined: 3 };
-      return (o[a.status] ?? 9) - (o[b.status] ?? 9);
-    });
     const liveN = metrics.approvedProjects.length;
+    const pendN = metrics.pendingProjects.length;
+    const blockN = metrics.blockedProjects.length;
     const liveValue = metrics.approvedProjects.reduce((s, p) => s + annualValue(p.outcome), 0);
-    const pilotsCard = card({
-      tag: 'FUND', title: 'Pilots', sub: `${liveN} live · ${metrics.pendingProjects.length} in approval · ${metrics.blockedProjects.length} blocked`, nav: 'projects',
-      body: `
-        <div class="ov-kpi-line">
-          <span class="ov-big">${liveN}<small> live</small></span>
-          <span class="muted-sm">${eurK(liveValue)} value / year</span>
-        </div>
-        <div class="ov-pilots">
-          ${pilotList.slice(0, 5).map(p => `
-            <div class="ov-pilot">
-              <span class="ov-pilot-name">${p.name}</span>
-              <span class="muted-sm">${deptLabel(p.deptId)}</span>
-              ${p.status === 'Approved' ? '<span class="badge badge-green">Live</span>' : statusBadge(p.status)}
-            </div>
-          `).join('')}
-        </div>
-      `
+    const nextP = metrics.pendingProjects.slice().sort((a, b) => annualValue(b.outcome) - annualValue(a.outcome))[0];
+    const t9 = tile({
+      title: 'Pilots', level: blockN ? 'yellow' : 'green', nav: 'projects',
+      hero: liveN, unit: ' live',
+      context: `${eurK(liveValue)} value per year`,
+      visual: segments([
+        { label: 'Live', n: liveN, color: 'var(--green)' },
+        { label: 'In approval', n: pendN, color: 'var(--yellow)' },
+        { label: 'Blocked', n: blockN, color: 'var(--red)' }
+      ]),
+      foot: nextP ? `Next: <strong>${nextP.name}</strong>` : 'No pilot waiting'
     });
 
     const fundTodos = [];
-    const pendP = metrics.pendingProjects;
-    if (pendP.length) {
+    if (pendN) {
       fundTodos.push(todoItem({
-        title: isCEO ? `Approve ${pendP.length} AI project${pendP.length > 1 ? 's' : ''}` : `${pendP.length} project${pendP.length > 1 ? 's' : ''} awaiting CEO`,
-        sub: `${[...new Set(pendP.map(p => deptLabel(p.deptId)))].join(', ')} · ${eurK(pendP.reduce((s, p) => s + annualValue(p.outcome), 0))}/yr potential`,
-        badge: showFin ? eur(pendP.reduce((s, p) => s + (p.budget || 0), 0)) : `${pendP.length} pending`,
+        title: isCEO ? `Approve ${pendN} AI projects` : `${pendN} projects awaiting CEO`,
+        sub: `${eurK(metrics.pendingProjects.reduce((s, p) => s + annualValue(p.outcome), 0))}/yr potential`,
+        badge: showFin ? eur(metrics.pendingProjects.reduce((s, p) => s + (p.budget || 0), 0)) : null,
         nav: 'projects'
       }));
     }
     metrics.blockedProjects.slice(0, 1).forEach(p => {
       fundTodos.push(todoItem({
-        title: `Unblock: ${p.name}`,
+        title: `Unblock ${p.name}`,
         sub: p.outcome.replace(/^Blocked:\s*/i, ''),
-        badge: 'blocked', badgeLevel: 'red',
+        badge: 'blocked', level: 'red',
         action: 'open-roadmap'
       }));
     });
     if (showFin && metrics.budgetUsedPct > 85) {
       fundTodos.push(todoItem({
         title: 'Review AI budget',
-        sub: `${metrics.budgetUsedPct}% used · approvals need headroom`,
-        badge: metrics.budgetRemaining >= 0 ? `${eurK(metrics.budgetRemaining)} left` : 'over',
-        badgeLevel: metrics.budgetRemaining >= 0 ? 'yellow' : 'red',
+        sub: 'Approvals need more headroom',
+        badge: `${metrics.budgetUsedPct}%`,
         nav: 'budget'
       }));
     }
@@ -491,34 +437,18 @@ window.NUTEX_VIEWS = (() => {
         <div class="ov-head">
           <span class="ov-head-scope">${isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
           <div class="ov-head-side">
-            <strong>To do</strong>
+            <span class="ov-head-scope">${isCEO ? 'Your to-dos' : 'To-dos'}</span>
             <span class="ov-badge ov-badge-red">${openCount} open</span>
           </div>
         </div>
 
-        ${overviewRow({
-          tag: 'FIX', title: 'AI Readiness', question: 'Are the foundations in place?',
-          cards: [roadmapLight, roadmapScore, toolCard],
-          todo: todoBlock(isCEO ? 'Fix · decide & escalate' : 'Fix · follow up', fixTodos)
-        })}
-
-        ${S.state.roadmapOpen && R ? `<div class="ov-roadmap-wrap">${R.render()}</div>` : ''}
-
-        ${overviewRow({
-          tag: 'PUSH', title: 'AI Adoption', question: 'Are our people using AI?',
-          cards: [weeklyCard, funnelCard, peopleCard],
-          todo: todoBlock('Push · people & usage', pushTodos)
-        })}
-
-        ${overviewRow({
-          tag: 'FUND', title: 'AI Projects', question: 'Does AI pay off?',
-          cards: [valueCard, budgetCard, pilotsCard],
-          todo: todoBlock(isCEO ? 'Fund · decisions for you' : 'Fund · awaiting CEO', fundTodos)
-        })}
+        ${overviewRow({ tag: 'FIX', title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t1, t2, t3], todos: fixTodos })}
+        ${S.state.roadmapOpen ? `<div class="ov-roadmap-wrap">${R.render()}</div>` : ''}
+        ${overviewRow({ tag: 'PUSH', title: 'AI Adoption', question: 'Are our people using AI?', tiles: [t4, t5, t6], todos: pushTodos })}
+        ${overviewRow({ tag: 'FUND', title: 'AI Projects', question: 'Does AI pay off?', tiles: [t7, t8, t9], todos: fundTodos })}
       </div>
     `;
   }
-
   // ==========================================================================
   // 1b. READINESS — Drill-down: Roadmap + Data Sources + Systems
   // ==========================================================================
