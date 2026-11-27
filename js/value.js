@@ -28,7 +28,12 @@ window.NUTEX_VALUE = (() => {
     return p.employees >= Y_SPLIT ? 'improve' : 'stop';
   }
 
-  const pilots = () => D.PILOTS.map(p => ({ ...p, vpe: p.valueMo / p.costMo, zone: zoneOf(p) }));
+  const pilots = () => {
+    const sel = window.NUTEX_STATE.state.filters.dept;
+    return D.PILOTS
+      .filter(p => sel === 'all' || p.deptId === sel)
+      .map(p => ({ ...p, vpe: p.valueMo / p.costMo, zone: zoneOf(p) }));
+  };
 
   function spark(values, { w = 260, h = 70, ref = 1, color = '#10B981' } = {}) {
     const all = values.concat([ref]);
@@ -162,6 +167,7 @@ window.NUTEX_VALUE = (() => {
           </div>
           <div class="vl-right">
             ${chart(list)}
+            ${list.length ? '' : `<div class="vl-empty">No AI pilots in ${deptName(window.NUTEX_STATE.state.filters.dept)} yet</div>`}
             <div class="vl-foot">Bubble size = cost per month · dark outline = live · hover a pilot for details</div>
             <div class="vl-tooltip" data-vl-tooltip role="tooltip" aria-hidden="true"></div>
           </div>

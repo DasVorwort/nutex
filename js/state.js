@@ -367,7 +367,9 @@ window.NUTEX_STATE = (() => {
     const tokenSpendMo = rows.reduce((s, r) => s + r.tokenCostMo, 0);
     const avgTokenRate = totalTokensM > 0 ? Math.round(tokenSpendMo / totalTokensM) : 50;
 
-    const budgetLimit = Math.round(state.monthlyBudget * scopeShare);
+    // Budget follows each department's planned share (not headcount); all departments = 100 %
+    const budgetShare = depts.length === D.DEPARTMENTS.length ? 1 : depts.reduce((sum, d) => sum + (d.budgetShare || d.employees / 300), 0);
+    const budgetLimit = Math.round(state.monthlyBudget * budgetShare);
     const licenseSpendMo = monthlyCost;
     const projectSpendMo = Math.round((approvedProjects.reduce((s, p) => s + (p.budget || 0), 0) / 12) * tf.factor);
     const trainingSpendMo = Math.round((approvedTrainings.reduce((s, t) => s + (t.budget || 0), 0) / 6) * tf.factor);
@@ -576,7 +578,7 @@ window.NUTEX_STATE = (() => {
 
   return {
     state, r1, r2, t, setTheme, setLang, setDelegation,
-    getRole, getPerms, canViewDept, canViewFinancials, getAccessibleDepts,
+    getRole, getPerms, canViewDept, canViewFinancials, getAccessibleDepts, getFilteredDepts,
     getStatus, addProject, setProjectStatus, getVisibleProjects,
     addTraining, setTrainingStatus, getVisibleTrainings,
     reallocateSeats, cancelUnusedSeats, resetLicenseActions,

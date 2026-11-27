@@ -285,7 +285,25 @@ window.NUTEX_VIEWS = (() => {
     const diff = metrics.weeklyPct - metrics.weeklyPrevPct;
     const deptSorted = metrics.rows.slice().sort((a, b) => b.weeklyPct - a.weeklyPct);
     const lag = deptSorted[deptSorted.length - 1];
-    const t4 = tile({
+    const single = metrics.rows.length === 1 ? metrics.rows[0] : null;
+    const teams = single ? S.getPrivacyTeams(single.dept).slice().sort((a, b) => b.weeklyPct - a.weeklyPct).slice(0, 6) : [];
+    const shortTeam = (n) => n.startsWith('Grouped') ? 'Small teams' : n.split(/[\s&]+/)[0];
+    const t4 = single ? tile({
+      title: `Weekly use by team · ${single.dept.name}`, level: ppLevel(metrics.weeklyPct, D.TARGETS.weeklyPct), nav: 'departments',
+      hero: metrics.weeklyPct, unit: '%',
+      context: `<span class="${diff >= 0 ? 'text-green' : 'text-red'}">${diff >= 0 ? '+' : ''}${diff} pp</span> vs. last month · target ${D.TARGETS.weeklyPct}%`,
+      visual: `
+        <div class="ov-donuts" style="grid-template-columns:repeat(${Math.max(4, teams.length)}, 1fr)">
+          ${teams.map(tm => `
+            <div class="ov-donut" title="${tm.name}: ${tm.weeklyPct}% (${tm.employees} people)">
+              ${donut(tm.weeklyPct, ppLevel(tm.weeklyPct, D.TARGETS.weeklyPct))}
+              <span>${shortTeam(tm.name)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `,
+      foot: teams.length ? `Lowest: <strong>${teams[teams.length - 1].name} ${teams[teams.length - 1].weeklyPct}%</strong>` : ''
+    }) : tile({
       title: 'Weekly use by department', level: ppLevel(metrics.weeklyPct, D.TARGETS.weeklyPct), nav: 'departments',
       hero: metrics.weeklyPct, unit: '%',
       context: `<span class="${diff >= 0 ? 'text-green' : 'text-red'}">${diff >= 0 ? '+' : ''}${diff} pp</span> vs. last month · target ${D.TARGETS.weeklyPct}%`,
@@ -306,9 +324,9 @@ window.NUTEX_VIEWS = (() => {
     const AD = window.NUTEX_ADOPTION;
     const ad = AD.summary();
     const t5 = tile({
-      title: 'Where do we lose employees?', level: ppLevel(Math.round((ad.weekly / D.ADOPTION_2026.target) * 100), 100), action: 'open-loss',
-      hero: ad.gap, unit: ' short',
-      context: `weekly users vs. target group ${D.ADOPTION_2026.target}`,
+      title: 'Where do we lose employees?', level: ppLevel(Math.round((ad.weekly / Math.max(1, ad.target)) * 100), 100), action: 'open-loss',
+      hero: Math.max(0, ad.gap), unit: ' short',
+      context: `weekly users vs. target group ${ad.target}`,
       visual: AD.mini(),
       foot: ad.biggest
         ? `Biggest loss: <strong>${ad.biggest.title}</strong> <span class="text-red">−${Math.abs(ad.biggest.weekly)}</span>`
@@ -333,7 +351,7 @@ window.NUTEX_VIEWS = (() => {
     const pendT = metrics.pendingTrainings;
     if (pendT.length) {
       pushTodos.push(todoItem({
-        title: isCEO ? `Approve ${pendT.length} trainings` : `${pendT.length} trainings awaiting CEO`,
+        title: isCEO ? `Approve ${pendT.length} training${pendT.length === 1 ? '' : 's'}` : `${pendT.length} training${pendT.length === 1 ? '' : 's'} awaiting CEO`,
         sub: `${pendT.reduce((s, x) => s + x.participants, 0)} employees · closes the training gap`,
         badge: showFin ? eur(pendT.reduce((s, x) => s + (x.budget || 0), 0)) : null,
         nav: 'trainings',
@@ -435,7 +453,7 @@ window.NUTEX_VIEWS = (() => {
     const fundTodos = [];
     if (pendN) {
       fundTodos.push(todoItem({
-        title: isCEO ? `Approve ${pendN} AI projects` : `${pendN} projects awaiting CEO`,
+        title: isCEO ? `Approve ${pendN} AI project${pendN === 1 ? '' : 's'}` : `${pendN} project${pendN === 1 ? '' : 's'} awaiting CEO`,
         sub: `${eurK(metrics.pendingProjects.reduce((s, p) => s + annualValue(p.outcome), 0))}/yr potential`,
         badge: showFin ? eur(metrics.pendingProjects.reduce((s, p) => s + (p.budget || 0), 0)) : null,
         nav: 'projects',
@@ -465,9 +483,9 @@ window.NUTEX_VIEWS = (() => {
       <div class="overview-screen ov-layout">
         <div class="ov-board">
           <div class="ov-panel-head">
-            <span class="ov-head-scope">${isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
+            <span class="ov-head-scope">${single ? `${single.dept.name} · ${single.employees} employees` : isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
           </div>
-          ${boardBlock({ n: 1, title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t2, t1], cols: 2 })}
+          ${boardBlock({ n: 1, title: 'AI Readiness', question: `Are the foundations in place?${single ? ' <span class="ov-scope-pill">Company-wide</span>' : ''}`, tiles: [t2, t1], cols: 2 })}
           ${boardBlock({ n: 2, title: 'AI Adoption', question: 'Are our people using AI?', tiles: [t4, t5, t6] })}
           ${boardBlock({ n: 3, title: 'AI Projects', question: 'Does AI pay off?', tiles: [t7, t8, t9] })}
         </div>
