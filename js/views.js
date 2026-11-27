@@ -187,39 +187,18 @@ window.NUTEX_VIEWS = (() => {
     const tfIdx = Math.max(0, D.TREND_2026.keys.indexOf(S.state.filters.timeframe));
 
     // ======================= 1 · AI READINESS =======================
-    // Roadmap traffic light: each lamp opens the roadmap filtered to the lanes in that state
-    const lampRows = ['red', 'yellow', 'green'].map(lv => {
-      const lanes = rm.lanes.filter(l => l.level === lv);
-      const late = lanes.reduce((n, l) => n + l.overdue.length, 0);
-      const detail = !lanes.length ? '' : lv === 'red' ? `${late} late · critical path` : lv === 'yellow' ? (late ? `${late} late` : 'owner missing') : 'on track';
-      return { lv, lanes, detail };
-    });
+    // Roadmap status: clickable roadmap preview + filter chips (critical path / overdue)
     const t1 = `
-      <div class="ov-tile ov-light-tile">
+      <div class="ov-tile ov-rm-tile">
         <div class="ov-tile-head">
           <span class="ov-tile-title">Roadmap status</span>
           <span class="ov-status ov-status-${rm.level}">${STATUS_TXT[rm.level]}</span>
         </div>
-        <div class="ov-tl-body">
-          <div class="ov-tl">
-            ${lampRows.map(r => `
-              <button type="button" class="ov-tl-lamp ov-tl-${r.lv} ${r.lanes.length ? 'on' : ''}" data-action="open-roadmap" data-level="${r.lv}"
-                ${r.lanes.length ? '' : 'disabled'} aria-label="${r.lv}: ${r.lanes.map(l => l.label).join(', ') || 'none'}"></button>
-            `).join('')}
-          </div>
-          <div class="ov-tl-labels">
-            ${lampRows.map(r => `
-              <button type="button" class="ov-tl-label" data-action="open-roadmap" data-level="${r.lv}" data-lv="${r.lv}" ${r.lanes.length ? '' : 'disabled'}>
-                <strong>${r.lanes.map(l => l.label).join(', ') || '—'}</strong>
-                ${r.detail ? `<span class="${r.lv === 'red' ? 'text-red' : r.lv === 'yellow' ? 'text-yellow' : 'text-green'}">${r.detail}</span>` : ''}
-              </button>
-            `).join('')}
-          </div>
-          <button type="button" class="ov-preview" data-action="open-roadmap" data-level="" aria-label="Open full roadmap">
-            ${R.preview()}
-            <span class="ov-preview-icon" aria-hidden="true">⤢</span>
-          </button>
-        </div>
+        <button type="button" class="ov-preview" data-action="open-roadmap" data-level="" aria-label="Open roadmap">
+          ${R.preview()}
+          <span class="ov-preview-icon" aria-hidden="true">⤢</span>
+        </button>
+        <div class="ov-rm-chips">${R.filterChips(null, 'ov-chip')}</div>
       </div>
     `;
 
@@ -464,7 +443,7 @@ window.NUTEX_VIEWS = (() => {
         <div class="ov-modal-backdrop" data-action="close-roadmap">
           <div class="ov-modal" role="dialog" aria-label="AI roadmap">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
-            ${R.render({ level: S.state.roadmapFilter || null })}
+            ${R.render({ filter: S.state.roadmapFilter || null })}
           </div>
         </div>
       ` : ''}

@@ -2213,8 +2213,8 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   background: var(--blue);
   transform: translateY(-50%);
 }
-.ov-head-rule { flex: 1; height: 1px; background: var(--border); margin-left: 4px; }
-.ov-todo-section .ov-head-rule { margin-left: 0; background: rgba(37, 99, 235, 0.18); }
+.ov-head-rule { flex: 1; height: 2px; border-radius: 2px; background: var(--border-hover); opacity: 0.7; margin-left: 4px; }
+.ov-todo-section .ov-head-rule { margin-left: 0; background: rgba(37, 99, 235, 0.3); opacity: 1; }
 .ov-todo-panel {
   background: var(--highlight-row);
   border: 1px solid #BFDBFE;
@@ -2247,66 +2247,15 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 .ov-todo-panel .ov-todo { background: var(--surface); }
 .ov-todo-panel .ov-todo-empty { background: var(--surface); border-radius: 10px; margin: 0; flex: 1; display: flex; align-items: center; justify-content: center; }
 
-/* Roadmap traffic light tile (lamps open the roadmap filtered by status) */
-.ov-light-tile { cursor: default; grid-template-rows: auto 1fr; }
-.ov-light-tile:hover { border-color: var(--border); box-shadow: none; }
-.ov-tl-body { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.25fr); gap: 12px; align-items: center; min-height: 0; }
-.ov-tl {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 6px;
-  border-radius: 14px;
-  background: #1E293B;
-}
-.ov-tl-lamp {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  opacity: 0.18;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-.ov-tl-lamp:disabled { cursor: default; }
-.ov-tl-red { background: #EF4444; }
-.ov-tl-yellow { background: #F59E0B; }
-.ov-tl-green { background: #10B981; }
-.ov-tl-lamp.on { opacity: 1; }
-.ov-tl-red.on { box-shadow: 0 0 10px rgba(239, 68, 68, 0.7); }
-.ov-tl-yellow.on { box-shadow: 0 0 10px rgba(245, 158, 11, 0.6); }
-.ov-tl-green.on { box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); }
-.ov-tl-lamp.on:hover { transform: scale(1.12); }
-
-.ov-tl-labels { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.ov-tl-label {
-  height: 26px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 6px;
-  margin-left: -6px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-  min-width: 0;
-}
-.ov-tl-label:disabled { cursor: default; }
-.ov-tl-label:not(:disabled):hover { background: var(--surface); }
-.ov-tl-label strong { font-size: 12px; font-weight: 650; color: var(--text); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ov-tl-label:disabled strong { color: var(--text-3); font-weight: 500; }
-.ov-tl-label span { font-size: 10.5px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
+/* Roadmap status tile: preview + filter chips */
+.ov-rm-tile { cursor: default; grid-template-rows: auto 1fr auto; gap: 8px; }
+.ov-rm-tile:hover { border-color: var(--border); box-shadow: none; }
 .ov-preview {
   position: relative;
-  align-self: stretch;
+  min-height: 0;
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -2314,22 +2263,30 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .ov-preview:hover { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-.pv-svg { width: 100%; height: auto; display: block; }
-.pv-lane { transition: opacity 0.15s ease; }
-.ov-preview-icon {
-  position: absolute;
-  right: 6px;
-  bottom: 4px;
-  font-size: 12px;
-  color: var(--text-3);
-  opacity: 0.7;
-}
+.pv-svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+.ov-preview-icon { position: absolute; right: 6px; bottom: 3px; font-size: 12px; color: var(--text-3); opacity: 0.7; }
 .ov-preview:hover .ov-preview-icon { color: var(--blue); opacity: 1; }
-
-/* Hovering a lamp/label spotlights its lanes in the preview */
-.ov-light-tile:has([data-level="red"]:hover) .pv-lane:not([data-level="red"]),
-.ov-light-tile:has([data-level="yellow"]:hover) .pv-lane:not([data-level="yellow"]),
-.ov-light-tile:has([data-level="green"]:hover) .pv-lane:not([data-level="green"]) { opacity: 0.15; }
+.ov-rm-chips { display: flex; gap: 6px; }
+.ov-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ov-chip:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); }
+.ov-chip i, .rm-filter i { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; background: var(--surface); box-sizing: border-box; }
+.ov-chip strong, .rm-filter strong { color: var(--text); }
+.ov-chip.active { display: none; }
+.rm-dim { opacity: 0.18; }
 
 /* Roadmap filter chips (inside the overlay) */
 .rm-filters { display: flex; gap: 6px; margin-right: 40px; }
@@ -2347,7 +2304,6 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
   font-weight: 600;
   cursor: pointer;
 }
-.rm-filter i { width: 9px; height: 9px; border-radius: 50%; }
 .rm-filter.active { border-color: var(--text); color: var(--text); background: var(--track); }
 .rm-filter:disabled { opacity: 0.4; cursor: default; }
 

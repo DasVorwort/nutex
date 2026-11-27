@@ -182,6 +182,7 @@
       const rmFilter = e.target.closest('[data-action="roadmap-filter"]');
       if (rmFilter) {
         S.state.roadmapFilter = rmFilter.dataset.level || null;
+        S.state.roadmapOpen = true;
         render(); return;
       }
 
