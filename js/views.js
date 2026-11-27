@@ -145,7 +145,6 @@ window.NUTEX_VIEWS = (() => {
     return `
       <section class="ov-block">
         <div class="ov-block-head">
-          <span class="ov-step">${n}</span>
           <h2 class="ov-row-title">${title}</h2>
           <span class="ov-row-q">${question}</span>
         </div>

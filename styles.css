@@ -2199,24 +2199,8 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 
 .ov-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 22px; }
 
-.ov-block { position: relative; display: flex; flex-direction: column; gap: 7px; padding-left: 34px; }
+.ov-block { position: relative; display: flex; flex-direction: column; gap: 7px; }
 .ov-block-head { display: flex; align-items: center; gap: 10px; height: 22px; min-width: 0; }
-.ov-step {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 1;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--blue);
-  color: #FFFFFF;
-  font-size: 11.5px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .ov-todo-panel {
   background: var(--highlight-row);
   border: 1px solid #BFDBFE;
