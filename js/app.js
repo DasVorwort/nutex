@@ -172,8 +172,16 @@
       const info = e.target.closest('[data-kpi-info]');
       if (info) { e.stopPropagation(); showPopover(info.dataset.kpiInfo, info); return; }
 
-      if (e.target.closest('[data-action="open-roadmap"]')) {
+      const openRm = e.target.closest('[data-action="open-roadmap"]');
+      if (openRm) {
         S.state.roadmapOpen = true;
+        S.state.roadmapFilter = openRm.dataset.level || null;
+        render(); return;
+      }
+
+      const rmFilter = e.target.closest('[data-action="roadmap-filter"]');
+      if (rmFilter) {
+        S.state.roadmapFilter = rmFilter.dataset.level || null;
         render(); return;
       }
 

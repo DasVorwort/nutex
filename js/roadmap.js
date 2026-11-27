@@ -128,8 +128,7 @@ window.NUTEX_ROADMAP = (() => {
 
     const lanes = LAYOUT.map(l => {
       const od = l.placed.filter(m => m.visualState === 'overdue');
-      const soon = l.placed.filter(m => m.visualState === 'open' && !m.owner);
-      const level = od.some(m => m.onPath) ? 'red' : (od.length || soon.length) ? 'yellow' : 'green';
+      const level = laneLevel(l);
       const active = l.placed.filter(m => m.status !== 'proposed');
       return {
         id: l.id, label: l.label, level,
@@ -179,7 +178,26 @@ window.NUTEX_ROADMAP = (() => {
     return `<g class="rm-node" tabindex="0" role="button" aria-label="${aria}" data-rm-id="${m.id}" data-on-path="${m.onPath ? 'true' : 'false'}">${parts.join('')}</g>`;
   }
 
-  function renderSvg() {
+  // Lane level: red = overdue on critical path · yellow = overdue or no owner · green = on track
+  function laneLevel(l) {
+    const od = l.placed.filter(m => m.visualState === 'overdue');
+    const noOwner = l.placed.filter(m => m.visualState === 'open' && !m.owner);
+    return od.some(m => m.onPath) ? 'red' : (od.length || noOwner.length) ? 'yellow' : 'green';
+  }
+
+  // Re-stack the selected lanes so a filtered roadmap has no gaps
+  function lanesFor(ids) {
+    const pick = ids && ids.length ? LAYOUT.filter(l => ids.includes(l.id)) : LAYOUT;
+    return pick.map((l, i) => {
+      const y = TOP + i * LANE_GAP + 22;
+      return { ...l, y, placed: l.placed.map(m => ({ ...m, y })) };
+    });
+  }
+
+  function renderSvg(ids) {
+    const LAYOUT_V = lanesFor(ids);
+    const AXIS_Y = TOP + (LAYOUT_V.length - 1) * LANE_GAP + 22 + 42;
+    const H = AXIS_Y + 30;
     const tx = xOf(TODAY);
     const inRange = TODAY >= '2026-01-01' && TODAY <= '2027-12-31';
     const PH = {
@@ -219,7 +237,7 @@ window.NUTEX_ROADMAP = (() => {
       }
     }
 
-    const lanes = LAYOUT.map(l => {
+    const lanes = LAYOUT_V.map(l => {
       return `
         <g class="rm-lane">
           <text x="2" y="${l.y}" dominant-baseline="central" font-size="12.5">
@@ -272,18 +290,70 @@ window.NUTEX_ROADMAP = (() => {
     `;
   }
 
-  function render({ compact = false } = {}) {
+  // Full roadmap; `level` (red|yellow|green) shows only the lanes with that status
+  function render({ level = null } = {}) {
+    const sum = summary();
+    const ids = level ? sum.lanes.filter(l => l.level === level).map(l => l.id) : null;
+    const LV = { red: 'var(--red)', yellow: 'var(--yellow)', green: 'var(--green)' };
+    const chip = (lv) => {
+      const n = sum.lanes.filter(l => l.level === lv).length;
+      return `<button type="button" class="rm-filter ${level === lv ? 'active' : ''}" data-action="roadmap-filter" data-level="${lv}" ${n ? '' : 'disabled'} title="${n} lane${n === 1 ? '' : 's'}">
+        <i style="background:${LV[lv]}"></i>${n}
+      </button>`;
+    };
     return `
-      <section class="card card-lg roadmap-section ${compact ? 'roadmap-compact' : ''}" aria-label="AI roadmap">
+      <section class="card card-lg roadmap-section" aria-label="AI roadmap">
         <div class="panel-head roadmap-head">
           <h3>AI Roadmap 2026 – 2027</h3>
+          <div class="rm-filters">
+            ${chip('red')}${chip('yellow')}${chip('green')}
+            <button type="button" class="rm-filter ${level ? '' : 'active'}" data-action="roadmap-filter" data-level="">All</button>
+          </div>
         </div>
         <div class="roadmap-stage" data-roadmap-stage>
-          ${renderSvg()}
+          ${renderSvg(ids)}
           <div class="rm-tooltip" data-rm-tooltip role="tooltip" aria-hidden="true"></div>
         </div>
         ${legend()}
       </section>
+    `;
+  }
+
+  // Tiny, decorative roadmap thumbnail for the overview tile
+  function preview() {
+    const w = 260;
+    const lanes = LAYOUT;
+    const top = 20;
+    const gap = 27;
+    const h = top + lanes.length * gap + 4;
+    const px = (iso) => 4 + ((ms(iso) - T0) / (T1 - T0)) * (w - 14);
+    const col = { done: '#22A06B', overdue: '#E5484D', open: '#2563EB', proposed: '#94A3B8' };
+    const ph = PHASES.map((p, i) => {
+      const x1 = px(p.from) + (i ? 1 : 0);
+      const x2 = px(p.to);
+      const fill = p.id === 'pilot' ? 'var(--green-bg)' : p.id === 'scale' ? 'rgba(37,99,235,0.85)' : 'var(--track)';
+      return `<polygon points="${x1},2 ${x2 - 5},2 ${x2},7 ${x2 - 5},12 ${x1},12 ${i ? x1 + 5 : x1},7" fill="${fill}"/>`;
+    }).join('');
+    const rows = lanes.map((l, i) => {
+      const y = top + i * gap + 6;
+      const lv = laneLevel(l);
+      return `
+        <g class="pv-lane" data-level="${lv}">
+          <line x1="4" x2="${w - 8}" y1="${y}" y2="${y}" stroke="var(--border-hover)" stroke-width="1.2"/>
+          <path d="M${w - 9},${y - 3} L${w - 4},${y} L${w - 9},${y + 3} z" fill="var(--border-hover)"/>
+          ${l.placed.map(m => m.visualState === 'done'
+            ? `<circle cx="${px(m.date).toFixed(1)}" cy="${y}" r="3" fill="${col.done}"/>`
+            : `<circle cx="${px(m.date).toFixed(1)}" cy="${y}" r="2.8" fill="var(--surface)" stroke="${col[m.visualState]}" stroke-width="1.5" ${m.visualState === 'proposed' ? 'stroke-dasharray="1.5 1.5"' : ''}/>`).join('')}
+        </g>
+      `;
+    }).join('');
+    const tx = px(TODAY);
+    return `
+      <svg class="pv-svg" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+        ${ph}
+        ${rows}
+        <line x1="${tx}" x2="${tx}" y1="14" y2="${h}" stroke="var(--text-3)" stroke-dasharray="2 2" stroke-width="1" opacity="0.7"/>
+      </svg>
     `;
   }
 
@@ -341,5 +411,5 @@ window.NUTEX_ROADMAP = (() => {
     });
   }
 
-  return { TODAY, LANES, ITEM_INDEX, summary, render, bind };
+  return { TODAY, LANES, ITEM_INDEX, summary, render, preview, bind };
 })();

@@ -74,6 +74,7 @@ window.NUTEX_STATE = (() => {
     lang: loadString(LANG_KEY, 'en'),
     showSettings: false,
     roadmapOpen: false,
+    roadmapFilter: null,
     showProjectModal: false,
     showTrainingModal: false
   };
