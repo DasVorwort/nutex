@@ -1969,9 +1969,9 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   gap: 7px;
-  height: 184px;
+  height: 178px;
   min-width: 0;
-  padding: 13px 16px 11px;
+  padding: 12px 16px 10px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -2156,8 +2156,8 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 .ov-modal .roadmap-head { padding-right: 40px; }
 .ov-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 14px;
   z-index: 2;
   width: 30px;
   height: 30px;
@@ -2170,13 +2170,151 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 }
 .ov-modal-close:hover { color: var(--text); border-color: var(--border-hover); }
 
+/* Overview layout: connected board (left) + dedicated to-do panel (right) */
+.ov-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ov-board,
+.ov-todo-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 14px 14px;
+  border-radius: 18px;
+}
+
+.ov-board {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.ov-board .ov-tile { background: var(--surface-soft); box-shadow: none; }
+.ov-board .ov-tile:hover,
+.ov-board .ov-tile:focus-visible { background: var(--surface); }
+
+.ov-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 22px; }
+
+.ov-block { position: relative; display: flex; flex-direction: column; gap: 7px; }
+.ov-block-head { display: flex; align-items: center; gap: 10px; height: 22px; min-width: 0; }
+.ov-block .ov-row-title { position: relative; padding-left: 11px; }
+.ov-block .ov-row-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--blue);
+  transform: translateY(-50%);
+}
+.ov-head-rule { flex: 1; height: 2px; border-radius: 2px; background: var(--border-hover); opacity: 0.7; margin-left: 4px; }
+.ov-todo-section .ov-head-rule { margin-left: 0; background: rgba(37, 99, 235, 0.3); opacity: 1; }
+.ov-todo-panel {
+  background: var(--highlight-row);
+  border: 1px solid #BFDBFE;
+}
+body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
+.ov-todo-panel-title { font-size: 14px; font-weight: 750; color: var(--text); }
+.ov-todo-section { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.ov-todo-sec-title { font-size: 12px; font-weight: 700; color: var(--text-2); }
+.ov-todo-count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--blue);
+  font-size: 10.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ov-todo-panel .ov-todo-block {
+  flex: none;
+  height: 178px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.ov-todo-panel .ov-todo { background: var(--surface); }
+.ov-todo-panel .ov-todo-empty { background: var(--surface); border-radius: 10px; margin: 0; flex: 1; display: flex; align-items: center; justify-content: center; }
+
+/* Roadmap status tile: preview + filter chips */
+.ov-rm-tile { cursor: default; grid-template-rows: auto 1fr auto; gap: 8px; }
+.ov-rm-tile:hover { border-color: var(--border); box-shadow: none; }
+.ov-preview {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: zoom-in;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ov-preview:hover { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+.pv-svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+.ov-preview-icon { position: absolute; right: 6px; bottom: 3px; font-size: 12px; color: var(--text-3); opacity: 0.7; }
+.ov-preview:hover .ov-preview-icon { color: var(--blue); opacity: 1; }
+.ov-rm-chips { display: flex; gap: 6px; }
+.ov-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ov-chip:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); }
+.ov-chip i, .rm-filter i { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; background: var(--surface); box-sizing: border-box; }
+.ov-chip strong, .rm-filter strong { color: var(--text); }
+.ov-chip.active { display: none; }
+.rm-dim { opacity: 0.18; }
+
+/* Roadmap filter chips (inside the overlay) */
+.rm-filters { display: flex; gap: 6px; margin-right: 40px; }
+.rm-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rm-filter.active { border-color: var(--text); color: var(--text); background: var(--track); }
+.rm-filter:disabled { opacity: 0.4; cursor: default; }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
-  .ov-head, .ov-row { grid-template-columns: 1fr; }
+  .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }
+  .ov-todo-panel .ov-todo-block { height: auto; }
   .ov-head-side { display: none; }
   .ov-row-side { padding-top: 0; }
   .ov-tile-grid { grid-template-columns: 1fr 1fr; }
-  .ov-tile, .ov-todo-block { height: auto; min-height: 184px; }
+  .ov-tile, .ov-todo-block { height: auto; min-height: 178px; }
   .kpi-row-4 { grid-template-columns: repeat(2, 1fr); }
   .hero-row, .split-2, .overview-cols, .project-cards-grid { grid-template-columns: 1fr; }
   .paired-grid-3 { grid-template-columns: 1fr; gap: 16px; }

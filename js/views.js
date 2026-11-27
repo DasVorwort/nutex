@@ -30,7 +30,7 @@ window.NUTEX_VIEWS = (() => {
   }
 
   // ==========================================================================
-  // 1. OVERVIEW — 3 rows: AI Readiness (FIX) · AI Adoption (PUSH) · AI Projects (FUND)
+  // 1. OVERVIEW — 3 connected blocks: AI Readiness → AI Adoption → AI Projects
   //    3 KPI cards per row (left 3/4) + a To-do block per row (right 1/4)
   // ==========================================================================
   const annualValue = (outcome) => {
@@ -140,21 +140,29 @@ window.NUTEX_VIEWS = (() => {
     `;
   }
 
-  function overviewRow({ tag, title, question, tiles, todos, cols = 3 }) {
+  // Left: one connected board with numbered blocks (1 → 2 → 3)
+  function boardBlock({ n, title, question, tiles, cols = 3 }) {
     return `
-      <section class="ov-row">
-        <div class="ov-row-main">
-          <div class="ov-row-head">
-            <span class="ov-tag ov-tag-${tag.toLowerCase()}">${tag}</span>
-            <h2 class="ov-row-title">${title}</h2>
-            <span class="ov-row-q">${question}</span>
-          </div>
-          <div class="ov-tile-grid ov-cols-${cols}">${tiles.join('')}</div>
+      <section class="ov-block">
+        <div class="ov-block-head">
+          <h2 class="ov-row-title">${title}</h2>
+          <span class="ov-row-q">${question}</span>
+          <span class="ov-head-rule" aria-hidden="true"></span>
         </div>
-        <div class="ov-row-side">
-          <div class="ov-todo-block">
-            ${todos.length ? todos.slice(0, 3).join('') : `<div class="ov-todo-empty">✓ Nothing open</div>`}
-          </div>
+        <div class="ov-tile-grid ov-cols-${cols}">${tiles.join('')}</div>
+      </section>
+    `;
+  }
+
+  // Right: dedicated to-do panel, one section per block (aligned)
+  function todoSection({ title, todos }) {
+    return `
+      <section class="ov-todo-section">
+        <div class="ov-block-head" aria-label="${title}">
+          <span class="ov-head-rule" aria-hidden="true"></span>
+        </div>
+        <div class="ov-todo-block">
+          ${todos.length ? todos.slice(0, 3).join('') : `<div class="ov-todo-empty">✓ Nothing open</div>`}
         </div>
       </section>
     `;
@@ -178,27 +186,21 @@ window.NUTEX_VIEWS = (() => {
     const rm = R.summary();
     const tfIdx = Math.max(0, D.TREND_2026.keys.indexOf(S.state.filters.timeframe));
 
-    // ======================= FIX · AI READINESS =======================
-    const critLate = rm.overdue.filter(m => m.onPath);
-    const lamp = (l) => `<span class="ov-lamp ov-lamp-${l} ${rm.level === l ? 'on' : ''}"></span>`;
-    const t1 = tile({
-      title: 'Roadmap status', level: rm.level, action: 'open-roadmap',
-      hero: rm.overdue.length, unit: ' late',
-      context: `${critLate.length} on critical path`,
-      extra: `<span class="ov-lights">${lamp('red')}${lamp('yellow')}${lamp('green')}</span>`,
-      visual: `
-        <div class="ov-lanes">
-          ${rm.lanes.map(l => `
-            <div class="ov-lane">
-              <i style="background:${LV[l.level]}"></i>
-              <span>${l.label}</span>
-              <strong class="${l.overdue.length ? 'text-red' : ''}">${l.overdue.length ? `${l.overdue.length} late` : `${l.done}/${l.total}`}</strong>
-            </div>
-          `).join('')}
+    // ======================= 1 · AI READINESS =======================
+    // Roadmap status: clickable roadmap preview + filter chips (critical path / overdue)
+    const t1 = `
+      <div class="ov-tile ov-rm-tile">
+        <div class="ov-tile-head">
+          <span class="ov-tile-title">Roadmap status</span>
+          <span class="ov-status ov-status-${rm.level}">${STATUS_TXT[rm.level]}</span>
         </div>
-      `,
-      foot: `<span class="link-btn">Open roadmap →</span>`
-    });
+        <button type="button" class="ov-preview" data-action="open-roadmap" data-level="" aria-label="Open roadmap">
+          ${R.preview()}
+          <span class="ov-preview-icon" aria-hidden="true">⤢</span>
+        </button>
+        <div class="ov-rm-chips">${R.filterChips(null, 'ov-chip')}</div>
+      </div>
+    `;
 
     const scoreLevel = rm.score >= 90 ? 'green' : rm.score >= 75 ? 'yellow' : 'red';
     const upcoming = rm.planned - rm.done - rm.overdue.length;
@@ -235,7 +237,7 @@ window.NUTEX_VIEWS = (() => {
       }));
     }
 
-    // ======================= PUSH · AI ADOPTION =======================
+    // ======================= 2 · AI ADOPTION =======================
     const diff = metrics.weeklyPct - metrics.weeklyPrevPct;
     const deptSorted = metrics.rows.slice().sort((a, b) => b.weeklyPct - a.weeklyPct);
     const lag = deptSorted[deptSorted.length - 1];
@@ -322,7 +324,7 @@ window.NUTEX_VIEWS = (() => {
       }));
     }
 
-    // ======================= FUND · AI PROJECTS =======================
+    // ======================= 3 · AI PROJECTS =======================
     let t7;
     if (showFin) {
       const ratio = metrics.costSavedMo / Math.max(1, metrics.totalSpendMo);
@@ -416,27 +418,32 @@ window.NUTEX_VIEWS = (() => {
       }));
     }
 
-    const openCount = fixTodos.length + pushTodos.length + fundTodos.length;
-
     return `
-      <div class="overview-screen ov-screen">
-        <div class="ov-head">
-          <span class="ov-head-scope">${isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
-          <div class="ov-head-side">
-            <span class="ov-head-scope">${isCEO ? 'Your to-dos' : 'To-dos'}</span>
-            <span class="ov-badge ov-badge-red">${openCount} open</span>
+      <div class="overview-screen ov-layout">
+        <div class="ov-board">
+          <div class="ov-panel-head">
+            <span class="ov-head-scope">${isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
           </div>
+          ${boardBlock({ n: 1, title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t2, t1], cols: 2 })}
+          ${boardBlock({ n: 2, title: 'AI Adoption', question: 'Are our people using AI?', tiles: [t4, t5, t6] })}
+          ${boardBlock({ n: 3, title: 'AI Projects', question: 'Does AI pay off?', tiles: [t7, t8, t9] })}
         </div>
 
-        ${overviewRow({ tag: 'FIX', title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t2, t1], todos: fixTodos, cols: 2 })}
-        ${overviewRow({ tag: 'PUSH', title: 'AI Adoption', question: 'Are our people using AI?', tiles: [t4, t5, t6], todos: pushTodos })}
-        ${overviewRow({ tag: 'FUND', title: 'AI Projects', question: 'Does AI pay off?', tiles: [t7, t8, t9], todos: fundTodos })}
+        <aside class="ov-todo-panel" aria-label="To-dos">
+          <div class="ov-panel-head">
+            <span class="ov-todo-panel-title">${isCEO ? 'Your to-dos' : 'To-dos'}</span>
+            <span class="ov-badge ov-badge-red">${Math.min(3, fixTodos.length) + Math.min(3, pushTodos.length) + Math.min(3, fundTodos.length)} open</span>
+          </div>
+          ${todoSection({ title: 'AI Readiness', todos: fixTodos })}
+          ${todoSection({ title: 'AI Adoption', todos: pushTodos })}
+          ${todoSection({ title: 'AI Projects', todos: fundTodos })}
+        </aside>
       </div>
       ${S.state.roadmapOpen ? `
         <div class="ov-modal-backdrop" data-action="close-roadmap">
           <div class="ov-modal" role="dialog" aria-label="AI roadmap">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
-            ${R.render()}
+            ${R.render({ filter: S.state.roadmapFilter || null })}
           </div>
         </div>
       ` : ''}
