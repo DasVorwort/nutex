@@ -684,7 +684,16 @@ window.NUTEX_DATA = (() => {
       perEmpMo: [60, 120],      // € AI spend per employee per month
       shareOfIt: [10, 20],      // % of IT budget
       shareOfRevenue: [0.3, 0.8] // % of revenue
-    }
+    },
+    // Anonymised peer group: AI spend as % of revenue (mid-sized manufacturers, 150–600 employees)
+    peers: [
+      { name: 'Technical textiles A', share: 0.18 }, { name: 'Nonwovens B', share: 0.27 },
+      { name: 'Automotive textiles C', share: 0.33 }, { name: 'Yarn spinner D', share: 0.38 },
+      { name: 'Home textiles E', share: 0.42 }, { name: 'Coated fabrics F', share: 0.46 },
+      { name: 'Medical textiles G', share: 0.49 }, { name: 'Apparel fabrics H', share: 0.58 },
+      { name: 'Industrial filters I', share: 0.64 }, { name: 'Composites J', share: 0.71 },
+      { name: 'Smart textiles K', share: 0.86 }, { name: 'Packaging films L', share: 1.04 }
+    ]
   };
 
   // People the CEO can delegate to-dos to (quick choose + search)

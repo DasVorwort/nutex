@@ -2831,6 +2831,35 @@ body.dark .ov-todo-panel { border-color: rgba(96, 165, 250, 0.3); }
 
 .b2-band-key { display: inline-block; width: 14px; height: 8px; border-radius: 99px; background: rgba(16, 185, 129, 0.35); margin-right: 6px; vertical-align: 0; }
 
+/* Budget v3: revenue share + peer strip */
+.b3-hero {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+.b3-kpis { display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+.b3-kpi { display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; }
+.b3-kpi + .b3-kpi { border-top: 1px solid var(--border); }
+.b3-big { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--text); }
+.b3-mid { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1; }
+.b3-mid small { font-size: 13px; font-weight: 600; color: var(--text-3); }
+.b3-peers { display: flex; flex-direction: column; gap: 4px; padding: 14px 18px 10px; min-width: 0; }
+.b3-peers-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.b3-peers-head strong { color: var(--text); }
+.b3-chart { width: 100%; height: auto; display: block; }
+
+.b3-depts { display: grid; grid-template-columns: auto repeat(6, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.b3-depts-lbl { font-size: 12.5px; font-weight: 700; color: var(--text); padding-right: 4px; }
+.b3-dept { display: flex; flex-direction: column; gap: 4px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.b3-dept.is-sel { border-color: var(--blue); }
+.b3-dept-top { display: flex; justify-content: space-between; font-size: 11.5px; }
+.b3-dept-top strong { color: var(--text); }
+.b3-dept-top span { font-weight: 700; }
+.b3-dept .b2-dept-bar { height: 5px; }
+.b3-dept-amt { font-size: 10.5px; color: var(--text-3); }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }
