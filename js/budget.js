@@ -112,42 +112,45 @@ window.NUTEX_BUDGET = (() => {
 
   // Compact peer strip: every comparable company is a dot; NuTex and the budget are highlighted
   function peerChart(share, budgetShare, C, stats) {
-    const W = 420;
-    const H = 118;
-    const L = 10;
-    const R = 410;
+    const W = 560;
+    const H = 150;
+    const L = 12;
+    const R = 548;
     const MAX = 1.2;
     const x = (p) => L + (Math.min(p, MAX) / MAX) * (R - L);
-    const yMid = 64;
+    const yMid = 80;
     const [lo, hi] = C.bench.shareOfRevenue;
     const placed = [];
     const dots = C.peers.slice().sort((a, b) => a.share - b.share).map(p => {
       const px = x(p.share);
       let lane = 0;
-      while (placed.some(q => q.lane === lane && Math.abs(q.x - px) < 10)) lane++;
+      while (placed.some(q => q.lane === lane && Math.abs(q.x - px) < 13)) lane++;
       placed.push({ x: px, lane });
-      const py = yMid + (lane % 2 ? 1 : -1) * Math.ceil(lane / 2) * 10;
-      return `<circle cx="${px}" cy="${py}" r="4.5" fill="#94A3B8" opacity="0.75"><title>${p.name}: ${p.share.toFixed(2)}% of revenue</title></circle>`;
+      const py = yMid + (lane % 2 ? 1 : -1) * Math.ceil(lane / 2) * 13;
+      return `<circle cx="${px}" cy="${py}" r="6" fill="#94A3B8" opacity="0.75"><title>${p.name}: ${p.share.toFixed(2)}% of revenue</title></circle>`;
     }).join('');
     const ticks = [0, 0.4, 0.8, 1.2].map(t => `
-      <text x="${x(t)}" y="${H - 4}" text-anchor="${t === 0 ? 'start' : t === MAX ? 'end' : 'middle'}" font-size="10" fill="var(--text-3)">${t.toFixed(1)}%</text>
+      <text x="${x(t)}" y="${H - 4}" text-anchor="${t === 0 ? 'start' : t === MAX ? 'end' : 'middle'}" font-size="11" fill="var(--text-3)">${t.toFixed(1)}%</text>
     `).join('');
     const nx = x(share);
     const bx = x(budgetShare);
     return `
       <svg class="b4-peer-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="AI spend as share of revenue vs peers">
-        <rect x="${x(0)}" y="36" width="${x(lo) - x(0)}" height="56" rx="6" fill="rgba(245,158,11,0.08)"/>
-        <rect x="${x(lo)}" y="36" width="${x(hi) - x(lo)}" height="56" rx="6" fill="rgba(16,185,129,0.13)"/>
-        <rect x="${x(hi)}" y="36" width="${x(MAX) - x(hi)}" height="56" rx="6" fill="rgba(239,68,68,0.07)"/>
-        <text x="${(x(lo) + x(hi)) / 2}" y="47" text-anchor="middle" font-size="9" font-weight="800" letter-spacing="0.06em" fill="var(--green-txt)" opacity="0.85">PEER RANGE</text>
-        <line x1="${x(stats.median)}" x2="${x(stats.median)}" y1="50" y2="92" stroke="var(--text-3)" stroke-dasharray="3 3"/>
+        <rect x="${x(0)}" y="38" width="${x(lo) - x(0)}" height="80" rx="8" fill="rgba(245,158,11,0.08)"/>
+        <rect x="${x(lo)}" y="38" width="${x(hi) - x(lo)}" height="80" rx="8" fill="rgba(16,185,129,0.13)"/>
+        <rect x="${x(hi)}" y="38" width="${x(MAX) - x(hi)}" height="80" rx="8" fill="rgba(239,68,68,0.07)"/>
+        <text x="${(x(0) + x(lo)) / 2}" y="52" text-anchor="middle" font-size="9.5" font-weight="800" letter-spacing="0.06em" fill="var(--yellow-txt)" opacity="0.8">BELOW</text>
+        <text x="${(x(lo) + x(hi)) / 2}" y="52" text-anchor="middle" font-size="9.5" font-weight="800" letter-spacing="0.06em" fill="var(--green-txt)" opacity="0.85">PEER RANGE ${lo}–${hi}%</text>
+        <text x="${(x(hi) + x(MAX)) / 2}" y="52" text-anchor="middle" font-size="9.5" font-weight="800" letter-spacing="0.06em" fill="var(--red-txt)" opacity="0.7">ABOVE</text>
+        <line x1="${x(stats.median)}" x2="${x(stats.median)}" y1="58" y2="118" stroke="var(--text-3)" stroke-dasharray="3 3"/>
+        <text x="${x(stats.median)}" y="114" text-anchor="end" dx="-4" font-size="9.5" fill="var(--text-3)">median</text>
         ${dots}
-        <line x1="${bx}" x2="${bx}" y1="40" y2="96" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="4 3"/>
-        <text x="${bx}" y="${H - 15}" text-anchor="middle" font-size="9.5" font-weight="800" fill="#2563EB">budget</text>
-        <circle cx="${nx}" cy="${yMid}" r="8" fill="#0F172A" stroke="var(--surface)" stroke-width="2.5"/>
-        <rect x="${nx - 38}" y="6" width="76" height="18" rx="9" fill="#0F172A"/>
-        <text x="${nx}" y="15" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="800" fill="#FFFFFF">NuTex ${fmtPct(share)}</text>
-        <line x1="${nx}" x2="${nx}" y1="24" y2="${yMid - 8}" stroke="#0F172A" stroke-width="1.4"/>
+        <line x1="${bx}" x2="${bx}" y1="42" y2="120" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <text x="${bx}" y="${H - 18}" text-anchor="middle" font-size="10" font-weight="800" fill="#2563EB">budget ${fmtPct(budgetShare)}</text>
+        <circle cx="${nx}" cy="${yMid}" r="10" fill="#0F172A" stroke="var(--surface)" stroke-width="3"/>
+        <rect x="${nx - 44}" y="6" width="88" height="20" rx="10" fill="#0F172A"/>
+        <text x="${nx}" y="16" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="#FFFFFF">NuTex ${fmtPct(share)}</text>
+        <line x1="${nx}" x2="${nx}" y1="26" y2="${yMid - 10}" stroke="#0F172A" stroke-width="1.5"/>
         ${ticks}
       </svg>
     `;
@@ -196,11 +199,18 @@ window.NUTEX_BUDGET = (() => {
       { label: 'Projects', v: all.projectSpendMo, c: '#10B981' },
       { label: 'Trainings', v: all.trainingSpendMo, c: '#F59E0B' }
     ];
+    const [lo, hi] = C.bench.shareOfRevenue;
+    const eMax = Math.max(revMo * 1.2 / 100, all.budgetLimit, all.totalSpendMo);
+    const ePos = (v) => Math.min(100, (v / eMax) * 100);
+    const eLo = ePos(revMo * lo / 100);
+    const eHi = ePos(revMo * hi / 100);
+    const eNow = ePos(all.totalSpendMo);
+    const eBud = ePos(all.budgetLimit);
     const casc = [
       { label: 'Revenue', val: revMo, note: `${eurK(C.revenueYear)} / year`, w: 100, cls: '' },
-      { label: 'IT budget', val: itMo, note: `${fmtPct(C.itBudgetPct)} of revenue`, w: C.itBudgetPct * 6, cls: '' },
-      { label: 'AI budget', val: all.budgetLimit, note: `${fmtPct(pct(all.budgetLimit, itMo))} of IT · ${fmtPct(budgetShare)} of revenue`, w: Math.max(2, pct(all.budgetLimit, itMo) * C.itBudgetPct * 6 / 100), cls: 'is-budget' },
-      { label: 'AI spend', val: all.totalSpendMo, note: `${fmtPct(pct(all.totalSpendMo, itMo))} of IT · ${fmtPct(share)} of revenue`, w: Math.max(2, pct(all.totalSpendMo, itMo) * C.itBudgetPct * 6 / 100), cls: 'is-ai' }
+      { label: 'IT budget', val: itMo, note: `${fmtPct(C.itBudgetPct)} of revenue`, w: C.itBudgetPct * 10, cls: '' },
+      { label: 'AI budget', val: all.budgetLimit, note: `${fmtPct(pct(all.budgetLimit, itMo))} of IT · ${fmtPct(budgetShare)} of revenue`, w: Math.max(2, pct(all.budgetLimit, itMo) * C.itBudgetPct * 10 / 100), cls: 'is-budget' },
+      { label: 'AI spend', val: all.totalSpendMo, note: `${all.budgetUsedPct}% of AI budget · ${fmtPct(pct(all.totalSpendMo, itMo))} of IT · ${fmtPct(share)} of revenue`, w: Math.max(2, pct(all.totalSpendMo, itMo) * C.itBudgetPct * 10 / 100), cls: 'is-ai' }
     ];
 
     return `
@@ -249,29 +259,25 @@ window.NUTEX_BUDGET = (() => {
             </div>
           </div>
 
-          <!-- Budget vs spend -->
-          <div class="b4-col">
-            <span class="bg-lbl">Budget vs. spend · ${all.tf.label}</span>
-            <div class="b4-share"><strong>${all.budgetUsedPct}%</strong><span>of the ${eurK(all.budgetLimit)} budget used</span></div>
-            <div class="b2-budget-bar"><div class="bg-${level}" style="width:${Math.min(100, all.budgetUsedPct)}%"></div></div>
-            <div class="b2-budget-meta"><span>${eurK(all.totalSpendMo)} spent</span><span class="${all.budgetRemaining >= 0 ? 'text-green' : 'text-red'}">${eurK(Math.abs(all.budgetRemaining))} ${all.budgetRemaining >= 0 ? 'left' : 'over'}</span></div>
-            <div class="b4-trend-wrap">
-              <div class="b4-trend-head"><span>Monthly spend Jan → ${all.tf.label.split(' ')[0]}</span><span class="b4-key"><i></i>budget</span></div>
-              ${budgetTrend(series, all.budgetLimit)}
-              <div class="b4-trend-foot"><span>YTD ${eurK(ytd)}</span><span>budget YTD ${eurK(all.budgetLimit * series.length)}</span></div>
-            </div>
-            <div class="bg-stack">${cats.map(c => `<div style="flex:${Math.max(0.001, c.v)};background:${c.c}" title="${c.label}: ${eur(c.v)}"></div>`).join('')}</div>
-            <div class="b4-cats">${cats.map(c => `<span><i style="background:${c.c}"></i>${c.label} <strong>${eurK(c.v)}</strong></span>`).join('')}</div>
-          </div>
-
           <!-- Peers (compact) -->
           <div class="b4-col">
-            <span class="bg-lbl">Vs. ${C.peers.length} peers · % of revenue</span>
+            <div class="b4-peer-head">
+              <span class="bg-lbl">Vs. ${C.peers.length} comparable manufacturers · AI spend as % of revenue</span>
+              <span class="b4-facts"><span>Rank <strong>${stats.rank}</strong> of ${stats.n}</span><span>Median <strong>${fmtPct(median)}</strong></span></span>
+            </div>
             ${peerChart(share, budgetShare, C, stats)}
-            <div class="b4-facts">
-              <span>Rank <strong>${stats.rank}</strong> of ${stats.n}</span>
-              <span>Median <strong>${fmtPct(median)}</strong></span>
-              <span>Budget = <strong>${fmtPct(budgetShare)}</strong></span>
+            <div class="b4-euro">
+              <span class="b4-euro-lbl">Peer range for NuTex in €/month</span>
+              <div class="b4-euro-track">
+                <span class="b4-euro-band" style="left:${eLo}%;width:${eHi - eLo}%"></span>
+                <span class="b4-euro-mark b4-euro-now" style="left:${eNow}%" title="Spend today"></span>
+                <span class="b4-euro-mark b4-euro-budget" style="left:${eBud}%" title="Budget"></span>
+              </div>
+              <div class="b4-euro-legend">
+                <span>${eurK(revMo * lo / 100)} – ${eurK(revMo * hi / 100)} in range</span>
+                <span><i class="b4-dot-now"></i>spend ${eurK(all.totalSpendMo)}</span>
+                <span><i class="b4-dot-budget"></i>budget ${eurK(all.budgetLimit)}</span>
+              </div>
             </div>
           </div>
         </section>
