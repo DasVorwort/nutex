@@ -73,6 +73,7 @@ window.NUTEX_STATE = (() => {
     theme: loadString(THEME_KEY, 'light'),
     lang: loadString(LANG_KEY, 'en'),
     showSettings: false,
+    roadmapOpen: false,
     showProjectModal: false,
     showTrainingModal: false
   };

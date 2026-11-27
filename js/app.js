@@ -167,6 +167,19 @@
       const info = e.target.closest('[data-kpi-info]');
       if (info) { e.stopPropagation(); showPopover(info.dataset.kpiInfo, info); return; }
 
+      if (e.target.closest('[data-action="toggle-roadmap"]')) {
+        S.state.roadmapOpen = !S.state.roadmapOpen;
+        render(); return;
+      }
+
+      if (e.target.closest('[data-action="open-roadmap"]')) {
+        S.state.roadmapOpen = true;
+        render();
+        const wrap = el.viewRoot.querySelector('.ov-roadmap-wrap');
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+
       if (e.target.closest('[data-action="open-project-modal"]')) {
         S.state.showProjectModal = true;
         render(); return;

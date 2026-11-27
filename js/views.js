@@ -30,8 +30,8 @@ window.NUTEX_VIEWS = (() => {
   }
 
   // ==========================================================================
-  // 1. OVERVIEW — 3 rows (Readiness · Adoption · Projects) × 3 KPIs (left 3/4)
-  //               + 1 recommended CEO action per row (right 1/4)
+  // 1. OVERVIEW — 3 rows: AI Readiness (FIX) · AI Adoption (PUSH) · AI Projects (FUND)
+  //    3 KPI cards per row (left 3/4) + a To-do block per row (right 1/4)
   // ==========================================================================
   const annualValue = (outcome) => {
     const m = String(outcome || '').match(/€\s?([\d.,]+)\s*(k)?/i);
@@ -39,46 +39,123 @@ window.NUTEX_VIEWS = (() => {
     const n = Number(m[1].replace(/[.,]/g, ''));
     return m[2] ? n * 1000 : n;
   };
-  const eurK = (n) => n >= 1000 ? `€${Math.round(n / 1000)}k` : eur(n);
+  const eurK = (n) => Math.abs(n) >= 10000 ? `€${Math.round(n / 1000)}k` : eur(n);
+  const LV = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)', blue: 'var(--blue)', gray: 'var(--border-hover)' };
+  // Screenshot rule: target met = green · within 15 pp = yellow · more than 15 pp below = red
+  const ppLevel = (v, target) => v >= target ? 'green' : v >= target - 15 ? 'yellow' : 'red';
 
-  function kpiCard({ title, value, unit, sub, level, pct, targetPct, nav, info }) {
+  function sparkline(values, { color = 'var(--blue)', ref = null, w = 240, h = 38 } = {}) {
+    if (!values || values.length < 2) return '';
+    const all = ref !== null ? values.concat([ref]) : values;
+    const lo = Math.min(...all);
+    const hi = Math.max(...all);
+    const pad = (hi - lo) * 0.12 || 1;
+    const y = (v) => h - 3 - ((v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (h - 6);
+    const x = (i) => (i / (values.length - 1)) * (w - 6) + 3;
+    const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const last = values.length - 1;
     return `
-      <div class="ov-kpi" role="link" tabindex="0" data-nav-tab="${nav}">
-        <div class="ov-kpi-top">
-          <span class="ov-kpi-title">${title}${info ? ` ${infoBtn(info)}` : ''}</span>
-          ${dot(level)}
-        </div>
-        <div class="ov-kpi-value">${value}${unit ? `<small>${unit}</small>` : ''}</div>
-        ${pct !== undefined ? renderProgressLine({ pct, targetPct: targetPct ?? 100, level }) : '<div class="ov-kpi-spacer"></div>'}
-        <div class="ov-kpi-sub">${sub}</div>
+      <svg class="ov-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        ${ref !== null ? `<line x1="0" x2="${w}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--text-3)" stroke-dasharray="3 3" stroke-width="1" opacity="0.6"/>` : ''}
+        <polygon points="3,${h} ${pts} ${x(last).toFixed(1)},${h}" fill="${color}" opacity="0.08"/>
+        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${x(last).toFixed(1)}" cy="${y(values[last]).toFixed(1)}" r="3" fill="${color}"/>
+      </svg>
+    `;
+  }
+
+  function ring(pct, level, size = 86, label = '') {
+    const r = size / 2 - 7;
+    const c = 2 * Math.PI * r;
+    const dash = (Math.max(0, Math.min(100, pct)) / 100) * c;
+    return `
+      <svg class="ov-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="8"/>
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${LV[level]}" stroke-width="8" stroke-linecap="round"
+          stroke-dasharray="${dash.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
+        <text x="50%" y="${label ? '47%' : '50%'}" text-anchor="middle" dominant-baseline="central" font-size="${size > 70 ? 19 : 13}" font-weight="750" fill="var(--text)">${pct}%</text>
+        ${label ? `<text x="50%" y="68%" text-anchor="middle" font-size="9.5" fill="var(--text-3)">${label}</text>` : ''}
+      </svg>
+    `;
+  }
+
+  function barRows(items, { target = null, unit = '%' } = {}) {
+    return `
+      <div class="ov-bars">
+        ${items.map(it => `
+          <div class="ov-bar-row">
+            <span class="ov-bar-lbl" title="${it.label}">${it.label}</span>
+            <div class="ov-bar-track">
+              <div class="ov-bar-fill" style="width:${Math.max(2, Math.min(100, it.value))}%;background:${LV[it.level] || LV.blue};"></div>
+              ${target !== null ? `<div class="ov-bar-target" style="left:${target}%"></div>` : ''}
+            </div>
+            <strong class="ov-bar-val">${it.display ?? `${it.value}${unit}`}</strong>
+          </div>
+        `).join('')}
       </div>
     `;
   }
 
-  function actionCard({ level, title, detail, primary, secondary }) {
+  function card({ tag, title, sub, body, nav, action, cls = '' }) {
+    const attr = action ? `data-action="${action}"` : nav ? `data-nav-tab="${nav}"` : '';
     return `
-      <div class="ov-action ov-action-${level}">
-        <span class="ov-action-lbl">${t('ov_recommended')}</span>
-        <strong class="ov-action-title">${title}</strong>
-        <p class="ov-action-detail">${detail}</p>
-        <div class="ov-action-btns">
-          ${primary || ''}
-          ${secondary || ''}
+      <div class="ov-card ${cls}" ${attr} ${attr ? 'role="button" tabindex="0"' : ''}>
+        <div class="ov-card-head">
+          <span class="ov-tag ov-tag-${tag.toLowerCase()}">${tag}</span>
+          <span class="ov-card-title">${title}</span>
+          ${sub ? `<span class="ov-card-sub">${sub}</span>` : ''}
         </div>
+        ${body}
       </div>
     `;
   }
 
-  function overviewRow({ title, kpis, action }) {
+  function todoItem({ title, sub, badge, badgeLevel = 'yellow', nav, action, attr }) {
+    const a = attr || (action ? `data-action="${action}"` : `data-nav-tab="${nav}"`);
+    return `
+      <button type="button" class="ov-todo" ${a}>
+        <div class="ov-todo-main">
+          <strong>${title}</strong>
+          <span>${sub}</span>
+        </div>
+        ${badge ? `<span class="ov-badge ov-badge-${badgeLevel}">${badge}</span>` : ''}
+      </button>
+    `;
+  }
+
+  function todoBlock(label, items) {
+    return `
+      <div class="ov-todo-block">
+        <span class="ov-todo-lbl">${label}</span>
+        ${items.length ? items.join('') : `<div class="ov-todo-empty">✓ Nothing open</div>`}
+      </div>
+    `;
+  }
+
+  function overviewRow({ tag, title, question, cards, todo }) {
     return `
       <section class="ov-row">
         <div class="ov-row-main">
-          <h2 class="ov-row-title">${title}</h2>
-          <div class="ov-kpi-grid">${kpis.join('')}</div>
+          <div class="ov-row-head">
+            <span class="ov-tag ov-tag-${tag.toLowerCase()}">${tag}</span>
+            <h2 class="ov-row-title">${title}</h2>
+            <span class="ov-row-q">${question}</span>
+          </div>
+          <div class="ov-card-grid">${cards.join('')}</div>
         </div>
-        <div class="ov-row-side">${action}</div>
+        <div class="ov-row-side">${todo}</div>
       </section>
     `;
+  }
+
+  // Monthly series Jan → selected month (re-computes metrics per month)
+  function monthSeries(fn) {
+    const keys = D.TREND_2026.keys;
+    const cur = S.state.filters.timeframe;
+    const idx = Math.max(0, keys.indexOf(cur));
+    const out = keys.slice(0, idx + 1).map(k => { S.state.filters.timeframe = k; return fn(S.computeMetrics()); });
+    S.state.filters.timeframe = cur;
+    return out;
   }
 
   function renderOverview(metrics) {
@@ -86,257 +163,407 @@ window.NUTEX_VIEWS = (() => {
     const isCEO = role.isCEO;
     const showFin = S.canViewFinancials();
     const R = window.NUTEX_ROADMAP;
-    const goBtn = (tab, label) => `<button type="button" class="link-btn" data-nav-tab="${tab}">${label || t('details')}</button>`;
+    const rm = R ? R.summary() : null;
+    const tfIdx = Math.max(0, D.TREND_2026.keys.indexOf(S.state.filters.timeframe));
 
-    // ---------------- Row 1: AI READINESS (Data & Technology fixes) ----------------
-    const dsPct = Math.round((metrics.dataSourcesReady / Math.max(1, metrics.dataSourcesTotal)) * 100);
-    const dsTargetPct = Math.round((D.TARGETS.dataSourcesReady / 9) * 100);
-    const dsSt = S.getStatus(dsPct, dsTargetPct);
+    // ======================= ROW 1 · AI READINESS (FIX) =======================
+    const lightLevel = rm ? rm.level : 'green';
+    const critOverdue = rm ? rm.overdue.filter(m => m.onPath) : [];
+    const lightHead = lightLevel === 'red'
+      ? `${critOverdue.length} critical ${critOverdue.length === 1 ? 'item' : 'items'} overdue`
+      : lightLevel === 'yellow' ? 'Delays outside critical path' : 'All milestones on track';
 
-    const rmItems = R ? Object.values(R.ITEM_INDEX) : [];
-    const rmActive = rmItems.filter(m => m.status !== 'proposed');
-    const rmDone = rmActive.filter(m => m.status === 'done').length;
-    const rmOverdue = rmActive.filter(m => m.visualState === 'overdue');
-    const rmPct = Math.round((rmDone / Math.max(1, rmActive.length)) * 100);
-    const rmLevel = rmOverdue.length > 0 ? 'yellow' : 'green';
+    const roadmapLight = card({
+      tag: 'FIX', title: 'Roadmap status', action: 'toggle-roadmap',
+      cls: `ov-light-card ov-light-${lightLevel} ${S.state.roadmapOpen ? 'is-open' : ''}`,
+      body: `
+        <div class="ov-light-wrap">
+          <div class="ov-light" aria-label="Traffic light ${lightLevel}">
+            <span class="ov-lamp ov-lamp-red ${lightLevel === 'red' ? 'on' : ''}"></span>
+            <span class="ov-lamp ov-lamp-yellow ${lightLevel === 'yellow' ? 'on' : ''}"></span>
+            <span class="ov-lamp ov-lamp-green ${lightLevel === 'green' ? 'on' : ''}"></span>
+          </div>
+          <div class="ov-light-main">
+            <strong class="text-${lightLevel}">${lightHead}</strong>
+            <div class="ov-lane-list">
+              ${(rm ? rm.lanes : []).map(l => `
+                <div class="ov-lane-row">
+                  ${dot(l.level)}
+                  <span>${l.label}</span>
+                  <span class="muted-sm">${l.overdue.length ? `<span class="text-red">${l.overdue.length} late</span>` : `${l.done}/${l.total}`}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="ov-card-foot"><span class="link-btn">${S.state.roadmapOpen ? 'Hide roadmap ▴' : 'Open roadmap ▾'}</span></div>
+      `
+    });
 
-    const blockers = rmActive.filter(m => m.onPath && m.status !== 'done');
-    const blockedProjects = metrics.blockedProjects;
-    const blockerLevel = blockers.some(m => m.visualState === 'overdue') ? 'red' : blockers.length ? 'yellow' : 'green';
-    const unlockText = blockers.find(m => m.unlocks)?.unlocks || '';
+    const scoreLevel = rm ? (rm.score >= 90 ? 'green' : rm.score >= 75 ? 'yellow' : 'red') : 'green';
+    const roadmapScore = card({
+      tag: 'FIX', title: 'Roadmap score', sub: 'on schedule', action: 'toggle-roadmap',
+      body: rm ? `
+        <div class="ov-score-wrap">
+          ${ring(rm.score, scoreLevel, 88)}
+          <div class="ov-score-main">
+            <div class="ov-big">${rm.done}<small> / ${rm.dueByToday}</small></div>
+            <span class="muted-sm">due milestones done</span>
+            <div class="ov-score-meta">
+              <span><strong>${rm.done}</strong> of ${rm.planned} planned</span>
+              <span>Phase <strong>${rm.phase}</strong></span>
+            </div>
+          </div>
+        </div>
+        <div class="ov-lane-bars">
+          ${rm.lanes.map(l => `
+            <div class="ov-lane-bar" title="${l.label}: ${l.done} of ${l.total}">
+              <span>${l.label}</span>
+              <div class="ov-bar-track"><div class="ov-bar-fill" style="width:${Math.round((l.done / Math.max(1, l.total)) * 100)}%;background:${LV[l.level]};"></div></div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''
+    });
 
-    const readinessKpis = [
-      kpiCard({
-        title: t('ov_data_sources'), info: 'dataReady', nav: 'readiness',
-        value: `${metrics.dataSourcesReady}`, unit: ` / ${metrics.dataSourcesTotal}`,
-        pct: dsPct, targetPct: dsTargetPct, level: dsSt.level,
-        sub: `${t('target')} ${D.TARGETS.dataSourcesReady} / 9`
-      }),
-      kpiCard({
-        title: t('ov_milestones'), nav: 'readiness',
-        value: `${rmDone}`, unit: ` / ${rmActive.length}`,
-        pct: rmPct, targetPct: 100, level: rmLevel,
-        sub: rmOverdue.length ? `<span class="text-red">${rmOverdue.length} ${t('ov_overdue')}</span>` : t('ov_none_overdue')
-      }),
-      kpiCard({
-        title: t('ov_blockers'), nav: 'readiness',
-        value: `${blockers.length + blockedProjects.length}`,
-        level: blockerLevel,
-        sub: `${blockers.length} ${t('ov_on_critical_path')} · ${blockedProjects.length} ${t(blockedProjects.length === 1 ? 'ov_blocked_project' : 'ov_blocked_projects')}`
-      })
+    const toolItems = metrics.toolUsage.slice().sort((a, b) => b.activePct - a.activePct).map(tl => ({
+      label: tl.name, value: tl.activePct, level: ppLevel(tl.activePct, D.TARGETS.licenseActivePct)
+    }));
+    const toolCard = card({
+      tag: 'FIX', title: 'Tool usage', sub: `active seats · target ${D.TARGETS.licenseActivePct}%`, nav: 'licenses',
+      body: `
+        ${barRows(toolItems, { target: D.TARGETS.licenseActivePct })}
+        <div class="ov-card-note">
+          <strong>${metrics.unusedLicenses}</strong> of ${metrics.purchased} seats unused${showFin && metrics.unusedCostMo ? ` · <span class="text-red">${eur(metrics.unusedCostMo)}/mo</span>` : ''}
+        </div>
+      `
+    });
+
+    const fixTodos = [];
+    (rm ? rm.openSorted : []).filter(m => m.visualState === 'overdue' || !m.owner).slice(0, 2).forEach(m => {
+      const late = m.visualState === 'overdue';
+      fixTodos.push(todoItem({
+        title: !m.owner ? `Assign owner: ${m.short}` : m.onPath ? `Escalate: ${m.short}` : `Close: ${m.short}`,
+        sub: `${m.lane} · ${m.owner || 'no owner'} · ${late ? `due ${rm.fmt(m.date)}` : rm.fmt(m.date)}${m.unlocks ? ` · unlocks ${m.unlocks}` : ''}`,
+        badge: late ? `${rm.daysLate(m.date)}d late` : 'no owner',
+        badgeLevel: late ? 'red' : 'yellow',
+        action: 'open-roadmap'
+      }));
+    });
+    const reallocN = Math.min(metrics.unusedLicenses, metrics.openRequests);
+    if (reallocN > 0) {
+      fixTodos.push(todoItem({
+        title: `Move ${reallocN} unused seats`,
+        sub: `${metrics.unusedLicenses} unused · ${metrics.openRequests} open requests`,
+        badge: showFin && metrics.unusedCostMo ? `${eur(Math.round(metrics.unusedCostMo * reallocN / Math.max(1, metrics.unusedLicenses)))}/mo` : null,
+        nav: 'licenses'
+      }));
+    }
+
+    // ======================= ROW 2 · AI ADOPTION (PUSH) =======================
+    const deptPies = metrics.rows.slice().sort((a, b) => b.weeklyPct - a.weeklyPct).map(r => {
+      const lvl = ppLevel(r.weeklyPct, D.TARGETS.weeklyPct);
+      const isOwn = !isCEO && role.ownDepts.includes(r.dept.id);
+      return `
+        <div class="ov-pie ${isOwn ? 'is-own' : ''}" title="${r.dept.name}: ${r.weeklyUsers} of ${r.employees} weekly">
+          ${ring(r.weeklyPct, lvl, 58)}
+          <span>${r.dept.name}</span>
+        </div>
+      `;
+    }).join('');
+    const weeklySeries = monthSeries(m => m.weeklyPct);
+    const diff = metrics.weeklyPct - metrics.weeklyPrevPct;
+    const weeklyCard = card({
+      tag: 'PUSH', title: 'Weekly use by department', sub: `target ${D.TARGETS.weeklyPct}%`, nav: 'departments',
+      body: `
+        <div class="ov-kpi-line">
+          <span class="ov-big">${metrics.weeklyPct}<small>%</small></span>
+          <span class="muted-sm">company · <span class="${diff >= 0 ? 'text-green' : 'text-red'}">${diff >= 0 ? '+' : ''}${diff} pp</span> vs. prev. month</span>
+        </div>
+        <div class="ov-pie-grid">${deptPies}</div>
+        <div class="ov-legend">
+          <span>${dot('green')} target met</span><span>${dot('yellow')} within 15 pp</span><span>${dot('red')} &gt;15 pp below</span>
+        </div>
+      `
+    });
+
+    const steps = [
+      { label: 'All employees', n: metrics.totalEmp },
+      { label: 'Target group', n: metrics.targetUsers },
+      { label: 'Trained', n: metrics.trainedCount },
+      { label: 'Weekly users', n: metrics.weeklyUsers }
     ];
+    let gapIdx = 1;
+    let gapN = 0;
+    for (let i = 1; i < steps.length; i++) {
+      const drop = steps[i - 1].n - steps[i].n;
+      if (i > 1 && drop > gapN) { gapN = drop; gapIdx = i; }
+    }
+    const funnelCard = card({
+      tag: 'PUSH', title: 'Where do we lose employees?', nav: 'trainings',
+      body: `
+        <div class="ov-funnel">
+          ${steps.map((s, i) => {
+            const pct = Math.round((s.n / Math.max(1, metrics.totalEmp)) * 100);
+            const col = i === 3 ? 'var(--blue)' : i === 0 ? '#BFCBF5' : i === 1 ? '#93A9F0' : '#6E8CEB';
+            return `
+              <div class="ov-funnel-row">
+                <span class="ov-bar-lbl">${s.label}</span>
+                <div class="ov-bar-track ov-funnel-track">
+                  <div class="ov-bar-fill" style="width:${pct}%;background:${col};"></div>
+                  ${i === 3 ? `<div class="ov-bar-target" style="left:${D.TARGETS.weeklyPct}%"></div>` : ''}
+                </div>
+                <strong class="ov-bar-val">${s.n}${i ? ` · ${pct}%` : ''}</strong>
+              </div>
+              ${i === gapIdx && gapN > 0 ? `<div class="ov-funnel-gap">▼ ${gapN} lost here · biggest gap</div>` : ''}
+            `;
+          }).join('')}
+        </div>
+        <div class="ov-card-note">Dashed line = weekly target ${D.TARGETS.weeklyPct}% of all employees</div>
+      `
+    });
 
-    const focus = blockers.slice().sort((a, b) => {
-      const ov = (b.visualState === 'overdue') - (a.visualState === 'overdue');
-      return ov !== 0 ? ov : String(a.date || '9999').localeCompare(String(b.date || '9999'));
-    })[0];
-
-    const readinessAction = focus
-      ? actionCard({
-          level: focus.visualState === 'overdue' ? 'red' : 'yellow',
-          title: t('ov_act_escalate', { x: focus.title }),
-          detail: `${focus.statusMeta.text}${focus.owner ? ` · ${t('ov_owner')}: ${focus.owner}` : ` · ${t('ov_no_owner')}`}${unlockText ? `<br>${t('ov_unlocks')}: <strong>${focus.unlocks || unlockText}</strong>` : ''}`,
-          primary: goBtn('readiness', t('ov_open_roadmap'))
-        })
-      : actionCard({
-          level: 'green',
-          title: t('ov_act_ready'),
-          detail: t('ov_act_ready_detail'),
-          primary: goBtn('readiness', t('ov_open_roadmap'))
-        });
-
-    // ---------------- Row 2: AI ADOPTION (people & implementation) ----------------
-    const wSt = S.getStatus(metrics.weeklyPct, D.TARGETS.weeklyPct);
-    const diffMonth = metrics.weeklyPct - metrics.weeklyPrevPct;
-    const trnSt = S.getStatus(metrics.trainedPct, D.TARGETS.trainingPct);
     const culture = S.computeCulture();
-    const cSt = S.getStatus(culture.overallPct, 75);
+    const pSeries = culture.trend.actual.slice(0, tfIdx + 1);
+    const pPrev = pSeries.length > 1 ? pSeries[pSeries.length - 2] : culture.overallPct;
+    const pDiff = culture.overallPct - pPrev;
+    const pLevel = ppLevel(culture.overallPct, 75);
+    const weakest = culture.questions.slice().sort((a, b) => a.pct - b.pct);
+    const peopleCard = card({
+      tag: 'PUSH', title: 'People score', sub: 'monthly pulse · target 75%', nav: 'culture',
+      body: `
+        <div class="ov-kpi-line">
+          <span class="ov-big">${culture.overallPct}<small>%</small></span>
+          <span class="muted-sm"><span class="${pDiff >= 0 ? 'text-green' : 'text-red'}">${pDiff >= 0 ? '+' : ''}${pDiff} pp</span> · ${culture.responsePct}% responded</span>
+        </div>
+        ${sparkline(pSeries, { color: LV[pLevel], ref: 75 })}
+        ${barRows(culture.questions.map(q => ({ label: q.label, value: q.pct, level: ppLevel(q.pct, 75) })), { target: 75 })}
+      `
+    });
 
-    const adoptionKpis = [
-      kpiCard({
-        title: t('metric_weekly'), info: 'adoption', nav: 'departments',
-        value: `${metrics.weeklyPct}`, unit: '%',
-        pct: metrics.weeklyPct, targetPct: D.TARGETS.weeklyPct, level: wSt.level,
-        sub: `${t('target')} ${D.TARGETS.weeklyPct}% · <span class="${diffMonth >= 0 ? 'text-green' : 'text-red'}">${diffMonth >= 0 ? '+' : ''}${diffMonth}% ${t('ov_vs_prev')}</span>`
-      }),
-      kpiCard({
-        title: t('employees_trained'), info: 'training', nav: 'trainings',
-        value: `${metrics.trainedPct}`, unit: '%',
-        pct: metrics.trainedPct, targetPct: D.TARGETS.trainingPct, level: trnSt.level,
-        sub: `${t('target')} ${D.TARGETS.trainingPct}% · ${metrics.untrainedCount} ${t('untrained_suffix')}`
-      }),
-      kpiCard({
-        title: t('ov_culture'), nav: 'culture',
-        value: `${culture.overallPct}`, unit: '%',
-        pct: culture.overallPct, targetPct: 75, level: cSt.level,
-        sub: `${t('target')} 75% · ${culture.responsePct}% ${t('responses')}`
-      })
-    ];
+    const pushTodos = [];
+    const pendT = metrics.pendingTrainings;
+    if (pendT.length) {
+      pushTodos.push(todoItem({
+        title: isCEO ? `Approve ${pendT.length} training${pendT.length > 1 ? 's' : ''}` : `${pendT.length} training${pendT.length > 1 ? 's' : ''} awaiting CEO`,
+        sub: `${pendT.reduce((s, x) => s + x.participants, 0)} employees · closes the "trained" gap`,
+        badge: showFin ? eur(pendT.reduce((s, x) => s + (x.budget || 0), 0)) : `${pendT.length} pending`,
+        nav: 'trainings'
+      }));
+    }
+    const lag = metrics.rows.slice().sort((a, b) => a.weeklyPct - b.weeklyPct)[0];
+    if (lag && lag.weeklyPct < D.TARGETS.weeklyPct) {
+      pushTodos.push(todoItem({
+        title: `Adoption plan with ${lag.dept.vp}`,
+        sub: `${lag.dept.name} at ${lag.weeklyPct}% weekly · ${lag.untrainedCount} untrained`,
+        badge: `${lag.weeklyPct - D.TARGETS.weeklyPct} pp`, badgeLevel: ppLevel(lag.weeklyPct, D.TARGETS.weeklyPct),
+        nav: 'departments'
+      }));
+    }
+    if (weakest[0] && weakest[0].pct < 75) {
+      pushTodos.push(todoItem({
+        title: `Address: ${weakest[0].label}`,
+        sub: `Weakest pulse question · top wish: ${culture.wishRanking[0]?.name || '—'}`,
+        badge: `${weakest[0].pct}%`, badgeLevel: ppLevel(weakest[0].pct, 75),
+        nav: 'culture'
+      }));
+    }
 
-    const lagRow = metrics.rows.slice().sort((a, b) => (a.weeklyPct - D.TARGETS.weeklyPct) - (b.weeklyPct - D.TARGETS.weeklyPct))[0];
-    const lagTraining = lagRow ? metrics.pendingTrainings.find(tr => tr.deptId === lagRow.dept.id) : null;
-    const anyTraining = lagTraining || metrics.pendingTrainings.slice().sort((a, b) => b.participants - a.participants)[0];
-
-    let adoptionAction;
-    if (lagRow && lagRow.weeklyPct >= D.TARGETS.weeklyPct && !anyTraining) {
-      adoptionAction = actionCard({
-        level: 'green', title: t('ov_act_adoption_ok'), detail: t('ov_act_adoption_ok_detail'),
-        primary: goBtn('departments')
-      });
-    } else if (anyTraining) {
-      const trDept = metrics.rows.find(r => r.dept.id === anyTraining.deptId);
-      adoptionAction = actionCard({
-        level: wSt.level === 'green' ? 'yellow' : wSt.level,
-        title: isCEO ? t('ov_act_approve_training', { x: anyTraining.name }) : t('ov_act_push_training', { x: anyTraining.name }),
-        detail: `${trDept ? `${trDept.dept.name}: ${trDept.weeklyPct}% ${t('ov_weekly_vs', { v: D.TARGETS.weeklyPct })}<br>` : ''}${anyTraining.participants} ${t('employees')}${showFin && anyTraining.budget ? ` · ${eur(anyTraining.budget)}` : ''} · ${anyTraining.timeline}`,
-        primary: isCEO ? `<button type="button" class="btn-approve" data-train-approve="${anyTraining.id}">${t('approve')}</button>` : '',
-        secondary: goBtn('trainings')
+    // ======================= ROW 3 · AI PROJECTS (FUND) =======================
+    let valueCard;
+    if (showFin) {
+      const ratio = metrics.costSavedMo / Math.max(1, metrics.totalSpendMo);
+      const rSeries = monthSeries(m => Math.round((m.costSavedMo / Math.max(1, m.totalSpendMo)) * 100) / 100);
+      const rLevel = ratio >= 1.5 ? 'green' : ratio >= 1 ? 'yellow' : 'red';
+      valueCard = card({
+        tag: 'FUND', title: 'Value per € spent', sub: 'savings ÷ AI cost', nav: 'budget',
+        body: `
+          <div class="ov-kpi-line">
+            <span class="ov-big">€${ratio.toFixed(2)}</span>
+            <span class="muted-sm">${eur(metrics.costSavedMo)} value · ${eur(metrics.totalSpendMo)} cost</span>
+          </div>
+          ${sparkline(rSeries, { color: LV[rLevel], ref: 1 })}
+          <div class="ov-card-note">Jan → ${metrics.tf.label} · dashed = break-even €1.00 · ${metrics.hoursSavedMo.toLocaleString('en-US')} h saved</div>
+        `
       });
     } else {
-      adoptionAction = actionCard({
-        level: wSt.level,
-        title: t('ov_act_lagging', { x: lagRow.dept.name }),
-        detail: `${lagRow.weeklyPct}% ${t('ov_weekly_vs', { v: D.TARGETS.weeklyPct })} · ${t('ov_owner')}: ${lagRow.dept.vp}`,
-        primary: goBtn('departments')
+      const hSeries = monthSeries(m => m.hoursSavedMo);
+      valueCard = card({
+        tag: 'FUND', title: 'Hours saved', sub: 'per month', nav: 'departments',
+        body: `
+          <div class="ov-kpi-line"><span class="ov-big">${metrics.hoursSavedMo.toLocaleString('en-US')}<small> h</small></span></div>
+          ${sparkline(hSeries, { color: LV.green })}
+          <div class="ov-card-note">Jan → ${metrics.tf.label}</div>
+        `
       });
     }
 
-    // ---------------- Row 3: AI PROJECTS (budget & successful projects) ----------------
-    const bLevel = metrics.budgetUsedPct > 95 ? 'red' : metrics.budgetUsedPct > 80 ? 'yellow' : 'green';
-    const live = metrics.approvedProjects;
-    const liveValue = live.reduce((s, p) => s + annualValue(p.outcome), 0);
-    const savTarget = Math.round(D.TARGETS.costSavedMo * (metrics.totalEmp / 300));
-    const savPct = Math.round((metrics.costSavedMo / Math.max(1, savTarget)) * 100);
-    const savSt = S.getStatus(metrics.costSavedMo, savTarget);
-    const hrsTarget = Math.round(D.TARGETS.hoursSavedMo * (metrics.totalEmp / 300));
-    const hrsSt = S.getStatus(metrics.hoursSavedMo, hrsTarget);
-    const pending = metrics.pendingProjects;
-
-    const projectKpis = [
-      showFin
-        ? kpiCard({
-            title: t('monthly_budget'), nav: 'budget',
-            value: eurK(metrics.totalSpendMo), unit: ` / ${eurK(metrics.budgetLimit)}`,
-            pct: metrics.budgetUsedPct, targetPct: 100, level: bLevel,
-            sub: metrics.budgetRemaining >= 0
-              ? `${metrics.budgetUsedPct}% ${t('used')} · <span class="text-green">${eurK(metrics.budgetRemaining)} ${t('left')}</span>`
-              : `<span class="text-red">${eurK(Math.abs(metrics.budgetRemaining))} ${t('over')}</span>`
-          })
-        : kpiCard({
-            title: t('ov_pipeline'), nav: 'projects',
-            value: `${pending.length}`, level: pending.length ? 'yellow' : 'green',
-            sub: `${t('Pending')} · ${blockedProjects.length} ${t('Blocked')}`
-          }),
-      kpiCard({
-        title: t('ov_live_projects'), nav: 'projects',
-        value: `${live.length}`,
-        level: live.length ? 'green' : 'yellow',
-        sub: liveValue ? `${eurK(liveValue)} ${t('ov_value_per_year')}` : t('ov_no_live')
-      }),
-      showFin
-        ? kpiCard({
-            title: t('ov_savings'), info: 'impact', nav: 'budget',
-            value: eurK(metrics.costSavedMo), unit: t('ov_per_mo'),
-            pct: savPct, targetPct: 100, level: savSt.level,
-            sub: `${t('target')} ${eurK(savTarget)} · ${metrics.hoursSavedMo.toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US')} h`
-          })
-        : kpiCard({
-            title: t('ov_hours_saved'), info: 'impact', nav: 'departments',
-            value: metrics.hoursSavedMo.toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US'), unit: ' h',
-            pct: Math.round((metrics.hoursSavedMo / Math.max(1, hrsTarget)) * 100), targetPct: 100, level: hrsSt.level,
-            sub: `${t('target')} ${hrsTarget.toLocaleString(S.state.lang === 'de' ? 'de-DE' : 'en-US')} h ${t('ov_per_mo')}`
-          })
-    ];
-
-    const best = pending.slice().sort((a, b) =>
-      (annualValue(b.outcome) / Math.max(1, b.budget)) - (annualValue(a.outcome) / Math.max(1, a.budget))
-    )[0];
-    const reallocCount = Math.min(metrics.unusedLicenses, metrics.openRequests);
-
-    let projectAction;
-    if (best) {
-      const monthlyCost = Math.round((best.budget || 0) / 12);
-      const fits = metrics.budgetRemaining >= monthlyCost;
-      projectAction = actionCard({
-        level: 'yellow',
-        title: isCEO ? t('ov_act_approve_project', { x: best.name }) : t('ov_act_push_project', { x: best.name }),
-        detail: `${best.outcome}${showFin && best.budget ? `<br>${t('ov_invest')}: <strong>${eur(best.budget)}</strong> · ${fits ? `<span class="text-green">${t('ov_fits_budget')}</span>` : `<span class="text-red">${t('ov_needs_budget', { v: eur(monthlyCost - metrics.budgetRemaining) })}</span>`}` : ''}`,
-        primary: isCEO ? `<button type="button" class="btn-approve" data-project-approve="${best.id}">${t('approve')}</button>` : '',
-        secondary: goBtn('projects', pending.length > 1 ? t('ov_all_pending', { n: pending.length }) : t('details'))
-      });
-    } else if (reallocCount > 0) {
-      projectAction = actionCard({
-        level: 'yellow',
-        title: t('reallocate_seats', { n: reallocCount }),
-        detail: `${metrics.unusedLicenses} ${t('unused')}${showFin && metrics.unusedCostMo ? ` · ${eur(metrics.unusedCostMo)}${t('ov_per_mo')}` : ''}`,
-        primary: goBtn('licenses')
+    let budgetCard;
+    if (showFin) {
+      const bLevel = metrics.budgetUsedPct > 95 ? 'red' : metrics.budgetUsedPct > 85 ? 'yellow' : 'green';
+      const parts = [
+        { label: 'Licenses', v: metrics.licenseSpendMo, c: '#3B82F6' },
+        { label: 'API tokens', v: metrics.tokenSpendMo, c: '#8B5CF6' },
+        { label: 'Projects', v: metrics.projectSpendMo, c: '#10B981' },
+        { label: 'Trainings', v: metrics.trainingSpendMo, c: '#F59E0B' }
+      ];
+      const lim = Math.max(1, metrics.budgetLimit, metrics.totalSpendMo);
+      budgetCard = card({
+        tag: 'FUND', title: 'Budget used', sub: metrics.tf.label, nav: 'budget',
+        body: `
+          <div class="ov-kpi-line">
+            <span class="ov-big text-${bLevel === 'green' ? '' : bLevel}">${metrics.budgetUsedPct}<small>%</small></span>
+            <span class="muted-sm"><strong>${eur(metrics.totalSpendMo)}</strong> of ${eur(metrics.budgetLimit)}</span>
+          </div>
+          <div class="ov-stack">
+            ${parts.map(p => `<div style="width:${(p.v / lim) * 100}%;background:${p.c};" title="${p.label}: ${eur(p.v)}"></div>`).join('')}
+          </div>
+          <div class="ov-stack-legend">
+            ${parts.map(p => `<span><i style="background:${p.c}"></i>${p.label} <strong>${eur(p.v)}</strong></span>`).join('')}
+          </div>
+          <div class="ov-card-note">${metrics.budgetRemaining >= 0 ? `<span class="text-green">${eur(metrics.budgetRemaining)} left</span>` : `<span class="text-red">${eur(-metrics.budgetRemaining)} over budget</span>`} · details →</div>
+        `
       });
     } else {
-      projectAction = actionCard({
-        level: 'green', title: t('ov_act_projects_ok'), detail: t('all_decided'),
-        primary: isCEO ? goBtn('projects') : `<button type="button" class="btn-primary-sm" data-action="open-project-modal">${t('new_project')}</button>`
+      budgetCard = card({
+        tag: 'FUND', title: 'Proposals in approval', nav: 'projects',
+        body: `<div class="ov-kpi-line"><span class="ov-big">${metrics.pendingProjects.length}</span><span class="muted-sm">waiting for CEO decision</span></div>`
       });
     }
+
+    const pilotList = metrics.projects.slice().sort((a, b) => {
+      const o = { Approved: 0, Pending: 1, Blocked: 2, Declined: 3 };
+      return (o[a.status] ?? 9) - (o[b.status] ?? 9);
+    });
+    const liveN = metrics.approvedProjects.length;
+    const liveValue = metrics.approvedProjects.reduce((s, p) => s + annualValue(p.outcome), 0);
+    const pilotsCard = card({
+      tag: 'FUND', title: 'Pilots', sub: `${liveN} live · ${metrics.pendingProjects.length} in approval · ${metrics.blockedProjects.length} blocked`, nav: 'projects',
+      body: `
+        <div class="ov-kpi-line">
+          <span class="ov-big">${liveN}<small> live</small></span>
+          <span class="muted-sm">${eurK(liveValue)} value / year</span>
+        </div>
+        <div class="ov-pilots">
+          ${pilotList.slice(0, 5).map(p => `
+            <div class="ov-pilot">
+              <span class="ov-pilot-name">${p.name}</span>
+              <span class="muted-sm">${deptLabel(p.deptId)}</span>
+              ${p.status === 'Approved' ? '<span class="badge badge-green">Live</span>' : statusBadge(p.status)}
+            </div>
+          `).join('')}
+        </div>
+      `
+    });
+
+    const fundTodos = [];
+    const pendP = metrics.pendingProjects;
+    if (pendP.length) {
+      fundTodos.push(todoItem({
+        title: isCEO ? `Approve ${pendP.length} AI project${pendP.length > 1 ? 's' : ''}` : `${pendP.length} project${pendP.length > 1 ? 's' : ''} awaiting CEO`,
+        sub: `${[...new Set(pendP.map(p => deptLabel(p.deptId)))].join(', ')} · ${eurK(pendP.reduce((s, p) => s + annualValue(p.outcome), 0))}/yr potential`,
+        badge: showFin ? eur(pendP.reduce((s, p) => s + (p.budget || 0), 0)) : `${pendP.length} pending`,
+        nav: 'projects'
+      }));
+    }
+    metrics.blockedProjects.slice(0, 1).forEach(p => {
+      fundTodos.push(todoItem({
+        title: `Unblock: ${p.name}`,
+        sub: p.outcome.replace(/^Blocked:\s*/i, ''),
+        badge: 'blocked', badgeLevel: 'red',
+        action: 'open-roadmap'
+      }));
+    });
+    if (showFin && metrics.budgetUsedPct > 85) {
+      fundTodos.push(todoItem({
+        title: 'Review AI budget',
+        sub: `${metrics.budgetUsedPct}% used · approvals need headroom`,
+        badge: metrics.budgetRemaining >= 0 ? `${eurK(metrics.budgetRemaining)} left` : 'over',
+        badgeLevel: metrics.budgetRemaining >= 0 ? 'yellow' : 'red',
+        nav: 'budget'
+      }));
+    }
+
+    const openCount = fixTodos.length + pushTodos.length + fundTodos.length;
 
     return `
       <div class="overview-screen ov-screen">
         <div class="ov-head">
-          <div class="ov-head-main">
-            <span class="ov-head-scope">${isCEO ? t('ov_company_status') : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
+          <span class="ov-head-scope">${isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
+          <div class="ov-head-side">
+            <strong>To do</strong>
+            <span class="ov-badge ov-badge-red">${openCount} open</span>
           </div>
-          <div class="ov-head-side"><span class="ov-head-scope">${isCEO ? t('ov_ceo_actions') : t('ov_actions')}</span></div>
         </div>
-        ${overviewRow({ title: t('ov_readiness'), kpis: readinessKpis, action: readinessAction })}
-        ${overviewRow({ title: t('ai_adoption'), kpis: adoptionKpis, action: adoptionAction })}
-        ${overviewRow({ title: t('ai_projects'), kpis: projectKpis, action: projectAction })}
+
+        ${overviewRow({
+          tag: 'FIX', title: 'AI Readiness', question: 'Are the foundations in place?',
+          cards: [roadmapLight, roadmapScore, toolCard],
+          todo: todoBlock(isCEO ? 'Fix · decide & escalate' : 'Fix · follow up', fixTodos)
+        })}
+
+        ${S.state.roadmapOpen && R ? `<div class="ov-roadmap-wrap">${R.render()}</div>` : ''}
+
+        ${overviewRow({
+          tag: 'PUSH', title: 'AI Adoption', question: 'Are our people using AI?',
+          cards: [weeklyCard, funnelCard, peopleCard],
+          todo: todoBlock('Push · people & usage', pushTodos)
+        })}
+
+        ${overviewRow({
+          tag: 'FUND', title: 'AI Projects', question: 'Does AI pay off?',
+          cards: [valueCard, budgetCard, pilotsCard],
+          todo: todoBlock(isCEO ? 'Fund · decisions for you' : 'Fund · awaiting CEO', fundTodos)
+        })}
       </div>
     `;
   }
 
   // ==========================================================================
-  // 1b. READINESS — Drill-down: Technical Roadmap + Data Sources by Department
+  // 1b. READINESS — Drill-down: Roadmap + Data Sources + Systems
   // ==========================================================================
   function renderReadiness(metrics) {
     return `
       <div class="page-stack">
         ${window.NUTEX_ROADMAP ? window.NUTEX_ROADMAP.render() : ''}
-        <div class="card card-lg">
-          <div class="panel-head">
-            <h3>${t('ov_data_sources')} ${infoBtn('dataReady')}</h3>
-            <span class="muted-sm">${metrics.dataSourcesReady} / ${metrics.dataSourcesTotal} · ${t('target')} ${D.TARGETS.dataSourcesReady} / 9</span>
+        <div class="split-2">
+          <div class="card card-lg">
+            <div class="panel-head">
+              <h3>Data sources ready ${infoBtn('dataReady')}</h3>
+              <span class="muted-sm">${metrics.dataSourcesReady} / ${metrics.dataSourcesTotal} · target ${D.TARGETS.dataSourcesReady} / 9</span>
+            </div>
+            <table class="clean-table">
+              <thead><tr><th>Department</th><th>Ready</th><th>Status</th></tr></thead>
+              <tbody>
+                ${metrics.rows.slice().sort((a, b) => (a.dataSourcesReady / a.dataSourcesTotal) - (b.dataSourcesReady / b.dataSourcesTotal)).map(r => {
+                  const lvl = r.dataSourcesReady >= r.dataSourcesTotal ? 'green' : r.dataSourcesReady > 0 ? 'yellow' : 'red';
+                  return `
+                    <tr>
+                      <td><strong>${r.dept.name}</strong></td>
+                      <td>${r.dataSourcesReady} / ${r.dataSourcesTotal}</td>
+                      <td><span class="pill pill-${lvl}">${dot(lvl)} ${lvl === 'green' ? 'Ready' : lvl === 'yellow' ? 'Partly' : 'Not ready'}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
           </div>
-          <table class="clean-table">
-            <thead><tr><th>${t('dept_col')}</th><th>${t('ov_ready_col')}</th><th>${t('ov_status_col')}</th></tr></thead>
-            <tbody>
-              ${metrics.rows.slice().sort((a, b) => (a.dataSourcesReady / a.dataSourcesTotal) - (b.dataSourcesReady / b.dataSourcesTotal)).map(r => {
-                const lvl = r.dataSourcesReady >= r.dataSourcesTotal ? 'green' : r.dataSourcesReady > 0 ? 'yellow' : 'red';
-                return `
-                  <tr>
-                    <td><strong>${r.dept.name}</strong></td>
-                    <td>${r.dataSourcesReady} / ${r.dataSourcesTotal}</td>
-                    <td><span class="pill pill-${lvl}">${dot(lvl)} ${lvl === 'green' ? t('on_track') : lvl === 'yellow' ? t('watch') : t('action_needed')}</span></td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div class="card card-lg">
-          <div class="panel-head"><h3>${t('ov_systems')}</h3></div>
-          <table class="clean-table">
-            <tbody>
-              ${D.SYSTEMS.map(s => {
-                const lvl = s.status === 'Live' ? 'green' : s.status === 'Blocked' ? 'red' : 'yellow';
-                return `
-                  <tr>
-                    <td><strong>${s.name}</strong></td>
-                    <td class="muted-sm">${s.detail}</td>
-                    <td><span class="pill pill-${lvl}">${dot(lvl)} ${s.status}</span></td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
+          <div class="card card-lg">
+            <div class="panel-head"><h3>Systems</h3></div>
+            <table class="clean-table">
+              <tbody>
+                ${D.SYSTEMS.map(s => {
+                  const lvl = s.status === 'Live' ? 'green' : s.status === 'Blocked' ? 'red' : 'yellow';
+                  return `
+                    <tr>
+                      <td><strong>${s.name}</strong><br><span class="muted-sm">${s.detail}</span></td>
+                      <td><span class="pill pill-${lvl}">${dot(lvl)} ${s.status}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     `;
