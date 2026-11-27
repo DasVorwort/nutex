@@ -209,8 +209,13 @@ window.NUTEX_BUDGET = (() => {
     const casc = [
       { label: 'Revenue', val: revMo, note: `${eurK(C.revenueYear)} / year`, w: 100, cls: '' },
       { label: 'IT budget', val: itMo, note: `${fmtPct(C.itBudgetPct)} of revenue`, w: C.itBudgetPct * 10, cls: '' },
-      { label: 'AI budget', val: all.budgetLimit, note: `${fmtPct(pct(all.budgetLimit, itMo))} of IT · ${fmtPct(budgetShare)} of revenue`, w: Math.max(2, pct(all.budgetLimit, itMo) * C.itBudgetPct * 10 / 100), cls: 'is-budget' },
-      { label: 'AI spend', val: all.totalSpendMo, note: `${all.budgetUsedPct}% of AI budget · ${fmtPct(pct(all.totalSpendMo, itMo))} of IT · ${fmtPct(share)} of revenue`, w: Math.max(2, pct(all.totalSpendMo, itMo) * C.itBudgetPct * 10 / 100), cls: 'is-ai' }
+      {
+        label: 'AI spend / budget', combo: true, cls: 'is-ai',
+        val: all.totalSpendMo, budget: all.budgetLimit,
+        note: `${all.budgetUsedPct}% of budget used · spend ${fmtPct(share)} / budget ${fmtPct(budgetShare)} of revenue`,
+        w: Math.min(100, all.budgetUsedPct),   // spend as share of the AI budget
+        wb: 100
+      }
     ];
 
     return `
@@ -247,8 +252,8 @@ window.NUTEX_BUDGET = (() => {
               ${casc.map(r => `
                 <div class="b4-casc-row ${r.cls}">
                   <span class="b4-casc-lbl">${r.label}</span>
-                  <strong>${eurK(r.val)}</strong>
-                  <span class="b4-casc-bar"><i style="width:${Math.min(100, r.w)}%"></i></span>
+                  <strong>${r.combo ? `${eurK(r.val)}<small> / ${eurK(r.budget)}</small>` : eurK(r.val)}</strong>
+                  <span class="b4-casc-bar">${r.combo ? `<b style="width:${Math.min(100, r.wb)}%"></b>` : ''}<i style="width:${Math.min(100, r.w)}%"></i></span>
                   <span class="b4-casc-note">${r.note}</span>
                 </div>
               `).join('')}

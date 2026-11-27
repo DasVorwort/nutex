@@ -3117,6 +3117,15 @@ body.dark .ip-chart circle[fill="#0F172A"] { fill: #F8FAFC; }
 body.dark .rm-onpath-ring { stroke: #CBD5E1; }
 .bg-key-spent { background: #2563EB !important; }
 
+/* Combined AI spend / budget row */
+.b4-casc-row.is-ai { grid-template-columns: 74px 96px minmax(0, 1fr) !important; }
+.b4-casc-row.is-ai .b4-casc-lbl { line-height: 1.2; }
+.b4-casc-row strong small { font-size: 11px; font-weight: 600; color: var(--text-3); }
+.b4-casc-bar { position: relative; }
+.b4-casc-bar b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: rgba(37, 99, 235, 0.22); outline: 1px dashed #2563EB; outline-offset: -1px; }
+.b4-casc-bar i { position: relative; }
+.b4-casc-row.is-ai .b4-casc-bar i { background: #2563EB !important; }
+
 /* --- Responsive --- */
 @media (max-width: 1020px) {
   .ov-head, .ov-row, .ov-layout { grid-template-columns: 1fr; }
