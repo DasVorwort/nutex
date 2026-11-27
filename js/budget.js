@@ -91,141 +91,133 @@ window.NUTEX_BUDGET = (() => {
     `;
   }
 
-  function render(metrics) {
+  function verdict(all, sharePct, ratio, C) {
+    const [lo, hi] = C.bench.shareOfRevenue;
+    const peerHighMo = (C.revenueYear / 12) * hi / 100;
+    if (all.budgetUsedPct > 100) {
+      return { level: 'red', text: `<strong>Over budget.</strong> AI spend exceeds the monthly budget by ${eur(-all.budgetRemaining)} — decide: raise the budget or pause the lowest-return spend.` };
+    }
+    if (ratio < 1) {
+      return { level: 'red', text: `<strong>Not paying off yet.</strong> AI returns only ${ratio.toFixed(1)}× its cost — fix adoption before adding budget.` };
+    }
+    if (sharePct < lo) {
+      return { level: 'yellow', text: `<strong>Under-invested.</strong> AI returns ${ratio.toFixed(1)}× its cost but spend is below peers (${fmtPct(sharePct)} of revenue) — scaling up is likely worth it.` };
+    }
+    if (sharePct > hi) {
+      return { level: 'yellow', text: `<strong>Above peers.</strong> Spend is ${fmtPct(sharePct)} of revenue (peers ≤ ${hi}%) — keep the budget flat and cut low-return spend first.` };
+    }
+    return {
+      level: 'green',
+      text: `<strong>Right-sized and paying off.</strong> AI returns <strong>${ratio.toFixed(1)}×</strong> its cost and spend sits mid-range for peers (${fmtPct(sharePct)} of revenue). Room to scale to <strong>${eurK(peerHighMo)}/mo</strong> (peer upper end) as pilots prove out.`
+    };
+  }
+
+  function render() {
     const role = S.getRole();
     const all = withFilters({ dept: 'all' }, m => m);
     const rows = deptRows();
     const sel = S.state.filters.dept;
-    const keys = D.TREND_2026.keys;
-    const idx = Math.max(0, keys.indexOf(S.state.filters.timeframe));
-    const series = keys.slice(0, idx + 1).map(k => withFilters({ timeframe: k, dept: 'all' }, m => m.totalSpendMo));
-    const level = all.budgetUsedPct > 100 ? 'red' : all.budgetUsedPct > 85 ? 'yellow' : 'green';
-
-    const maxScale = Math.max(...rows.map(r => Math.max(r.budget, r.spent))) * 1.04;
     const C = D.COMPANY;
     const revMo = C.revenueYear / 12;
-    const itMo = revMo * C.itBudgetPct / 100;
-    const aiShareRev = pct(all.totalSpendMo, revMo);
-    const aiShareIt = pct(all.totalSpendMo, itMo);
-    const perEmp = all.totalSpendMo / all.totalEmp;
+    const share = pct(all.totalSpendMo, revMo);
+    const budgetShare = pct(all.budgetLimit, revMo);
     const ratio = all.costSavedMo / Math.max(1, all.totalSpendMo);
-    const cats = [
-      { label: 'Licenses', v: all.licenseSpendMo, c: '#3B82F6' },
-      { label: 'API tokens', v: all.tokenSpendMo, c: '#8B5CF6' },
-      { label: 'Projects', v: all.projectSpendMo, c: '#10B981' },
-      { label: 'Trainings', v: all.trainingSpendMo, c: '#F59E0B' }
-    ];
-    const bench = (val, lo, hi) => val < lo ? { t: 'below range', l: 'yellow' } : val > hi ? { t: 'above range', l: 'red' } : { t: 'in range', l: 'green' };
-    const bEmp = bench(perEmp, C.bench.perEmpMo[0], C.bench.perEmpMo[1]);
-    const bIt = bench(aiShareIt, C.bench.shareOfIt[0], C.bench.shareOfIt[1]);
-    const bRev = bench(aiShareRev, C.bench.shareOfRevenue[0], C.bench.shareOfRevenue[1]);
-    const tips = insights(rows);
+    const v = verdict(all, share, ratio, C);
+    const level = all.budgetUsedPct > 100 ? 'red' : all.budgetUsedPct > 90 ? 'yellow' : 'green';
+    const [lo, hi] = C.bench.shareOfRevenue;
+    const SCALE = 1.2; // % of revenue shown on the peer scale
+    const at = (p) => Math.min(100, (p / SCALE) * 100);
+    const maxCV = Math.max(all.totalSpendMo, all.costSavedMo);
+    const tips = insights(rows).slice(0, 2);
+    const editing = !!S.state.budgetEdit;
 
     return `
-      <div class="bg-wrap">
-        <!-- 1 · This month -->
-        <div class="bg-top">
-          <div class="bg-kpi">
-            <span class="bg-lbl">AI spend · ${all.tf.label}</span>
-            <div class="bg-big">${eur(all.totalSpendMo)}<small> / ${eur(all.budgetLimit)}</small></div>
-            <div class="bg-bar"><div class="bg-bar-fill bg-${level}" style="width:${Math.min(100, all.budgetUsedPct)}%"></div></div>
-            <div class="bg-meta"><span><strong>${all.budgetUsedPct}%</strong> used</span><span class="${all.budgetRemaining >= 0 ? 'text-green' : 'text-red'}"><strong>${eur(Math.abs(all.budgetRemaining))}</strong> ${all.budgetRemaining >= 0 ? 'left' : 'over'}</span></div>
-          </div>
-          <div class="bg-trend">
-            <span class="bg-lbl">Monthly spend · Jan → ${all.tf.label.split(' ')[0]}</span>
-            ${spark(series, all.budgetLimit)}
-          </div>
-          <div class="bg-cats">
-            <span class="bg-lbl">Where it goes</span>
-            <div class="bg-stack">${cats.map(c => `<div style="flex:${Math.max(0.001, c.v)};background:${c.c}" title="${c.label}: ${eur(c.v)}"></div>`).join('')}</div>
-            <div class="bg-cat-legend">${cats.map(c => `<span><i style="background:${c.c}"></i>${c.label} <strong>${eurK(c.v)}</strong></span>`).join('')}</div>
-          </div>
+      <div class="b2">
+        <div class="b2-head">
+          <span class="b2-q">Is our AI budget right-sized?</span>
           ${role.isCEO ? `
-            <div class="bg-adjust">
-              <span class="bg-lbl">Monthly budget</span>
-              <div class="bg-adjust-row">
-                <button type="button" class="bg-chip" data-budget-add="2500">+ €2.5k</button>
-                <button type="button" class="bg-chip" data-budget-add="5000">+ €5k</button>
-                <button type="button" class="bg-chip" data-action="reset-budget">Reset</button>
-              </div>
+            <div class="b2-adjust">
+              <button type="button" class="b2-adjust-btn ${editing ? 'is-open' : ''}" data-action="budget-edit">Adjust budget</button>
+              ${editing ? `
+                <div class="b2-adjust-pop">
+                  <span class="bg-lbl">Monthly AI budget</span>
+                  <form id="budget-form" class="b2-form">
+                    <input type="number" name="budgetAmount" value="${S.state.monthlyBudget}" min="5000" step="500" aria-label="Monthly budget">
+                    <button type="submit" class="btn-primary-sm">Save</button>
+                  </form>
+                  <div class="b2-quick">
+                    <button type="button" class="bg-chip" data-budget-add="2500">+ €2.5k</button>
+                    <button type="button" class="bg-chip" data-budget-add="5000">+ €5k</button>
+                    <button type="button" class="bg-chip" data-action="reset-budget">Reset €32k</button>
+                  </div>
+                </div>
+              ` : ''}
             </div>
           ` : ''}
         </div>
 
-        <div class="bg-grid">
-          <!-- 2 · Per department -->
-          <section class="bg-panel">
-            <div class="bg-panel-head">
-              <h4>Budget per department</h4>
-              <span class="bg-legend"><i class="bg-key-spent"></i>spent <i class="bg-key-budget"></i>budget</span>
+        <!-- 1 · The big picture -->
+        <section class="b2-hero">
+          <div class="b2-col">
+            <span class="bg-lbl">AI spend · ${all.tf.label}</span>
+            <div class="b2-big">${eurK(all.totalSpendMo)}<small>/mo</small></div>
+            <div class="b2-sub">${eurK(all.totalSpendMo * 12)} per year · ${fmtPct(share)} of revenue</div>
+            <div class="b2-budget">
+              <div class="b2-budget-bar"><div class="bg-${level}" style="width:${Math.min(100, all.budgetUsedPct)}%"></div></div>
+              <div class="b2-budget-meta"><span><strong>${all.budgetUsedPct}%</strong> of ${eurK(all.budgetLimit)} budget</span><span class="${all.budgetRemaining >= 0 ? 'text-green' : 'text-red'}">${eurK(Math.abs(all.budgetRemaining))} ${all.budgetRemaining >= 0 ? 'left' : 'over'}</span></div>
             </div>
-            <div class="bg-table">
-              <div class="bg-tr bg-th"><span>Department</span><span>Spent vs budget</span><span>Used</span><span>€ / emp.</span><span>Value / €</span></div>
-              ${rows.map(r => {
-                const lv = r.used > 100 ? 'red' : r.used >= 95 ? 'yellow' : 'green';
-                const bw = (r.budget / maxScale) * 100;
-                const sw = (Math.min(r.spent, r.budget) / maxScale) * 100;
-                const ow = (Math.max(0, r.spent - r.budget) / maxScale) * 100;
-                return `
-                  <div class="bg-tr ${sel === r.id ? 'is-sel' : ''}" title="${r.name}: ${eur(r.spent)} of ${eur(r.budget)} · licenses ${eur(r.parts.licenses)}, tokens ${eur(r.parts.tokens)}, projects ${eur(r.parts.projects)}, trainings ${eur(r.parts.trainings)}">
-                    <span class="bg-dept"><strong>${r.name}</strong><small>${r.employees} emp.</small></span>
-                    <span class="bg-track-wrap">
-                      <span class="bg-track" style="width:${bw}%"></span>
-                      <span class="bg-fill bg-${lv}" style="width:${sw}%"></span>
-                      ${ow ? `<span class="bg-over" style="left:${bw}%;width:${ow}%"></span>` : ''}
-                      <span class="bg-amt">${k1(r.spent)} <em>/ ${k1(r.budget)}</em></span>
-                    </span>
-                    <strong class="text-${lv}">${r.used}%</strong>
-                    <span>${eur(r.perEmp)}</span>
-                    <strong class="${r.vpe >= 2 ? 'text-green' : r.vpe >= 1 ? '' : 'text-red'}">€${r.vpe.toFixed(2)}</strong>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-            <div class="bg-tips">
-              ${tips.map(t => `<div class="bg-tip bg-tip-${t.level}">${t.text}</div>`).join('')}
-            </div>
-          </section>
+          </div>
 
-          <!-- 3 · Company context -->
-          <section class="bg-panel">
-            <div class="bg-panel-head">
-              <h4>AI in the company context</h4>
-              <span class="bg-legend">per month</span>
+          <div class="b2-col">
+            <span class="bg-lbl">Cost vs value · per month</span>
+            <div class="b2-cv">
+              <div class="b2-cv-row"><span>AI cost</span><div class="b2-cv-track"><div style="width:${(all.totalSpendMo / maxCV) * 100}%;background:#3B82F6"></div></div><strong>${eurK(all.totalSpendMo)}</strong></div>
+              <div class="b2-cv-row"><span>AI value</span><div class="b2-cv-track"><div style="width:${(all.costSavedMo / maxCV) * 100}%;background:#10B981"></div></div><strong>${eurK(all.costSavedMo)}</strong></div>
             </div>
-            <div class="bg-zoom">
-              <div class="bg-step">
-                <span class="bg-step-lbl">Revenue</span>
-                <strong>${eurK(revMo)}</strong>
-                <span class="bg-step-bar"><i style="width:100%"></i></span>
-                <span class="bg-step-share">${eurK(C.revenueYear)} / year</span>
+            <div class="b2-ratio"><strong class="${ratio >= 1 ? 'text-green' : 'text-red'}">${ratio.toFixed(1)}×</strong> return on every euro</div>
+          </div>
+
+          <div class="b2-col">
+            <span class="bg-lbl">Vs. peers · AI spend as % of revenue</span>
+            <div class="b2-scale">
+              <div class="b2-scale-track">
+                <div class="b2-band" style="left:${at(lo)}%;width:${at(hi) - at(lo)}%" title="Peer range ${lo}–${hi}%"></div>
+                <div class="b2-mark b2-mark-budget" style="left:${at(budgetShare)}%"><span>budget</span></div>
+                <div class="b2-mark b2-mark-now" style="left:${at(share)}%"><span>NuTex ${fmtPct(share)}</span></div>
               </div>
-              <div class="bg-step">
-                <span class="bg-step-lbl">IT budget</span>
-                <strong>${eurK(itMo)}</strong>
-                <span class="bg-step-bar"><i style="width:${C.itBudgetPct}%"></i></span>
-                <span class="bg-step-share">${fmtPct(C.itBudgetPct)} of revenue</span>
-              </div>
-              <div class="bg-step is-ai">
-                <span class="bg-step-lbl">AI spend</span>
-                <strong>${eurK(all.totalSpendMo)}</strong>
-                <span class="bg-step-bar"><i style="width:${Math.min(100, aiShareIt)}%"></i></span>
-                <span class="bg-step-share">${fmtPct(aiShareIt)} of IT · ${fmtPct(aiShareRev)} of revenue</span>
-              </div>
-              <div class="bg-step is-value">
-                <span class="bg-step-lbl">AI value</span>
-                <strong>${eurK(all.costSavedMo)}</strong>
-                <span class="bg-step-bar"><i style="width:${Math.min(100, (all.costSavedMo / Math.max(all.costSavedMo, all.totalSpendMo)) * 100)}%"></i></span>
-                <span class="bg-step-share"><strong>${ratio.toFixed(1)}×</strong> the AI spend</span>
-              </div>
+              <div class="b2-scale-ticks">${[0, 0.4, 0.8, 1.2].map(t => `<span style="left:${at(t)}%">${t}%</span>`).join('')}</div>
             </div>
-            <div class="bg-bench">
-              <div><span>AI spend per employee</span><strong>${eur(perEmp)}</strong><small class="text-${bEmp.l}">${bEmp.t} · peers €${C.bench.perEmpMo[0]}–${C.bench.perEmpMo[1]}</small></div>
-              <div><span>Share of IT budget</span><strong>${fmtPct(aiShareIt)}</strong><small class="text-${bIt.l}">${bIt.t} · peers ${C.bench.shareOfIt[0]}–${C.bench.shareOfIt[1]}%</small></div>
-              <div><span>Share of revenue</span><strong>${fmtPct(aiShareRev)}</strong><small class="text-${bRev.l}">${bRev.t} · peers ${C.bench.shareOfRevenue[0]}–${C.bench.shareOfRevenue[1]}%</small></div>
-            </div>
-          </section>
+            <div class="b2-sub"><i class="b2-band-key"></i>peer range ${lo}–${hi}% · ${eur(all.totalSpendMo / all.totalEmp)} per employee (peers €${C.bench.perEmpMo[0]}–${C.bench.perEmpMo[1]})</div>
+          </div>
+        </section>
+        <div class="b2-verdict b2-verdict-${v.level}">${v.text}</div>
+
+        <!-- 2 · Per department -->
+        <div class="b2-sec-head">
+          <span class="b2-sec-title">By department</span>
+          <span class="b2-sec-sub">spent vs. budget this month · value per € spent</span>
         </div>
+        <div class="b2-depts">
+          ${rows.map(r => {
+            const lv = r.used > 100 ? 'red' : r.used >= 95 ? 'yellow' : 'green';
+            const tag = r.used > 100 ? 'Over' : r.used >= 95 ? 'Tight' : r.used < 80 ? 'Headroom' : '';
+            return `
+              <div class="b2-dept ${sel === r.id ? 'is-sel' : ''}" title="Licenses ${eur(r.parts.licenses)} · Tokens ${eur(r.parts.tokens)} · Projects ${eur(r.parts.projects)} · Trainings ${eur(r.parts.trainings)} · ${eur(r.perEmp)} per employee">
+                <div class="b2-dept-top">
+                  <strong>${r.name}</strong>
+                  ${tag ? `<span class="b2-tag b2-tag-${lv}">${tag}</span>` : ''}
+                </div>
+                <div class="b2-dept-amt"><strong>${k1(r.spent)}</strong> <span>of ${k1(r.budget)}</span></div>
+                <div class="b2-dept-bar"><div class="bg-${lv}" style="width:${Math.min(100, r.used)}%"></div></div>
+                <div class="b2-dept-foot">
+                  <span class="text-${lv}">${r.used}% used</span>
+                  <span>€${r.vpe.toFixed(2)} <em>per €</em></span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${tips.length ? `<div class="b2-tips">${tips.map(t => `<div class="bg-tip bg-tip-${t.level}">${t.text}</div>`).join('')}</div>` : ''}
       </div>
     `;
   }

@@ -245,6 +245,11 @@
         render(); return;
       }
 
+      if (e.target.closest('[data-action="budget-edit"]')) {
+        S.state.budgetEdit = !S.state.budgetEdit;
+        render(); return;
+      }
+
       const addBudgetBtn = e.target.closest('[data-budget-add]');
       if (addBudgetBtn) { S.increaseBudget(addBudgetBtn.dataset.budgetAdd); render(); return; }
 
