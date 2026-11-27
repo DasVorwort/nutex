@@ -2198,7 +2198,6 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
 .ov-board .ov-tile:focus-visible { background: var(--surface); }
 
 .ov-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 22px; }
-.ov-flow { font-size: 11.5px; font-weight: 600; color: var(--text-3); }
 
 .ov-block { position: relative; display: flex; flex-direction: column; gap: 7px; padding-left: 34px; }
 .ov-block-head { display: flex; align-items: center; gap: 10px; height: 22px; min-width: 0; }
@@ -2218,25 +2217,6 @@ body.dark .rm-status-done { background: rgba(45, 212, 191, 0.16); color: #5EEAD4
   align-items: center;
   justify-content: center;
 }
-.ov-block:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: 10px;
-  top: 22px;
-  bottom: -12px;
-  width: 2px;
-  background: linear-gradient(var(--blue), rgba(37, 99, 235, 0.25));
-}
-.ov-block:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 6px;
-  bottom: -12px;
-  border: 5px solid transparent;
-  border-top: 6px solid rgba(37, 99, 235, 0.4);
-  border-bottom: 0;
-}
-
 .ov-todo-panel {
   background: var(--highlight-row);
   border: 1px solid #BFDBFE;

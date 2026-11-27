@@ -430,7 +430,6 @@ window.NUTEX_VIEWS = (() => {
         <div class="ov-board">
           <div class="ov-panel-head">
             <span class="ov-head-scope">${isCEO ? 'Company status' : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
-            <span class="ov-flow">Readiness → Adoption → Value</span>
           </div>
           ${boardBlock({ n: 1, title: 'AI Readiness', question: 'Are the foundations in place?', tiles: [t2, t1], cols: 2 })}
           ${boardBlock({ n: 2, title: 'AI Adoption', question: 'Are our people using AI?', tiles: [t4, t5, t6] })}
