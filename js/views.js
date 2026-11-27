@@ -30,248 +30,314 @@ window.NUTEX_VIEWS = (() => {
   }
 
   // ==========================================================================
-  // 1. OVERVIEW — Left: Decisions, Budget, Approvals | Right: 3 AI Adoption Cards
+  // 1. OVERVIEW — 3 rows (Readiness · Adoption · Projects) × 3 KPIs (left 3/4)
+  //               + 1 recommended CEO action per row (right 1/4)
   // ==========================================================================
+  const annualValue = (outcome) => {
+    const m = String(outcome || '').match(/€\s?([\d.,]+)\s*(k)?/i);
+    if (!m) return 0;
+    const n = Number(m[1].replace(/[.,]/g, ''));
+    return m[2] ? n * 1000 : n;
+  };
+  const eurK = (n) => n >= 1000 ? `€${Math.round(n / 1000)}k` : eur(n);
+
+  function kpiCard({ title, value, unit, sub, level, pct, targetPct, nav, info }) {
+    return `
+      <div class="ov-kpi" role="link" tabindex="0" data-nav-tab="${nav}">
+        <div class="ov-kpi-top">
+          <span class="ov-kpi-title">${title}${info ? ` ${infoBtn(info)}` : ''}</span>
+          ${dot(level)}
+        </div>
+        <div class="ov-kpi-value">${value}${unit ? `<small>${unit}</small>` : ''}</div>
+        ${pct !== undefined ? renderProgressLine({ pct, targetPct: targetPct ?? 100, level }) : '<div class="ov-kpi-spacer"></div>'}
+        <div class="ov-kpi-sub">${sub}</div>
+      </div>
+    `;
+  }
+
+  function actionCard({ level, title, detail, primary, secondary }) {
+    return `
+      <div class="ov-action ov-action-${level}">
+        <span class="ov-action-lbl">${t('ov_recommended')}</span>
+        <strong class="ov-action-title">${title}</strong>
+        <p class="ov-action-detail">${detail}</p>
+        <div class="ov-action-btns">
+          ${primary || ''}
+          ${secondary || ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function overviewRow({ title, kpis, action }) {
+    return `
+      <section class="ov-row">
+        <div class="ov-row-main">
+          <h2 class="ov-row-title">${title}</h2>
+          <div class="ov-kpi-grid">${kpis.join('')}</div>
+        </div>
+        <div class="ov-row-side">${action}</div>
+      </section>
+    `;
+  }
+
   function renderOverview(metrics) {
     const role = S.getRole();
+    const isCEO = role.isCEO;
     const showFin = S.canViewFinancials();
+    const R = window.NUTEX_ROADMAP;
+    const goBtn = (tab, label) => `<button type="button" class="link-btn" data-nav-tab="${tab}">${label || t('details')}</button>`;
+
+    // ---------------- Row 1: AI READINESS (Data & Technology fixes) ----------------
+    const dsPct = Math.round((metrics.dataSourcesReady / Math.max(1, metrics.dataSourcesTotal)) * 100);
+    const dsTargetPct = Math.round((D.TARGETS.dataSourcesReady / 9) * 100);
+    const dsSt = S.getStatus(dsPct, dsTargetPct);
+
+    const rmItems = R ? Object.values(R.ITEM_INDEX) : [];
+    const rmActive = rmItems.filter(m => m.status !== 'proposed');
+    const rmDone = rmActive.filter(m => m.status === 'done').length;
+    const rmOverdue = rmActive.filter(m => m.visualState === 'overdue');
+    const rmPct = Math.round((rmDone / Math.max(1, rmActive.length)) * 100);
+    const rmLevel = rmOverdue.length > 0 ? 'yellow' : 'green';
+
+    const blockers = rmActive.filter(m => m.onPath && m.status !== 'done');
+    const blockedProjects = metrics.blockedProjects;
+    const blockerLevel = blockers.some(m => m.visualState === 'overdue') ? 'red' : blockers.length ? 'yellow' : 'green';
+    const unlockText = blockers.find(m => m.unlocks)?.unlocks || '';
+
+    const readinessKpis = [
+      kpiCard({
+        title: t('ov_data_sources'), info: 'dataReady', nav: 'readiness',
+        value: `${metrics.dataSourcesReady}`, unit: ` / ${metrics.dataSourcesTotal}`,
+        pct: dsPct, targetPct: dsTargetPct, level: dsSt.level,
+        sub: `${t('target')} ${D.TARGETS.dataSourcesReady} / 9`
+      }),
+      kpiCard({
+        title: t('ov_milestones'), nav: 'readiness',
+        value: `${rmDone}`, unit: ` / ${rmActive.length}`,
+        pct: rmPct, targetPct: 100, level: rmLevel,
+        sub: rmOverdue.length ? `<span class="text-red">${rmOverdue.length} ${t('ov_overdue')}</span>` : t('ov_none_overdue')
+      }),
+      kpiCard({
+        title: t('ov_blockers'), nav: 'readiness',
+        value: `${blockers.length + blockedProjects.length}`,
+        level: blockerLevel,
+        sub: `${blockers.length} ${t('ov_on_critical_path')} · ${blockedProjects.length} ${t(blockedProjects.length === 1 ? 'ov_blocked_project' : 'ov_blocked_projects')}`
+      })
+    ];
+
+    const focus = blockers.slice().sort((a, b) => {
+      const ov = (b.visualState === 'overdue') - (a.visualState === 'overdue');
+      return ov !== 0 ? ov : String(a.date || '9999').localeCompare(String(b.date || '9999'));
+    })[0];
+
+    const readinessAction = focus
+      ? actionCard({
+          level: focus.visualState === 'overdue' ? 'red' : 'yellow',
+          title: t('ov_act_escalate', { x: focus.title }),
+          detail: `${focus.statusMeta.text}${focus.owner ? ` · ${t('ov_owner')}: ${focus.owner}` : ` · ${t('ov_no_owner')}`}${unlockText ? `<br>${t('ov_unlocks')}: <strong>${focus.unlocks || unlockText}</strong>` : ''}`,
+          primary: goBtn('readiness', t('ov_open_roadmap'))
+        })
+      : actionCard({
+          level: 'green',
+          title: t('ov_act_ready'),
+          detail: t('ov_act_ready_detail'),
+          primary: goBtn('readiness', t('ov_open_roadmap'))
+        });
+
+    // ---------------- Row 2: AI ADOPTION (people & implementation) ----------------
     const wSt = S.getStatus(metrics.weeklyPct, D.TARGETS.weeklyPct);
     const diffMonth = metrics.weeklyPct - metrics.weeklyPrevPct;
-
-    const deptBars = metrics.rows
-      .slice()
-      .sort((a, b) => b.weeklyPct - a.weeklyPct)
-      .map(r => ({
-        id: r.dept.id,
-        label: r.dept.name,
-        value: r.weeklyPct,
-        display: `${r.weeklyPct}%`,
-        level: S.getStatus(r.weeklyPct, D.TARGETS.weeklyPct).level,
-        isOwn: !role.isCEO && role.ownDepts.includes(r.dept.id)
-      }));
-
-    const toolBars = metrics.toolUsage
-      .slice()
-      .sort((a, b) => b.activePct - a.activePct)
-      .map(tool => ({
-        id: tool.id,
-        label: tool.name,
-        value: tool.activePct,
-        display: `${tool.activePct}%`,
-        level: S.getStatus(tool.activePct, D.TARGETS.licenseActivePct).level
-      }));
-
-    const overviewProjects = role.isCEO
-      ? metrics.pendingProjects.slice(0, 2)
-      : metrics.projects.filter(p => role.ownDepts.includes(p.deptId)).slice(0, 2);
-
-    const pCount = metrics.pendingProjects.length;
-    const pBudget = metrics.pendingProjects.reduce((s, p) => s + (p.budget || 0), 0);
-    const pDepts = [...new Set(metrics.pendingProjects.map(p => deptLabel(p.deptId)))].join(', ');
-    const tCount = metrics.pendingTrainings.length;
-    const tBudget = metrics.pendingTrainings.reduce((s, tr) => s + (tr.budget || 0), 0);
-    const tParticipants = metrics.pendingTrainings.reduce((s, tr) => s + (tr.participants || 0), 0);
-    const reallocCount = Math.min(metrics.unusedLicenses, metrics.openRequests);
-    const bLevel = metrics.budgetUsedPct > 95 ? 'red' : metrics.budgetUsedPct > 80 ? 'yellow' : 'green';
-    const moSuffix = S.state.lang === 'de' ? '/Mon.' : '/mo';
-
-    const ceoFacts = `
-      <button type="button" class="fact-row fact-row-decision" data-nav-tab="projects">
-        ${dot(pCount > 0 ? 'yellow' : 'green')}
-        <div class="fact-main">
-          <strong>${pCount > 0 ? `${pCount} ${t('ai_projects')}` : t('projects')}</strong>
-          <span>${pCount > 0 ? `${pDepts} · ${eur(pBudget)}` : t('all_decided')}</span>
-        </div>
-        <span class="pill pill-${pCount > 0 ? 'yellow' : 'green'}">${pCount > 0 ? t('approval_needed') : t('done')}</span>
-        <span class="arrow">→</span>
-      </button>
-
-      <button type="button" class="fact-row fact-row-decision" data-nav-tab="trainings">
-        ${dot(tCount > 0 ? 'yellow' : 'green')}
-        <div class="fact-main">
-          <strong>${tCount > 0 ? `${tCount} ${t('trainings')}` : t('trainings')}</strong>
-          <span>${tCount > 0 ? `${tParticipants} ${t('employees')} · ${eur(tBudget)}` : `${metrics.trainedPct}% ${t('trained_suffix')}`}</span>
-        </div>
-        <span class="pill pill-${tCount > 0 ? 'yellow' : 'green'}">${tCount > 0 ? t('approval_needed') : t('done')}</span>
-        <span class="arrow">→</span>
-      </button>
-
-      <button type="button" class="fact-row fact-row-decision" data-nav-tab="licenses">
-        ${dot(reallocCount > 0 ? 'red' : 'green')}
-        <div class="fact-main">
-          <strong>${reallocCount > 0 ? t('reallocate_seats', { n: reallocCount }) : t('licenses')}</strong>
-          <span>${metrics.unusedLicenses} ${t('unused')}${metrics.unusedCostMo > 0 ? ` · ${eur(metrics.unusedCostMo)}${moSuffix}` : ''}</span>
-        </div>
-        <span class="pill pill-${reallocCount > 0 ? 'red' : 'green'}">${reallocCount > 0 ? t('action_needed') : t('optimized')}</span>
-        <span class="arrow">→</span>
-      </button>
-    `;
-
-    // VP-specific To-dos computed strictly for the VP's own department(s)
-    const ownRows = metrics.rows.filter(r => role.ownDepts.includes(r.dept.id));
-    const vpEmp = ownRows.reduce((s, r) => s + r.employees, 0) || 1;
-    const vpTrained = ownRows.reduce((s, r) => s + r.trainedCount, 0);
-    const vpUntrained = vpEmp - vpTrained;
-    const vpTrainedPct = Math.round((vpTrained / vpEmp) * 100);
-    const vpUnused = ownRows.reduce((s, r) => s + r.unusedLicenses, 0);
-    const vpRequests = ownRows.reduce((s, r) => s + r.openRequests, 0);
+    const trnSt = S.getStatus(metrics.trainedPct, D.TARGETS.trainingPct);
     const culture = S.computeCulture();
-    const vpCultureScores = culture.deptScores.filter(d => role.ownDepts.includes(d.id));
-    const vpCulturePct = vpCultureScores.length
-      ? Math.round(vpCultureScores.reduce((s, d) => s + d.pct, 0) / vpCultureScores.length)
-      : culture.overallPct;
+    const cSt = S.getStatus(culture.overallPct, 75);
 
-    const vpFacts = `
-      <button type="button" class="fact-row" data-nav-tab="trainings">
-        ${dot(S.getStatus(vpTrainedPct, D.TARGETS.trainingPct).level)}
-        <div class="fact-main">
-          <strong>${vpUntrained} ${t('untrained_suffix')}</strong>
-          <span>${vpTrainedPct}% ${t('trained_suffix')}</span>
-        </div>
-        <span class="arrow">→</span>
-      </button>
+    const adoptionKpis = [
+      kpiCard({
+        title: t('metric_weekly'), info: 'adoption', nav: 'departments',
+        value: `${metrics.weeklyPct}`, unit: '%',
+        pct: metrics.weeklyPct, targetPct: D.TARGETS.weeklyPct, level: wSt.level,
+        sub: `${t('target')} ${D.TARGETS.weeklyPct}% · <span class="${diffMonth >= 0 ? 'text-green' : 'text-red'}">${diffMonth >= 0 ? '+' : ''}${diffMonth}% ${t('ov_vs_prev')}</span>`
+      }),
+      kpiCard({
+        title: t('employees_trained'), info: 'training', nav: 'trainings',
+        value: `${metrics.trainedPct}`, unit: '%',
+        pct: metrics.trainedPct, targetPct: D.TARGETS.trainingPct, level: trnSt.level,
+        sub: `${t('target')} ${D.TARGETS.trainingPct}% · ${metrics.untrainedCount} ${t('untrained_suffix')}`
+      }),
+      kpiCard({
+        title: t('ov_culture'), nav: 'culture',
+        value: `${culture.overallPct}`, unit: '%',
+        pct: culture.overallPct, targetPct: 75, level: cSt.level,
+        sub: `${t('target')} 75% · ${culture.responsePct}% ${t('responses')}`
+      })
+    ];
 
-      <button type="button" class="fact-row" data-nav-tab="licenses">
-        ${dot(vpUnused > 15 ? 'red' : 'green')}
-        <div class="fact-main">
-          <strong>${vpUnused} ${t('unused')}</strong>
-          <span>${vpRequests} ${t('open_requests')}</span>
-        </div>
-        <span class="arrow">→</span>
-      </button>
+    const lagRow = metrics.rows.slice().sort((a, b) => (a.weeklyPct - D.TARGETS.weeklyPct) - (b.weeklyPct - D.TARGETS.weeklyPct))[0];
+    const lagTraining = lagRow ? metrics.pendingTrainings.find(tr => tr.deptId === lagRow.dept.id) : null;
+    const anyTraining = lagTraining || metrics.pendingTrainings.slice().sort((a, b) => b.participants - a.participants)[0];
 
-      <button type="button" class="fact-row" data-nav-tab="culture">
-        ${dot(S.getStatus(vpCulturePct, 75).level)}
-        <div class="fact-main">
-          <strong>${t('nav_culture')} · ${vpCulturePct}%</strong>
-          <span>${culture.wishRanking[0]?.name || ''}</span>
-        </div>
-        <span class="arrow">→</span>
-      </button>
-    `;
+    let adoptionAction;
+    if (lagRow && lagRow.weeklyPct >= D.TARGETS.weeklyPct && !anyTraining) {
+      adoptionAction = actionCard({
+        level: 'green', title: t('ov_act_adoption_ok'), detail: t('ov_act_adoption_ok_detail'),
+        primary: goBtn('departments')
+      });
+    } else if (anyTraining) {
+      const trDept = metrics.rows.find(r => r.dept.id === anyTraining.deptId);
+      adoptionAction = actionCard({
+        level: wSt.level === 'green' ? 'yellow' : wSt.level,
+        title: isCEO ? t('ov_act_approve_training', { x: anyTraining.name }) : t('ov_act_push_training', { x: anyTraining.name }),
+        detail: `${trDept ? `${trDept.dept.name}: ${trDept.weeklyPct}% ${t('ov_weekly_vs', { v: D.TARGETS.weeklyPct })}<br>` : ''}${anyTraining.participants} ${t('employees')}${showFin && anyTraining.budget ? ` · ${eur(anyTraining.budget)}` : ''} · ${anyTraining.timeline}`,
+        primary: isCEO ? `<button type="button" class="btn-approve" data-train-approve="${anyTraining.id}">${t('approve')}</button>` : '',
+        secondary: goBtn('trainings')
+      });
+    } else {
+      adoptionAction = actionCard({
+        level: wSt.level,
+        title: t('ov_act_lagging', { x: lagRow.dept.name }),
+        detail: `${lagRow.weeklyPct}% ${t('ov_weekly_vs', { v: D.TARGETS.weeklyPct })} · ${t('ov_owner')}: ${lagRow.dept.vp}`,
+        primary: goBtn('departments')
+      });
+    }
+
+    // ---------------- Row 3: AI PROJECTS (budget & successful projects) ----------------
+    const bLevel = metrics.budgetUsedPct > 95 ? 'red' : metrics.budgetUsedPct > 80 ? 'yellow' : 'green';
+    const live = metrics.approvedProjects;
+    const liveValue = live.reduce((s, p) => s + annualValue(p.outcome), 0);
+    const savTarget = Math.round(D.TARGETS.costSavedMo * (metrics.totalEmp / 300));
+    const savPct = Math.round((metrics.costSavedMo / Math.max(1, savTarget)) * 100);
+    const savSt = S.getStatus(metrics.costSavedMo, savTarget);
+    const hrsTarget = Math.round(D.TARGETS.hoursSavedMo * (metrics.totalEmp / 300));
+    const hrsSt = S.getStatus(metrics.hoursSavedMo, hrsTarget);
+    const pending = metrics.pendingProjects;
+
+    const projectKpis = [
+      showFin
+        ? kpiCard({
+            title: t('monthly_budget'), nav: 'budget',
+            value: eurK(metrics.totalSpendMo), unit: ` / ${eurK(metrics.budgetLimit)}`,
+            pct: metrics.budgetUsedPct, targetPct: 100, level: bLevel,
+            sub: metrics.budgetRemaining >= 0
+              ? `${metrics.budgetUsedPct}% ${t('used')} · <span class="text-green">${eurK(metrics.budgetRemaining)} ${t('left')}</span>`
+              : `<span class="text-red">${eurK(Math.abs(metrics.budgetRemaining))} ${t('over')}</span>`
+          })
+        : kpiCard({
+            title: t('ov_pipeline'), nav: 'projects',
+            value: `${pending.length}`, level: pending.length ? 'yellow' : 'green',
+            sub: `${t('Pending')} · ${blockedProjects.length} ${t('Blocked')}`
+          }),
+      kpiCard({
+        title: t('ov_live_projects'), nav: 'projects',
+        value: `${live.length}`,
+        level: live.length ? 'green' : 'yellow',
+        sub: liveValue ? `${eurK(liveValue)} ${t('ov_value_per_year')}` : t('ov_no_live')
+      }),
+      showFin
+        ? kpiCard({
+            title: t('ov_savings'), info: 'impact', nav: 'budget',
+            value: eurK(metrics.costSavedMo), unit: t('ov_per_mo'),
+            pct: savPct, targetPct: 100, level: savSt.level,
+            sub: `${t('target')} ${eurK(savTarget)} · ${metrics.hoursSavedMo.toLocaleString('de-DE')} h`
+          })
+        : kpiCard({
+            title: t('ov_hours_saved'), info: 'impact', nav: 'departments',
+            value: metrics.hoursSavedMo.toLocaleString('de-DE'), unit: ' h',
+            pct: Math.round((metrics.hoursSavedMo / Math.max(1, hrsTarget)) * 100), targetPct: 100, level: hrsSt.level,
+            sub: `${t('target')} ${hrsTarget.toLocaleString('de-DE')} h ${t('ov_per_mo')}`
+          })
+    ];
+
+    const best = pending.slice().sort((a, b) =>
+      (annualValue(b.outcome) / Math.max(1, b.budget)) - (annualValue(a.outcome) / Math.max(1, a.budget))
+    )[0];
+    const reallocCount = Math.min(metrics.unusedLicenses, metrics.openRequests);
+
+    let projectAction;
+    if (best) {
+      const monthlyCost = Math.round((best.budget || 0) / 12);
+      const fits = metrics.budgetRemaining >= monthlyCost;
+      projectAction = actionCard({
+        level: 'yellow',
+        title: isCEO ? t('ov_act_approve_project', { x: best.name }) : t('ov_act_push_project', { x: best.name }),
+        detail: `${best.outcome}${showFin && best.budget ? `<br>${t('ov_invest')}: <strong>${eur(best.budget)}</strong> · ${fits ? `<span class="text-green">${t('ov_fits_budget')}</span>` : `<span class="text-red">${t('ov_needs_budget', { v: eur(monthlyCost - metrics.budgetRemaining) })}</span>`}` : ''}`,
+        primary: isCEO ? `<button type="button" class="btn-approve" data-project-approve="${best.id}">${t('approve')}</button>` : '',
+        secondary: goBtn('projects', pending.length > 1 ? t('ov_all_pending', { n: pending.length }) : t('details'))
+      });
+    } else if (reallocCount > 0) {
+      projectAction = actionCard({
+        level: 'yellow',
+        title: t('reallocate_seats', { n: reallocCount }),
+        detail: `${metrics.unusedLicenses} ${t('unused')}${showFin && metrics.unusedCostMo ? ` · ${eur(metrics.unusedCostMo)}${t('ov_per_mo')}` : ''}`,
+        primary: goBtn('licenses')
+      });
+    } else {
+      projectAction = actionCard({
+        level: 'green', title: t('ov_act_projects_ok'), detail: t('all_decided'),
+        primary: isCEO ? goBtn('projects') : `<button type="button" class="btn-primary-sm" data-action="open-project-modal">${t('new_project')}</button>`
+      });
+    }
 
     return `
-      <div class="overview-screen">
-        <div class="overview-cols">
-          <!-- LEFT COLUMN -->
-          <div class="col-stack">
-            <div class="col-heading">
-              <h2>${role.isCEO ? t('decisions') : `${t('todos')} · ${role.ownDepts.map(deptLabel).join(' & ')}`}</h2>
-            </div>
-
-            <div class="card card-lg">
-              <div class="fact-list">${role.isCEO ? ceoFacts : vpFacts}</div>
-            </div>
-
-            ${showFin ? `
-              <div class="card card-lg clickable" data-nav-card="budget">
-                <div class="panel-head" style="margin-bottom:10px;">
-                  <h3>${t('monthly_budget')}</h3>
-                  <span class="link-btn">${role.isCEO ? t('adjust') : t('view')}</span>
-                </div>
-                <div class="hero-main" style="margin-bottom:12px;">
-                  <span class="kpi-num">${eur(metrics.totalSpendMo)}</span>
-                  <span class="muted-lg">/ ${eur(metrics.budgetLimit)}</span>
-                </div>
-                ${renderProgressLine({ pct: metrics.budgetUsedPct, targetPct: 100, indPct: null, level: bLevel })}
-                <div class="hero-sub">
-                  <span>${metrics.budgetUsedPct}% ${t('used')} · ${metrics.totalTokensM}M ${t('tokens_short')}</span>
-                  <strong class="${metrics.budgetRemaining < 0 ? 'text-red' : 'text-green'}">
-                    ${metrics.budgetRemaining >= 0 ? `${eur(metrics.budgetRemaining)} ${t('left')}` : `${eur(Math.abs(metrics.budgetRemaining))} ${t('over')}`}
-                  </strong>
-                </div>
-              </div>
-            ` : ''}
-
-            ${!role.isCEO ? `
-              <div class="card card-lg">
-                <div class="panel-head">
-                  <h3>${t('my_proposals')}</h3>
-                  <button type="button" class="btn-primary-sm" data-action="open-project-modal">${t('new_btn')}</button>
-                </div>
-
-                ${overviewProjects.length === 0 ? `
-                  <div class="empty-clean"><span>${t('none_pending')}</span></div>
-                ` : `
-                  <div class="proposal-list">
-                    ${overviewProjects.map(p => `
-                      <div class="proposal-item">
-                        <div class="proposal-top">
-                          <strong>${p.name}</strong>
-                          ${statusBadge(p.status)}
-                        </div>
-                        <div class="proposal-outcome">${p.outcome}</div>
-                        <div class="proposal-foot">
-                          <span class="muted-sm">${deptLabel(p.deptId)}${showFin && p.budget ? ` · ${eur(p.budget)}` : ''}</span>
-                        </div>
-                      </div>
-                    `).join('')}
-                  </div>
-                `}
-              </div>
-            ` : ''}
+      <div class="overview-screen ov-screen">
+        <div class="ov-head">
+          <div class="ov-head-main">
+            <span class="ov-head-scope">${isCEO ? t('ov_company_status') : `${role.title} · ${role.name}`} · ${metrics.tf.label}</span>
           </div>
-
-          <!-- RIGHT COLUMN: 3 SEPARATE AI ADOPTION CARDS -->
-          <div class="col-stack">
-            <div class="col-heading">
-              <h2>${t('ai_adoption')}</h2>
-            </div>
-
-            <div class="card card-lg">
-              <div class="card-top" style="margin-bottom:8px;">
-                <span class="card-title">${t('employees_using_ai')} ${infoBtn('adoption')}</span>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span class="delta ${diffMonth >= 0 ? 'delta-up' : 'delta-down'}">${diffMonth >= 0 ? '+' : ''}${diffMonth}%</span>
-                  <span class="pill pill-${wSt.level}">${dot(wSt.level)} ${wSt.label}</span>
-                </div>
-              </div>
-              ${C.renderAdoptionFunnel({
-                total: metrics.totalEmp,
-                targetUsers: metrics.targetUsers,
-                trained: metrics.trainedCount,
-                weekly: metrics.weeklyUsers,
-                weeklyLevel: wSt.level
-              })}
-              <div class="hero-sub" style="margin-top:8px;">
-                <span>${t('target')} ${D.TARGETS.weeklyPct}%</span>
-                <strong class="text-${wSt.level}">${metrics.weeklyPct - D.TARGETS.weeklyPct >= 0 ? '+' : ''}${metrics.weeklyPct - D.TARGETS.weeklyPct}%</strong>
-              </div>
-            </div>
-
-            <div class="overview-subgrid">
-              <div class="card card-lg">
-                <div class="panel-head">
-                  <h3>${t('usage_by_dept')}</h3>
-                  <button type="button" class="link-btn" data-nav-tab="departments">${t('details')}</button>
-                </div>
-                ${C.renderTargetBars({
-                  items: deptBars,
-                  max: 100,
-                  target: D.TARGETS.weeklyPct,
-                  unit: '%',
-                  tight: true
-                })}
-              </div>
-
-              <div class="card card-lg">
-                <div class="panel-head">
-                  <h3>${t('usage_by_tool')}</h3>
-                  <span class="muted-sm">${t('active_seats')}</span>
-                </div>
-                ${C.renderTargetBars({
-                  items: toolBars,
-                  max: 100,
-                  target: D.TARGETS.licenseActivePct,
-                  unit: '%',
-                  tight: true
-                })}
-              </div>
-            </div>
-          </div>
+          <div class="ov-head-side"><span class="ov-head-scope">${isCEO ? t('ov_ceo_actions') : t('ov_actions')}</span></div>
         </div>
+        ${overviewRow({ title: t('ov_readiness'), kpis: readinessKpis, action: readinessAction })}
+        ${overviewRow({ title: t('ai_adoption'), kpis: adoptionKpis, action: adoptionAction })}
+        ${overviewRow({ title: t('ai_projects'), kpis: projectKpis, action: projectAction })}
+      </div>
+    `;
+  }
 
+  // ==========================================================================
+  // 1b. READINESS — Drill-down: Technical Roadmap + Data Sources by Department
+  // ==========================================================================
+  function renderReadiness(metrics) {
+    return `
+      <div class="page-stack">
         ${window.NUTEX_ROADMAP ? window.NUTEX_ROADMAP.render() : ''}
+        <div class="card card-lg">
+          <div class="panel-head">
+            <h3>${t('ov_data_sources')} ${infoBtn('dataReady')}</h3>
+            <span class="muted-sm">${metrics.dataSourcesReady} / ${metrics.dataSourcesTotal} · ${t('target')} ${D.TARGETS.dataSourcesReady} / 9</span>
+          </div>
+          <table class="clean-table">
+            <thead><tr><th>${t('dept_col')}</th><th>${t('ov_ready_col')}</th><th>${t('ov_status_col')}</th></tr></thead>
+            <tbody>
+              ${metrics.rows.slice().sort((a, b) => (a.dataSourcesReady / a.dataSourcesTotal) - (b.dataSourcesReady / b.dataSourcesTotal)).map(r => {
+                const lvl = r.dataSourcesReady >= r.dataSourcesTotal ? 'green' : r.dataSourcesReady > 0 ? 'yellow' : 'red';
+                return `
+                  <tr>
+                    <td><strong>${r.dept.name}</strong></td>
+                    <td>${r.dataSourcesReady} / ${r.dataSourcesTotal}</td>
+                    <td><span class="pill pill-${lvl}">${dot(lvl)} ${lvl === 'green' ? t('on_track') : lvl === 'yellow' ? t('watch') : t('action_needed')}</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="card card-lg">
+          <div class="panel-head"><h3>${t('ov_systems')}</h3></div>
+          <table class="clean-table">
+            <tbody>
+              ${D.SYSTEMS.map(s => {
+                const lvl = s.status === 'Live' ? 'green' : s.status === 'Blocked' ? 'red' : 'yellow';
+                return `
+                  <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td class="muted-sm">${s.detail}</td>
+                    <td><span class="pill pill-${lvl}">${dot(lvl)} ${s.status}</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
   }
@@ -899,7 +965,7 @@ window.NUTEX_VIEWS = (() => {
   }
 
   return {
-    renderOverview, renderProjects, renderTrainings, renderLicenses, renderBudget, renderDepartments, renderCulture,
+    renderOverview, renderReadiness, renderProjects, renderTrainings, renderLicenses, renderBudget, renderDepartments, renderCulture,
     renderSettingsMenu, renderProjectModal, renderTrainingModal
   };
 })();

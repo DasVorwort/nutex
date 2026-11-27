@@ -90,6 +90,7 @@
     el.viewRoot.classList.toggle('overview-mode', S.state.activeTab === 'overview');
 
     if (S.state.activeTab === 'overview') el.viewRoot.innerHTML = V.renderOverview(metrics);
+    else if (S.state.activeTab === 'readiness') el.viewRoot.innerHTML = V.renderReadiness(metrics);
     else if (S.state.activeTab === 'projects') el.viewRoot.innerHTML = V.renderProjects(metrics);
     else if (S.state.activeTab === 'trainings') el.viewRoot.innerHTML = V.renderTrainings(metrics);
     else if (S.state.activeTab === 'licenses') el.viewRoot.innerHTML = V.renderLicenses(metrics);
