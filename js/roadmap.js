@@ -1,12 +1,16 @@
 /* ============================================================================
-   NuTex Inc. — AI Roadmap (Data · Technology · Skills · Rules)
+   NuTex Inc. — AI Roadmap (Data · Technology · Skills · Compliance)
    Date-based SVG timeline Jan 2026 – Dec 2027, hover/focus cards,
    critical-path highlighting and a summary used by the Overview
    (traffic light per lane + schedule score).
    ============================================================================ */
 
 window.NUTEX_ROADMAP = (() => {
-  const TODAY = '2026-11-21';
+  // Current day (local time) — milestones turn overdue automatically
+  const TODAY = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
 
   // Phase plan: Pilot (H1 2026) → Scale (H2 2026 – H1 2027) → Embed (H2 2027)
   const PHASES = [
@@ -53,7 +57,7 @@ window.NUTEX_ROADMAP = (() => {
       ]
     },
     {
-      id: 'rules', label: 'Rules',
+      id: 'rules', label: 'Compliance',
       items: [
         { id: 'r1', short: 'AI policy',       title: 'AI usage policy published',                         status: 'done',     date: '2026-02-27', owner: 'Legal' },
         { id: 'r2', short: 'Works council',   title: 'Works council agreement on AI use',                 status: 'open',     date: '2026-11-15', owner: 'Legal / HR',    unlocks: 'Shopfloor camera & usage analytics' },
@@ -67,10 +71,11 @@ window.NUTEX_ROADMAP = (() => {
   // ---------- Geometry ----------
   const W = 1160;
   const X0 = 150;
-  const X1 = 1140;
-  const TOP = 40;
-  const LANE_GAP = 54;
-  const H = TOP + LANES.length * LANE_GAP + 28;
+  const X1 = 1126;
+  const TOP = 34;
+  const LANE_GAP = 50;
+  const AXIS_Y = TOP + (LANES.length - 1) * LANE_GAP + 22 + 42;
+  const H = AXIS_Y + 30;
 
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const ms = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d); };
@@ -177,24 +182,41 @@ window.NUTEX_ROADMAP = (() => {
 
   function renderSvg() {
     const tx = xOf(TODAY);
-    const phases = PHASES.map(p => {
-      const x1 = xOf(p.from);
+    const inRange = TODAY >= '2026-01-01' && TODAY <= '2027-12-31';
+    const PH = {
+      pilot: { fill: 'var(--green-bg)', text: 'var(--green-txt)', band: 'rgba(16,185,129,0.045)', sub: 'done' },
+      scale: { fill: '#2563EB', text: '#FFFFFF', band: 'rgba(37,99,235,0.06)', sub: 'we are here' },
+      embed: { fill: 'var(--track)', text: 'var(--text-3)', band: 'transparent', sub: 'next' }
+    };
+
+    // Phase chevrons (arrow-shaped) + tinted bands behind the lanes
+    const phases = PHASES.map((p, i) => {
+      const x1 = xOf(p.from) + (i ? 2 : 0);
       const x2 = xOf(p.to);
-      const here = TODAY >= p.from && TODAY <= p.to;
+      const c = PH[p.id];
+      const tip = 11;
+      const pts = [
+        `${x1},4`, `${x2 - tip},4`, `${x2},16`, `${x2 - tip},28`, `${x1},28`,
+        i ? `${x1 + tip},16` : `${x1},16`
+      ].join(' ');
       return `
-        ${here ? `<rect class="rm-phase-scale" x="${x1}" y="4" width="${x2 - x1}" height="20" rx="6"/>` : ''}
-        <text x="${(x1 + x2) / 2}" y="18" text-anchor="middle" font-size="11" font-weight="${here ? 700 : 600}" fill="${here ? '#2563EB' : 'var(--text-3)'}">${p.label}${here ? ' · we are here' : ''}</text>
-        ${p.id !== 'pilot' ? `<line x1="${x1}" y1="4" x2="${x1}" y2="${H - 20}" stroke="var(--border)" stroke-width="1"/>` : ''}
+        <rect x="${xOf(p.from)}" y="30" width="${x2 - xOf(p.from)}" height="${AXIS_Y - 30}" fill="${c.band}"/>
+        <polygon points="${pts}" fill="${c.fill}"/>
+        <text x="${(x1 + x2) / 2 + (i ? 4 : -4)}" y="16" dominant-baseline="central" text-anchor="middle" font-size="11.5" fill="${c.text}">
+          <tspan font-weight="750">${p.label}</tspan><tspan dx="5" font-weight="500" opacity="0.85">· ${c.sub}</tspan>
+        </text>
       `;
     }).join('');
 
-    const quarters = [];
+    // Time axis with arrow, quarter ticks
+    const ticks = [];
     for (let y = 2026; y <= 2027; y++) {
       for (let q = 0; q < 4; q++) {
         const iso = `${y}-${String(q * 3 + 1).padStart(2, '0')}-01`;
         const x = xOf(iso);
         const x2 = xOf(q === 3 ? `${y}-12-31` : `${y}-${String(q * 3 + 4).padStart(2, '0')}-01`);
-        quarters.push(`<text x="${(x + x2) / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--text-3)">Q${q + 1} ${String(y).slice(2)}</text>`);
+        ticks.push(`<line x1="${x}" x2="${x}" y1="${AXIS_Y - 4}" y2="${AXIS_Y + 4}" stroke="var(--text-3)" stroke-width="1"/>`);
+        ticks.push(`<text x="${(x + x2) / 2}" y="${AXIS_Y + 20}" text-anchor="middle" font-size="10.5" fill="var(--text-3)">Q${q + 1} ${String(y).slice(2)}</text>`);
       }
     }
 
@@ -207,20 +229,38 @@ window.NUTEX_ROADMAP = (() => {
             <tspan font-weight="700" fill="var(--text)">${l.label}</tspan>
             <tspan dx="6" font-size="11" font-weight="500" fill="var(--text-3)">${doneN} of ${active.length}</tspan>
           </text>
-          <line x1="${X0 - 6}" y1="${l.y}" x2="${X1}" y2="${l.y}" stroke="var(--border-hover)" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="${X0 - 6}" y1="${l.y}" x2="${X1 + 14}" y2="${l.y}" stroke="var(--border-hover)" stroke-width="1.6" stroke-linecap="round" marker-end="url(#rm-arrow)"/>
           ${l.placed.map(nodeMark).join('')}
         </g>
       `;
     }).join('');
 
+    const todayLabel = `Today · ${fmt(TODAY)}`;
+    const pillW = todayLabel.length * 6.1 + 18;
+    const today = inRange ? `
+      <g class="rm-today">
+        <line x1="${tx}" y1="30" x2="${tx}" y2="${AXIS_Y}" stroke="var(--text)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.55"/>
+        <rect x="${tx - pillW / 2}" y="${AXIS_Y - 10}" width="${pillW}" height="20" rx="10" fill="var(--text)"/>
+        <text x="${tx}" y="${AXIS_Y}" dominant-baseline="central" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--surface)">${todayLabel}</text>
+      </g>
+    ` : '';
+
     return `
-      <svg class="roadmap-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="AI roadmap across Data, Technology, Skills and Rules">
+      <svg class="roadmap-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="AI roadmap across Data, Technology, Skills and Compliance">
+        <defs>
+          <marker id="rm-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--border-hover)"/>
+          </marker>
+          <marker id="rm-axis-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/>
+          </marker>
+        </defs>
         ${phases}
-        <g class="rm-today">
-          <line x1="${tx}" y1="28" x2="${tx}" y2="${H - 20}" stroke="var(--text-3)" stroke-width="1.3" stroke-dasharray="4 4" opacity="0.7"/>
-        </g>
+        <line x1="${X0 - 6}" y1="${AXIS_Y}" x2="${X1 + 22}" y2="${AXIS_Y}" stroke="var(--text-3)" stroke-width="1.3" marker-end="url(#rm-axis-arrow)"/>
+        <text x="2" y="${AXIS_Y}" dominant-baseline="central" font-size="11" font-weight="600" fill="var(--text-3)">Time →</text>
+        ${ticks.join('')}
         ${lanes}
-        ${quarters.join('')}
+        ${today}
       </svg>
     `;
   }
@@ -233,7 +273,6 @@ window.NUTEX_ROADMAP = (() => {
         <span class="rm-leg-item"><span class="rm-leg-dot rm-leg-overdue"></span>overdue</span>
         <span class="rm-leg-item"><span class="rm-leg-dot rm-leg-proposed"></span>later phase</span>
         <span class="rm-leg-item"><span class="rm-leg-dot rm-leg-path"></span>critical path</span>
-        <span class="rm-leg-item"><span class="rm-leg-today"></span>today</span>
       </div>
     `;
   }
@@ -242,7 +281,7 @@ window.NUTEX_ROADMAP = (() => {
     return `
       <section class="card card-lg roadmap-section ${compact ? 'roadmap-compact' : ''}" aria-label="AI roadmap">
         <div class="panel-head roadmap-head">
-          <h3><span class="ov-tag ov-tag-fix">FIX</span> Roadmap: are the foundations in place?</h3>
+          <h3>AI Roadmap 2026 – 2027</h3>
           <span class="muted-sm">Hover a milestone for owner & impact</span>
         </div>
         <div class="roadmap-stage" data-roadmap-stage>
