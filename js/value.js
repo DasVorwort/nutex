@@ -140,6 +140,103 @@ window.NUTEX_VALUE = (() => {
   }
 
   // Opened from the overview; company KPI comes from the overview metrics
+  // Return split into the four drivers for the current scope (department / month).
+  // Pilots contribute their own driver(s); everyday AI use is time saved.
+  function drivers(totalMo) {
+    const M = D.RETURN_MODEL;
+    const out = Object.fromEntries(M.drivers.map(d => [d.id, 0]));
+    const list = pilots();
+    const pilotSum = list.reduce((s, p) => s + p.valueMo, 0);
+    const k = pilotSum > totalMo ? totalMo / pilotSum : 1; // earlier months: scale pilots into the total
+    list.forEach(p => {
+      const split = p.split || { [p.driver || 'time']: p.valueMo };
+      Object.entries(split).forEach(([id, v]) => { out[id] += v * k; });
+    });
+    out.time += Math.max(0, totalMo - pilotSum * k);
+    const total = Object.values(out).reduce((a, b) => a + b, 0);
+    return { ...out, total, hours: out.time / M.hourlyRate };
+  }
+
+  const k1 = (n) => `€${(n / 1000).toFixed(1)}k`;
+
+  function driverBar(dv) {
+    const M = D.RETURN_MODEL;
+    return `
+      <div class="vl-src">
+        <div class="vl-src-bar">${M.drivers.map(d => `<div style="flex:${Math.max(0.001, dv[d.id])};background:${d.color}" title="${d.label}: ${k1(dv[d.id])}"></div>`).join('')}</div>
+        <div class="vl-src-legend">
+          ${M.drivers.map(d => `<span><i style="background:${d.color}"></i>${d.label} <strong>${k1(dv[d.id])}</strong></span>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Methodology pop-up: the one place where "return" is defined
+  function renderMethod(totalMo, scopeLabel) {
+    const M = D.RETURN_MODEL;
+    const S = window.NUTEX_STATE;
+    const dv = drivers(totalMo);
+    const CONF = { measured: { t: 'Measured', c: 'green' }, estimate: { t: 'Estimated', c: 'yellow' } };
+    // soft facts (tracked, not priced)
+    const fb = D.IMPACT.kpis.find(k => k.id === 'feedback');
+    const fbNow = fb.series[Math.min(fb.series.length - 1, 3 + Math.max(0, D.TREND_2026.keys.indexOf(S.state.filters.timeframe)))];
+    const culture = S.computeCulture();
+    const rm = window.NUTEX_ROADMAP ? window.NUTEX_ROADMAP.summary() : null;
+    const comp = rm ? rm.lanes.find(l => l.id === 'rules') : null;
+    const lv = (v, t) => (v >= t ? 'green' : v >= t - 10 ? 'yellow' : 'red');
+    const soft = [
+      { label: 'Customer feedback', value: `${fbNow}% positive`, level: lv(fbNow, 80), note: 'target 80%' },
+      { label: 'Employee sentiment', value: `${culture.overallPct}% People score`, level: lv(culture.overallPct, 75), note: 'target 75%' },
+      { label: 'Compliance risk', value: comp ? (comp.overdue.length ? `${comp.overdue.length} item overdue` : 'on track') : '—', level: comp ? comp.level : 'green', note: 'works council, AI Act, DPIA' }
+    ];
+    return `
+      <section class="card card-lg ov-detail rm2" aria-label="How we calculate return">
+        <div class="panel-head ov-detail-head">
+          <h3>How we calculate return</h3>
+          <button type="button" class="link-btn rm2-back" data-action="open-value">← Back to pilots</button>
+        </div>
+        <div class="rm2-formula">
+          <span class="rm2-total"><small>Return ${scopeLabel}</small><strong>${k1(dv.total)}</strong><small>/month</small></span>
+          <span class="rm2-eq">=</span>
+          ${M.drivers.map((d, i) => `
+            ${i ? '<span class="rm2-eq">+</span>' : ''}
+            <span class="rm2-part" style="border-color:${d.color}"><small>${d.label}</small><strong>${k1(dv[d.id])}</strong></span>
+          `).join('')}
+        </div>
+        <div class="rm2-table">
+          <div class="rm2-tr rm2-th"><span>Driver</span><span>How it is calculated</span><span>Source · owner</span><span>Basis</span><span>€ / month</span></div>
+          ${M.drivers.map(d => `
+            <div class="rm2-tr">
+              <span class="rm2-name"><i style="background:${d.color}"></i>${d.label}</span>
+              <span><strong>${d.formula}</strong><small>${d.detail}${d.id === 'time' ? ` Today: ${Math.round(dv.hours).toLocaleString('en-US')} h valued here.` : ''}</small></span>
+              <span><small>${d.source}<br>${d.owner} · ${d.freq}</small></span>
+              <span><em class="ip-conf ip-conf-${CONF[d.confidence].c}">${CONF[d.confidence].t}</em></span>
+              <strong class="rm2-eur">${k1(dv[d.id])}</strong>
+            </div>
+          `).join('')}
+        </div>
+        <div class="rm2-bottom">
+          <div class="rm2-rules">
+            <span class="vl-lbl">Rules</span>
+            ${M.rules.map(r => `<span>• ${r}</span>`).join('')}
+          </div>
+          <div class="rm2-soft">
+            <span class="vl-lbl">Soft facts · tracked, not priced</span>
+            <div class="rm2-soft-grid">
+              ${soft.map(x => `
+                <div class="rm2-soft-card">
+                  <span><i class="dot dot-${x.level}"></i>${x.label}</span>
+                  <strong>${x.value}</strong>
+                  <small>${x.note}</small>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
   function render({ ratio, valueMo, costMo, series, labels }) {
     const list = pilots();
     const prev = series.length > 1 ? series[series.length - 2] : ratio;
@@ -164,16 +261,8 @@ window.NUTEX_VALUE = (() => {
             <div class="vl-axis"><span>${labels[0]}</span><span>${labels[labels.length - 1]}</span></div>
 
             <span class="vl-lbl" style="margin-top:12px">Where the return comes from</span>
-            <div class="vl-src">
-              <div class="vl-src-bar">
-                <div style="flex:${Math.min(pv, valueMo)};background:#10B981" title="Pilots"></div>
-                <div style="flex:${Math.max(0, valueMo - pv)};background:#93C5FD" title="Everyday AI tools"></div>
-              </div>
-              <div class="vl-src-legend">
-                <span><i style="background:#10B981"></i>Pilots <strong>${eurK(Math.min(pv, valueMo))}</strong></span>
-                <span><i style="background:#93C5FD"></i>Everyday AI tools <strong>${eurK(Math.max(0, valueMo - pv))}</strong></span>
-              </div>
-            </div>
+            ${driverBar(drivers(valueMo))}
+            <button type="button" class="link-btn vl-method-link" data-action="open-method">How is return calculated? →</button>
 
             <span class="vl-lbl" style="margin-top:12px">${list.length} pilot${list.length === 1 ? '' : 's'} · ${eurK(pv)} return vs ${eurK(pc)} cost</span>
             <div class="vl-chips">
@@ -214,6 +303,13 @@ window.NUTEX_VALUE = (() => {
         <span>Return per € · Jun → Nov</span>
         ${miniTrend(p.trend, z.color)}
       </div>
+      <div class="vl-tip-mix">${(() => {
+        const split = p.split || { [p.driver || 'time']: p.valueMo };
+        return Object.entries(split).map(([id, v]) => {
+          const d = D.RETURN_MODEL.drivers.find(x => x.id === id);
+          return `<span><i style="background:${d.color}"></i>${d.label} ${k1(v)}</span>`;
+        }).join('');
+      })()}</div>
       <div class="vl-tip-result">${p.result}</div>
       <div class="vl-tip-next"><span>Next step</span>${p.next}</div>
     `;
@@ -262,5 +358,5 @@ window.NUTEX_VALUE = (() => {
     root.addEventListener('focusout', e => { const [n, s] = find(e); if (n) hide(s); });
   }
 
-  return { render, bind, pilots };
+  return { render, renderMethod, drivers, bind, pilots };
 })();

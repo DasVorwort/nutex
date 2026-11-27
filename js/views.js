@@ -400,7 +400,7 @@ window.NUTEX_VIEWS = (() => {
         labels: D.TREND_2026.labelsEn.slice(0, rSeries.length).map(l => l.split(' ')[0])
       };
       t7 = tile({
-        title: 'Return per € spent', level: rLevel, action: 'open-value',
+        title: `Return per € spent ${infoBtn('returnCalc')}`, level: rLevel, action: 'open-value',
         hero: `€${ratio.toFixed(2)}`,
         context: `${eurK(metrics.costSavedMo)} return · ${eurK(metrics.totalSpendMo)} cost`,
         visual: sparkline(rSeries, { color: LV[rLevel], ref: 1 }),
@@ -546,6 +546,14 @@ window.NUTEX_VIEWS = (() => {
           <div class="ov-modal" role="dialog" aria-label="Where did we lose our people?">
             <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
             ${window.NUTEX_ADOPTION.render()}
+          </div>
+        </div>
+      ` : ''}
+      ${S.state.methodOpen && valueData && window.NUTEX_VALUE ? `
+        <div class="ov-modal-backdrop" data-action="close-roadmap">
+          <div class="ov-modal" role="dialog" aria-label="How we calculate return">
+            <button type="button" class="ov-modal-close" data-action="close-roadmap" aria-label="Close">✕</button>
+            ${window.NUTEX_VALUE.renderMethod(valueData.valueMo, metrics.rows.length === 1 ? '· ' + metrics.rows[0].dept.name : '')}
           </div>
         </div>
       ` : ''}

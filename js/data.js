@@ -23,7 +23,8 @@ window.NUTEX_DATA = (() => {
     licenses:   { source: 'Tool & Finance Logs', updated: '2026-11-19', freq: 'Daily', text: 'Paid licenses compared to active monthly users and cost per active user.' },
     training:   { source: 'Learning Platform', updated: '2026-11-18', freq: 'Weekly', text: 'Share of employees who completed core AI training.' },
     dataReady:  { source: 'IT Audit', updated: '2026-11-18', freq: 'Weekly', text: 'Data sources meeting all quality & security criteria.' },
-    impact:     { source: 'Logs & Finance', updated: '2026-11-18', freq: 'Monthly', text: 'Estimated monthly hours & savings paired with measured process error rate.' }
+    impact:     { source: 'Logs & Finance', updated: '2026-11-18', freq: 'Monthly', text: 'Estimated monthly hours & savings paired with measured process error rate.' },
+    returnCalc: { source: 'Return model', updated: '2026-11-18', freq: 'Monthly', text: 'Return = time saved + quality + speed & revenue + cost avoided — net, each euro counted once. Soft facts (customer feedback, employee sentiment, compliance risk) are tracked separately, not in €. Details: open the tile → "How is return calculated?"' }
   };
 
   const ROLES = [
@@ -628,67 +629,67 @@ window.NUTEX_DATA = (() => {
   // trend = value per € for the last 6 months (Jun → Nov 2026)
   const PILOTS = [
     {
-      id: 'quotedraft', name: 'QuoteDraft', full: 'Automated Quote & Spec Drafting', deptId: 'sales', owner: 'Marcus Weber',
+      id: 'quotedraft', name: 'QuoteDraft', driver: 'speed', full: 'Automated Quote & Spec Drafting', deptId: 'sales', owner: 'Marcus Weber',
       status: 'Live', since: 'Mar 2026', costMo: 2500, valueMo: 8600, employees: 50,
       result: 'Quotes 44% faster (27 h → 15 h) · win rate +4 pp', trend: [1.9, 2.4, 2.8, 3.1, 3.3, 3.47],
       next: 'Roll out to Apparel & Retail team (18 reps)'
     },
     {
-      id: 'yarnlab', name: 'YarnLab', full: 'Yarn Formulation Assistant', deptId: 'rd', owner: 'Sarah Klein',
+      id: 'yarnlab', name: 'YarnLab', driver: 'speed', full: 'Yarn Formulation Assistant', deptId: 'rd', owner: 'Sarah Klein',
       status: 'Live', since: 'Feb 2026', costMo: 3300, valueMo: 9800, employees: 45,
       result: 'Lab test cycles 30% faster', trend: [2.2, 2.5, 2.6, 2.8, 2.9, 2.98],
       next: 'Connect simulation data to cut cycles further'
     },
     {
-      id: 'fabricvision', name: 'FabricVision', full: 'Optical Fabric Defect Camera', deptId: 'production', owner: 'Dr. Thomas Berg',
+      id: 'fabricvision', name: 'FabricVision', driver: 'quality', full: 'Optical Fabric Defect Camera', deptId: 'production', owner: 'Dr. Thomas Berg',
       status: 'Pilot', since: 'Jul 2026', costMo: 1500, valueMo: 3600, employees: 90,
       result: 'Defects −27%, returns −25% in Plant A', trend: [0.4, 0.9, 1.4, 1.8, 2.2, 2.4],
       next: 'Approve rollout to all looms (€48k) — needs works council sign-off'
     },
     {
-      id: 'weaveopt', name: 'WeaveOpt', full: 'Loom Setting Optimizer', deptId: 'production', owner: 'Dr. Thomas Berg',
+      id: 'weaveopt', name: 'WeaveOpt', driver: 'quality', full: 'Loom Setting Optimizer', deptId: 'production', owner: 'Dr. Thomas Berg',
       status: 'Pilot', since: 'Aug 2026', costMo: 800, valueMo: 1700, employees: 62,
       result: 'Changeover time −22%', trend: [0, 0.6, 1.1, 1.6, 1.9, 2.1],
       next: 'Blocked by ERP link for full rollout'
     },
     {
-      id: 'yarnprice', name: 'YarnPrice', label: 'left', full: 'Raw Yarn Price Forecast', deptId: 'purchasing', owner: 'Andreas Richter',
+      id: 'yarnprice', name: 'YarnPrice', driver: 'cost', label: 'left', full: 'Raw Yarn Price Forecast', deptId: 'purchasing', owner: 'Andreas Richter',
       status: 'Pilot', since: 'Sep 2026', costMo: 1500, valueMo: 4200, employees: 12,
       result: '€35k saved on two fiber contracts', trend: [0, 0, 0, 1.2, 2.1, 2.8],
       next: 'Keep small — high value, few users'
     },
     {
-      id: 'dyematch', name: 'DyeMatch', full: 'Color Recipe Matching', deptId: 'rd', owner: 'Sarah Klein',
+      id: 'dyematch', name: 'DyeMatch', driver: 'quality', full: 'Color Recipe Matching', deptId: 'rd', owner: 'Sarah Klein',
       status: 'Pilot', since: 'Jun 2026', costMo: 1200, valueMo: 1700, employees: 38,
       result: 'First-time-right dyeing 71% → 79%', trend: [0.6, 0.8, 1.0, 1.2, 1.3, 1.42],
       next: 'Add finishing team to reach implement zone'
     },
     {
-      id: 'shopfloor', name: 'ShopFloor Copilot', label: 'above-left', full: 'Shopfloor Assistant (work instructions)', deptId: 'production', owner: 'Dr. Thomas Berg',
+      id: 'shopfloor', name: 'ShopFloor Copilot', driver: 'time', label: 'above-left', full: 'Shopfloor Assistant (work instructions)', deptId: 'production', owner: 'Dr. Thomas Berg',
       status: 'Pilot', since: 'May 2026', costMo: 1300, valueMo: 1000, employees: 80,
       result: 'Only 31% of operators use it weekly', trend: [0.5, 0.6, 0.6, 0.7, 0.7, 0.76],
       next: 'Fix adoption: shopfloor training wave 2 before more spend'
     },
     {
-      id: 'customsai', name: 'CustomsAI', full: 'Customs Document Checker', deptId: 'logistics', owner: 'Julia Hoffmann',
+      id: 'customsai', name: 'CustomsAI', driver: 'time', full: 'Customs Document Checker', deptId: 'logistics', owner: 'Julia Hoffmann',
       status: 'Pilot', since: 'Apr 2026', costMo: 1100, valueMo: 600, employees: 6,
       result: 'Errors flat — vendor tool covers it already', trend: [0.7, 0.6, 0.6, 0.5, 0.55, 0.55],
       next: 'Stop at end of contract (Jan 2027), save €1.1k/mo'
     },
     {
-      id: 'routeassist', name: 'RouteAssist', full: 'Warehouse Picking Route Assistant', deptId: 'logistics', owner: 'Julia Hoffmann',
+      id: 'routeassist', name: 'RouteAssist', driver: 'cost', full: 'Warehouse Picking Route Assistant', deptId: 'logistics', owner: 'Julia Hoffmann',
       status: 'Pilot', since: 'Jul 2026', costMo: 1400, valueMo: 2600, employees: 20,
       result: 'Picking route errors −15%, 40 min saved per shift', trend: [0.3, 0.7, 1.1, 1.4, 1.7, 1.86],
       next: 'Extend to second warehouse once SupplyAI users moved to Copilot'
     },
     {
-      id: 'contentstudio', name: 'ContentStudio', label: 'right', full: 'Brand Content & Spec Sheet Drafting', deptId: 'marketing', owner: 'Marcus Weber',
+      id: 'contentstudio', name: 'ContentStudio', split: { cost: 3000, time: 2200 }, label: 'right', full: 'Brand Content & Spec Sheet Drafting', deptId: 'marketing', owner: 'Marcus Weber',
       status: 'Live', since: 'Apr 2026', costMo: 1600, valueMo: 5200, employees: 24,
       result: 'Campaign assets 45% faster, agency spend −€3k/mo', trend: [2.1, 2.4, 2.7, 2.9, 3.1, 3.25],
       next: 'Connect product data to auto-draft spec sheets'
     },
     {
-      id: 'trendradar', name: 'TrendRadar', label: 'right', full: 'Market Intelligence Briefs', deptId: 'marketing', owner: 'Marcus Weber',
+      id: 'trendradar', name: 'TrendRadar', driver: 'time', label: 'right', full: 'Market Intelligence Briefs', deptId: 'marketing', owner: 'Marcus Weber',
       status: 'Pilot', since: 'Sep 2026', costMo: 900, valueMo: 1100, employees: 7,
       result: 'Weekly competitor brief in 10 min instead of 3 h', trend: [0, 0, 0, 0.8, 1.1, 1.22],
       next: 'Share briefs with Sales to widen the audience'
@@ -761,6 +762,43 @@ window.NUTEX_DATA = (() => {
         series:  [5.1, 5.0, 4.9, 5.0, 4.4, 4.1, 3.9, 3.8, 3.7, 3.6, 3.6, 3.5, 3.5, 3.5],
         driver: 'YarnLab', owner: 'Sarah Klein · R&D', euroYear: 117600, euroNote: 'faster development, fewer lab hours'
       }
+    ]
+  };
+
+  // How "return" is calculated: four hard drivers in € (summing to the realized return)
+  // plus soft facts that are tracked but never priced.
+  const RETURN_MODEL = {
+    hourlyRate: 40, // € fully loaded cost per employee hour
+    drivers: [
+      {
+        id: 'time', label: 'Time saved', color: '#3B82F6',
+        formula: 'Net hours saved × €40 fully loaded hourly rate',
+        detail: 'Hours from everyday AI use (logs + monthly survey), net of rework for checking and fixing output.',
+        source: 'Tool logs · pulse survey', owner: 'HR / Finance', freq: 'Monthly', confidence: 'estimate'
+      },
+      {
+        id: 'quality', label: 'Quality', color: '#10B981',
+        formula: 'Fewer defects & returns × cost per case (scrap, credit note, re-shipment)',
+        detail: 'Defects per 1,000 m and returns rate vs. 3-month pre-AI baseline; Plant B as control group.',
+        source: 'QA system · ERP returns', owner: 'Production', freq: 'Monthly', confidence: 'measured'
+      },
+      {
+        id: 'speed', label: 'Speed & revenue', color: '#8B5CF6',
+        formula: 'Faster quotes & lab cycles × contribution margin of the extra output',
+        detail: 'Quote lead time and win rate (CRM), lab test cycle time; Apparel team as control group for quotes.',
+        source: 'CRM · lab system', owner: 'Sales / R&D', freq: 'Monthly', confidence: 'measured'
+      },
+      {
+        id: 'cost', label: 'Cost avoided', color: '#F59E0B',
+        formula: 'Avoided external spend: penalties, express freight, agency fees, better contract prices',
+        detail: 'Invoices before vs. after go-live, adjusted for volume.',
+        source: 'Finance · procurement', owner: 'Finance', freq: 'Quarterly', confidence: 'estimate'
+      }
+    ],
+    rules: [
+      'Each euro is counted once: hours freed inside a quality or speed pilot are valued via that outcome, not again as time saved.',
+      'Baseline = average of the 3 months before each go-live.',
+      'Soft facts are tracked next to the return but never priced into it.'
     ]
   };
 
@@ -838,7 +876,7 @@ window.NUTEX_DATA = (() => {
   };
 
   return {
-    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE, COMPANY, IMPACT,
+    THRESHOLDS, TARGETS, KPI_INFO, ROLES, DEFAULT_RBAC, PILOTS, ADOPTION_2026, PEOPLE, COMPANY, IMPACT, RETURN_MODEL,
     TOOLS, TIMEFRAMES, DEPARTMENTS, INITIAL_PROJECTS, INITIAL_TRAININGS, SYSTEMS, CULTURE_SURVEY, TREND_2026, I18N
   };
 })();

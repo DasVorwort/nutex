@@ -216,7 +216,14 @@
         render(); return;
       }
 
+      if (e.target.closest('[data-action="open-method"]')) {
+        S.state.methodOpen = true;
+        S.state.valueOpen = false;
+        render(); return;
+      }
+
       if (e.target.closest('[data-action="open-value"]')) {
+        S.state.methodOpen = false;
         S.state.valueOpen = true;
         S.state.detailOpen = null;
         render(); return;
@@ -244,6 +251,7 @@
         S.state.lossOpen = false;
         S.state.detailOpen = null;
         S.state.impactOpen = false;
+        S.state.methodOpen = false;
         render(); return;
       }
 
@@ -418,7 +426,7 @@
       if (e.key === 'Escape') {
         closeModals();
         if (S.state.todoOpen) { S.state.todoOpen = null; render(); return; }
-        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen || S.state.detailOpen || S.state.impactOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; S.state.detailOpen = null; S.state.impactOpen = false; render(); }
+        if (S.state.roadmapOpen || S.state.valueOpen || S.state.lossOpen || S.state.detailOpen || S.state.impactOpen || S.state.methodOpen) { S.state.roadmapOpen = false; S.state.valueOpen = false; S.state.lossOpen = false; S.state.detailOpen = null; S.state.impactOpen = false; S.state.methodOpen = false; render(); }
         if (S.state.showSettings) { S.state.showSettings = false; render(); }
       }
     });
