@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Executive Dashboard</title>
+  <link rel="stylesheet" href="styles.css?v=28">
+  <style id="print-page-style"></style>
+</head>
+<body>
+  <!-- Full-bleed print backdrop (eliminates white PDF margins/hairlines in Dark & Light Mode) -->
+  <div class="print-bg" aria-hidden="true"></div>
+
+  <!-- Clean Top Navigation Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <nav class="main-nav" aria-label="Primary Navigation">
+          <button type="button" class="nav-tab active" data-nav="overview" data-i18n="nav_overview">Overview</button>
+          <button type="button" class="nav-tab" data-nav="departments" data-i18n="nav_departments">Departments</button>
+          <button type="button" class="nav-tab" data-nav="culture" data-i18n="nav_culture">Culture</button>
+          <button type="button" class="nav-tab" data-nav="projects"><span data-i18n="nav_projects">Projects</span> <span id="nav-pending-badge" class="nav-count"></span></button>
+          <button type="button" class="nav-tab" data-nav="trainings"><span data-i18n="nav_trainings">Trainings</span> <span id="nav-train-badge" class="nav-count"></span></button>
+          <button type="button" class="nav-tab" data-nav="licenses" data-i18n="nav_licenses">Licenses</button>
+          <button type="button" class="nav-tab" data-nav="budget" data-i18n="nav_budget">Budget</button>
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <select id="role-switcher" class="control-select role-select" aria-label="Active Role"></select>
+        <button type="button" id="btn-pptx" class="btn-subtle" title="Export AI PowerPoint Presentation (.pptx)">PowerPoint</button>
+        <button type="button" id="btn-print" class="btn-subtle" title="Export Structured PDF">PDF</button>
+        <div class="settings-wrap">
+          <button type="button" id="btn-settings" class="btn-icon-gear" aria-label="Settings" title="Settings">⚙</button>
+          <div id="settings-menu" class="settings-menu"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slim Global Filter Bar -->
+    <div class="filterbar">
+      <div class="filterbar-inner">
+        <span class="filter-label" data-i18n="filters">Filters</span>
+        <select id="filter-dept" class="control-select" aria-label="Department"></select>
+        <select id="filter-time" class="control-select" aria-label="Month"></select>
+        <button type="button" id="btn-reset" class="btn-reset" data-i18n="reset">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Clean Print / PDF Header (shown only when exporting PDF) -->
+  <div id="print-header" class="print-header"></div>
+
+  <!-- Main Centered Workspace -->
+  <main id="view-root" class="workspace"></main>
+
+  <!-- Modal Root (Project / Training Proposal) + Info Popover -->
+  <div id="modal-root"></div>
+  <div id="kpi-popover" class="kpi-popover" role="dialog"></div>
+
+  <script src="js/data.js?v=28"></script>
+  <script src="js/state.js?v=28"></script>
+  <script src="js/charts.js?v=28"></script>
+  <script src="js/roadmap.js?v=28"></script>
+  <script src="js/views.js?v=28"></script>
+  <script src="js/export.js?v=28"></script>
+  <script src="js/app.js?v=28"></script>
+</body>
+</html>
